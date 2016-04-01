@@ -6,6 +6,9 @@ os:
 julia:
   - release
   - nightly
+before_install:
+  - sudo apt-get install liblapack3 libblas3
+
 notifications:
   email: false
 # uncomment the following lines to override the default test script
