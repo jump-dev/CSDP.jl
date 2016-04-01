@@ -7,27 +7,23 @@ const DIAG          = 0
 const MATRIX        = 1
 const PACKEDMATRIX  = 2
 
-type blockdatarec
-    mat::Ref{Cdouble}
-end
-
 type blockrec
-  data::blockdatarec
-  blockcategory::Cint;
-  blocksize::Cint
+    mat::Ref{Cdouble}
+    blockcategory::Cint;
+    blocksize::Cint
 end
 
 type Blockrec
-  data::Vector{Cdouble}
-  blockcategory::Cint;
-  blocksize::Cint
+    data::Vector{Cdouble}
+    blockcategory::Cint;
+    blocksize::Cint
 end
 
 
 create_block(block::Matrix{Float64}) =
-    Blockrec(blockdatarec(block[:]), MATRIX, length(block))
+    Blockrec(block[:], MATRIX, length(block))
 create_block(block::Diagonal{Float64}) = 
-    Blockrec(blockdatarec(block[:]), DIAG, length(block))
+    Blockrec(block[:], DIAG, length(block))
 
 
 immutable blockmatrix
@@ -36,9 +32,9 @@ immutable blockmatrix
 end
 
 type Blockmatrix
-    blocks::Vector{blockrec}
-    Blockmatrix(bs::Matrix{Float64}...) =
-        Blockmatrix([create_block(b) for b in bs])
+    blocks::Vector{Blockrec}
+    Blockmatrix(bs::Union{Matrix{Float64},Diagonal{Float64}}...) =
+        new([create_block(b) for b in bs])
 end
 
 type sparseblock

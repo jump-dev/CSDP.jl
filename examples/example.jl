@@ -47,8 +47,8 @@ C1 = Float64[[2 1]
 C2 = Float64[[3 0 1]
              [0 2 0]
              [1 0 3]]
-# C3 = Diagonal([0,0])
+C3 = Diagonal{Float64}([0,0])
 
-C = Blockmatrix(C1, C2)
+C = Blockmatrix(C1, C2, C3)
 
 b = [1.0, 2.0]
