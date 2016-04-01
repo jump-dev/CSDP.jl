@@ -7,6 +7,8 @@ else
     error("CSDP not properly installed. Please run Pkg.build(\"CSDP\")")
 end
 
+export Blockmatrix
+
 include("blockmat.jl")
 
 end # module
