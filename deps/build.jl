@@ -60,4 +60,7 @@ provides(SimpleBuild,
          [csdp])
 
 
+# TODO: provide binary downloader for windows
+# http://icl.cs.utk.edu/lapack-for-windows/lapack/#libraries_mingw
+
 @BinDeps.install Dict(:csdp => :csdp)
