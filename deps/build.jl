@@ -60,7 +60,15 @@ provides(SimpleBuild,
          [csdp])
 
 
-# TODO: provide binary downloader for windows
+# TODO: provide win32 binaries
 # http://icl.cs.utk.edu/lapack-for-windows/lapack/#libraries_mingw
+provides(Binaries,
+   URI("http://icl.cs.utk.edu/lapack-for-windows/libraries/VisualStudio/3.6.0/Dynamic-MINGW/Win64/liblapack.dll"),
+   [lapack], unpacked_dir="bin$WORD_SIZE", os = :Windows)
+
+provides(Binaries,
+   URI("http://icl.cs.utk.edu/lapack-for-windows/libraries/VisualStudio/3.6.0/Dynamic-MINGW/Win64/libblas.dll"),
+   [blas], unpacked_dir="bin$WORD_SIZE", os = :Windows)
+
 
 @BinDeps.install Dict(:csdp => :csdp)
