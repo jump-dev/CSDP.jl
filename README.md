@@ -13,3 +13,6 @@ The Sage [module](https://github.com/mghasemi/pycsdp) by @mghasemi is a Cython i
 So far, I don't know how the libcsdp is installed or whether they assume that it is already available on the system.
 
 That is why this package tries to parse the makefile and compiles it itself.
+
+On Windows you need the MinGW `gcc` compiler available in the `PATH`.
+Furthermore `libblas` and `liblapack` are needed to be installed.

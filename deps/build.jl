@@ -4,7 +4,11 @@ using BinDeps
 
 const version = "6.1.1"
 libname = "libcsdp.$(Libdl.dlext)"
-csdp = library_dependency("csdp", aliases=[libname])
+
+blas = library_dependency("libblas")
+lapack = library_dependency("liblapack")
+csdp = library_dependency("csdp", aliases=[libname], depends=[blas, lapack])
+
 srcdir = joinpath(BinDeps.depsdir(csdp), "src", "Csdp-$version", "lib")
 prefix = joinpath(BinDeps.depsdir(csdp), "usr")
 libdir = joinpath(prefix, "lib/")
@@ -27,7 +31,8 @@ function compile_objs()
         run(`gcc -fPIC $cflags -o $builddir/$o.o -c $srcdir/$o.c`)
     end
     objs = ["$builddir/$o.o" for o in find_obj()]
-    cmd = `gcc -shared -o $dlpath $objs`
+    libs = ["-l$l" for l in ["blas", "lapack"]]
+    cmd = `gcc -shared -o $dlpath $objs $libs`
     try
         run(cmd)
     catch
