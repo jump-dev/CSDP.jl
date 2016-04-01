@@ -14,7 +14,7 @@ prefix = joinpath(BinDeps.depsdir(csdp), "usr")
 libdir = joinpath(prefix, "lib/")
 builddir = joinpath(BinDeps.depsdir(csdp), "build")
 dlpath = joinpath(libdir, libname)
-cflags = "-I$srcdir/../include"
+cflags = ["-I$srcdir/../include",  "-DNOSHORTS"]
 Makefile = joinpath(srcdir, "Makefile")
 
 function find_obj(makefile_path=Makefile)

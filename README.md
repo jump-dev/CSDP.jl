@@ -16,3 +16,8 @@ That is why this package tries to parse the makefile and compiles it itself.
 
 On Windows you need the MinGW `gcc` compiler available in the `PATH`.
 Furthermore `libblas` and `liblapack` are needed to be installed.
+
+
+## Next Steps
+Reconstruct example program.
+Therefore, one needs to reconstruct the `include/blockmat.h` types.
