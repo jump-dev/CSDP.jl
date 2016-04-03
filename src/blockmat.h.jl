@@ -22,15 +22,15 @@ end
 
 type blockmatrix
     nblocks::Cint
-    blocks::Ref{blockrec}
+    blocks::Ptr{blockrec}
 end
 
 type sparseblock
-    next::Ref{sparseblock}
-    nextbyblock::Ref{sparseblock}
-    entries::Ref{Cdouble}
-    iindices::Ref{Cint}
-    jindices::Ref{Cint}
+    next::Ptr{sparseblock}
+    nextbyblock::Ptr{sparseblock}
+    entries::Ptr{Cdouble}
+    iindices::Ptr{Cint}
+    jindices::Ptr{Cint}
     numentries::Cint
     blocknum::Cint
     blocksize::Cint
@@ -39,7 +39,7 @@ type sparseblock
 end
 
 type constraintmatrix
-    blocks::Ref{sparseblock}
+    blocks::Ptr{sparseblock}
 end
 
 # Skipping MacroDefinition: ijtok ( iiii , jjjj , lda ) ( ( jjjj - 1 ) * lda + iiii - 1 )
