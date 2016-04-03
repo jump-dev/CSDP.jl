@@ -3,7 +3,7 @@
 # Capitalized are the corresponding Julia types
 using Base.convert
 
-brec(b::Vector{Cdouble}, cat::UInt32, l::Int) =
+brec(b::Vector{Cdouble}, cat::blockcat, l::Int) =
     blockrec(blockdatarec(Ref(b)), cat, Cint(l))
 brec(b::Matrix{Float64}) =
     brec(b[:], MATRIX, length(b))
