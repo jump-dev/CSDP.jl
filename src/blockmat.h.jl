@@ -41,3 +41,26 @@ end
 type constraintmatrix
     blocks::Ref{sparseblock}
 end
+
+# Skipping MacroDefinition: ijtok ( iiii , jjjj , lda ) ( ( jjjj - 1 ) * lda + iiii - 1 )
+# Skipping MacroDefinition: ijtokp ( iii , jjj , lda ) ( ( iii + jjj * ( jjj - 1 ) / 2 ) - 1 )
+# Skipping MacroDefinition: ktoi ( k , lda ) ( ( k % lda ) + 1 )
+# Skipping MacroDefinition: ktoj ( k , lda ) ( ( k / lda ) + 1 )
+
+type paramstruc
+    axtol::Cdouble
+    atytol::Cdouble
+    objtol::Cdouble
+    pinftol::Cdouble
+    dinftol::Cdouble
+    maxiter::Cint
+    minstepfrac::Cdouble
+    maxstepfrac::Cdouble
+    minstepp::Cdouble
+    minstepd::Cdouble
+    usexzgap::Cint
+    tweakgap::Cint
+    affine::Cint
+    perturbobj::Cdouble
+    fastmode::Cint
+end

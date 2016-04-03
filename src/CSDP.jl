@@ -9,7 +9,7 @@ end
 
 export Blockmatrix
 
-include("blockmat_.jl")
+include("blockmat.h.jl")
 include("blockmat.jl")
 
 end # module
