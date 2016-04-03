@@ -11,5 +11,6 @@ export Blockmatrix
 
 include("blockmat.h.jl")
 include("blockmat.jl")
+include("declarations.h.jl")
 
 end # module
