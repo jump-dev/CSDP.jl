@@ -4,10 +4,10 @@
 const NOSHORTS = 1
 
 # begin enum blockcat
-typealias blockcat UInt32
-const DIAG = (UInt32)(0)
-const MATRIX = (UInt32)(1)
-const PACKEDMATRIX = (UInt32)(2)
+typealias blockcat UInt
+const DIAG = (UInt)(0)
+const MATRIX = (UInt)(1)
+const PACKEDMATRIX = (UInt)(2)
 # end enum blockcat
 
 type blockdatarec
