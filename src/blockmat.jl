@@ -9,10 +9,10 @@ brec(b::Matrix{Float64}) =
 brec(b::Diagonal{Float64}) = 
     brec(b[:], DIAG, length(b))
 
-typealias BMat Union{Matrix{Float64},Diagonal{Float64}}
+typealias BMat{T} Union{Matrix{T},Diagonal{T}}
 
 type Blockmatrix
     blocks::Vector{blockrec}
-    Blockmatrix(bs::BMat...) =
-        new([brec(b) for b in bs])
+    Blockmatrix{T<:Number}(bs::BMat{T}...) =
+        new([brec(map(Float64, b)) for b in bs])
 end
