@@ -1,6 +1,7 @@
 # Data types declared in `include/blockmat.h`
 # Small type names are the C types
 # Capitalized are the corresponding Julia types
+using Base.convert
 
 brec(b::Vector{Cdouble}, cat::UInt32, l::Int) =
     blockrec(blockdatarec(Ref(b)), cat, Cint(l))
@@ -14,3 +15,6 @@ type Blockmatrix
     Blockmatrix(bs::AbstractMatrix...) =
         new([brec(map(Float64, b)) for b in bs])
 end
+
+Base.convert(::Type{blockmatrix}, b::Blockmatrix) =
+    blockmatrix(length(b.blocks), Ref(b.blocks))
