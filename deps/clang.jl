@@ -30,13 +30,23 @@ context = wrap_c.init(header_outputfile = header_naming,
 context.options.wrap_structs = true
 wrap_c.wrap_c_headers(context, ["include/blockmat.h", "include/declarations.h"])
 
-outfile = Pkg.dir("CSDP", "src", "blockmat.h.jl")
-blockmat_ = readall(outfile)
-for (pat, subs) in [(r"^( begin enum)"m, s"#\1"),
-                    (r"^(nst NOSHORTS = 1)$"m, s"co\1"),
-                    (r"::Ptr", s"::Ref")]
-    blockmat_ = replace(blockmat_, pat, subs)
+function readchangewrite(f, fname)
+    content = readall(fname)
+    open(fname, "w") do file
+        write(file, f(content))
+    end
 end
-open(outfile, "w") do f
-    write(f, blockmat_)
+
+readchangewrite(header_naming("blockmat.h")) do b
+    for (pat, subs) in [(r"^( begin enum)"m, s"#\1"),
+                        (r"^(nst NOSHORTS = 1)$"m, s"co\1"),
+                        (r"::Ptr", s"::Ref")]
+        b = replace(b, pat, subs)
+    end
+    b
 end
+
+readchangewrite(header_naming("declarations.h")) do d
+    replace(d, r"\nfunction \w+_\(\)\n(.+?)\nend\n"sm, "")
+end
+
