@@ -22,6 +22,7 @@ cd(Pkg.dir("CSDP", "deps", "src", csdpversion))
 wrap_c.cl_to_jl[Clang.cindex.Pointer] = :Ptr
 header_naming = n -> Pkg.dir("CSDP", "src", "$(basename(n)).jl")
 context = wrap_c.init(header_outputfile = header_naming,
+                      header_library = "CSDP.csdp",
                       clang_diagnostics=true,
                       common_file = Pkg.dir("CSDP", "src", "blockmat.h.jl"),
                       clang_args = ["-DNOSHORTS"])
@@ -39,4 +40,3 @@ end
 open(outfile, "w") do f
     write(f, blockmat_)
 end
-
