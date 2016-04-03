@@ -2,14 +2,13 @@ using BinDeps
 
 @BinDeps.setup
 
-const version = "6.1.1"
-libname = "libcsdp.$(Libdl.dlext)"
+include("constants.jl")
 
 blas = library_dependency("libblas")
 lapack = library_dependency("liblapack")
 csdp = library_dependency("csdp", aliases=[libname], depends=[blas, lapack])
 
-srcdir = joinpath(BinDeps.depsdir(csdp), "src", "Csdp-$version", "lib")
+srcdir = joinpath(BinDeps.depsdir(csdp), "src", csdpversion, "lib")
 prefix = joinpath(BinDeps.depsdir(csdp), "usr")
 libdir = joinpath(prefix, "lib/")
 builddir = joinpath(BinDeps.depsdir(csdp), "build")
