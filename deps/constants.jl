@@ -12,3 +12,4 @@ dlpath      = joinpath(libdir, libname)
 Makefile    = joinpath(srcdir, "Makefile")
 
 JULIA_LAPACK = false
+CC = get(ENV, "CCOMPILER", "gcc")

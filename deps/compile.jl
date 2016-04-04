@@ -30,7 +30,7 @@ function compile_objs(JULIA_LAPACK=JULIA_LAPACK)
 
     for o in find_obj()
         info("CC $o.c")
-        run(`gcc -fPIC $cflags -o $builddir/$o.o -c $srcdir/$o.c`)
+        run(`$CC -fPIC $cflags -o $builddir/$o.o -c $srcdir/$o.c`)
     end
     objs = ["$builddir/$o.o" for o in find_obj()]
     cmd = `gcc -shared -o $dlpath $objs $libs`
