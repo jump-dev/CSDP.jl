@@ -7,21 +7,11 @@ include("constants.jl")
 blas = library_dependency("libblas")
 lapack = library_dependency("liblapack")
 csdp = library_dependency("csdp", aliases=[libname], depends=[blas, lapack])
-patchf = Pkg.dir("CSDP", "deps", "src", "debug-mat.c")
-
-srcdir = joinpath(BinDeps.depsdir(csdp), "src", csdpversion, "lib")
-prefix = joinpath(BinDeps.depsdir(csdp), "usr")
-libdir = joinpath(prefix, "lib/")
-builddir = joinpath(BinDeps.depsdir(csdp), "build")
-dlpath = joinpath(libdir, libname)
-cflags = ["-I$srcdir/../include",  "-DNOSHORTS"]
-Makefile = joinpath(srcdir, "Makefile")
 
 function find_obj(makefile_path=Makefile)
     # patch: symlink debugging source
     patchsrc = "$srcdir/$(basename(patchf))"
     isfile(patchsrc) || symlink(patchf, patchsrc)
-
     makefile = readall(makefile_path)
     m = match(r"libsdp\.a\:(.+)", makefile)
     m != nothing || error("Could not find `libsdp.a` target in '$makefile_path'")
