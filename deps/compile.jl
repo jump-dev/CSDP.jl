@@ -1,7 +1,8 @@
 function find_obj(makefile_path=Makefile)
     # patch: symlink debugging source
     patchsrc = "$srcdir/$(basename(patchf))"
-    isfile(patchsrc) || symlink(patchf, patchsrc)
+    mylink = @windows? cp : symlink
+    isfile(patchsrc) || mylink(patchf, patchsrc)
     makefile = readall(makefile_path)
     m = match(r"libsdp\.a\:(.+)", makefile)
     m != nothing || error("Could not find `libsdp.a` target in '$makefile_path'")
@@ -26,6 +27,7 @@ function compile_objs(JULIA_LAPACK=JULIA_LAPACK)
         end
     else
         libs = ["-l$l" for l in ["blas", "lapack"]]
+        @windows_only unshift!(libs, "-L$libdir")
     end
 
     for o in find_obj()

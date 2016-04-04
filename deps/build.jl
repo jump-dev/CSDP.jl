@@ -23,6 +23,8 @@ else
     depends = []
 end
 
+info("libname = $libname")
+
 csdp = library_dependency("csdp", aliases=[libname], depends=depends)
 
 provides(Sources,
@@ -31,7 +33,7 @@ provides(Sources,
          unpacked_dir="Csdp-$version")
 
 
-provides(SimpleBuild,
+provides(BuildProcess,
          (@build_steps begin
              GetSources(csdp)
              CreateDirectory(libdir)
@@ -51,5 +53,6 @@ provides(SimpleBuild,
 #    [lapack], unpacked_dir="bin$WORD_SIZE", os = :Windows)
 
 
-
+@windows_only push!(BinDeps.defaults, BuildProcess)
 @BinDeps.install Dict(:csdp => :csdp)
+@windows_only pop!(BinDeps.defaults)
