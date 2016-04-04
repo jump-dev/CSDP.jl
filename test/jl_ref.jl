@@ -5,13 +5,15 @@ run(`gcc -fPIC -shared -o $libn -std=c99 ref.c`)
 
 type S
     n::Cint
-    e::Ref{Cdouble}
+    e::Ptr{Cdouble}
 end
 
 
 vec = Cdouble[1.0, 2.0]
 
-s = S(length(vec), Ref(vec))
+println("&vec = $(pointer(vec))")
+s = S(length(vec), pointer(vec))
+
+println(ccall((:hello,libn), Cdouble, ()))
 
 ccall((:sum,libn), Cdouble, (S,), s)
-
