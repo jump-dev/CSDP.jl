@@ -1,5 +1,3 @@
-module TestJlRef
-
 code = """
 struct S {
   int n;
@@ -13,7 +11,9 @@ double sum(struct S s) {
 }
 """
 
-libn = Pkg.dir("CSDP", "deps", "usr", "lib", "ref.$(Libdl.dlext)")
+if !isdefined(:libn)
+    const libn = Pkg.dir("CSDP", "deps", "usr", "lib", "ref.$(Libdl.dlext)")
+end
 open(`gcc -fPIC -shared -o $libn -std=c99 -x c -`, "w", STDOUT) do io
     println(io, code)
 end
@@ -30,4 +30,3 @@ s = S(length(vec), Ref(vec))
 
 ccall((:sum,libn), Cdouble, (S,), s)
 
-end # module
