@@ -1,15 +1,14 @@
 using CSDP
 
-C = Blockmatrix(eye(0),
-                [1 3
-                 5 6])
+I = [1 3
+     5 6]
 
-println("C.blocks[1].blockcategory = $(C.blocks[1].blockcategory)")
+I = map(Float64, I)
 
-c = convert(CSDP.blockmatrix, C)
-
-println(Base.unsafe_convert(Ptr{CSDP.blockrec}, c.blocks))
-
-CSDP.triu(c)
-
-C
+br = CSDP.brec(I)
+ccall((:printb, CSDP.csdp), Void, (CSDP.blockrec,), br)
+bra = [br, br]
+block = CSDP.blockmatrix(1, pointer(bra))
+println(block)
+# ccall((:printm, CSDP.csdp), Void, (CSDP.blockmatrix,), block)
+CSDP.triu(block)
