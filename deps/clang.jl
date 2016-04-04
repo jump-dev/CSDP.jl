@@ -38,9 +38,10 @@ function readchangewrite(f, fname)
 end
 
 readchangewrite(header_naming("blockmat.h")) do b
-    for (pat, subs) in [(r"^( begin enum)"m, s"#\1"),
-                        (r"^(nst NOSHORTS = 1)$"m, s"co\1"),
-                        (r"::Ptr", s"::Ref")]
+    for (pat, subs) in [(r"^( begin enum)"m, s"#\1")
+                       ,(r"^(nst NOSHORTS = 1)$"m, s"co\1")
+                       #,(r"::Ptr", s"::Ref")
+                       ]
         b = replace(b, pat, subs)
     end
     b

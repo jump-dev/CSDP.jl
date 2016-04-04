@@ -11,7 +11,7 @@ const PACKEDMATRIX = (UInt32)(2)
 # end enum blockcat
 
 type blockdatarec
-    _blockdatarec::Ref{Cdouble}
+    _blockdatarec::Ptr{Cdouble}
 end
 
 type blockrec
