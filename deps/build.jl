@@ -7,6 +7,7 @@ include("constants.jl")
 blas = library_dependency("libblas")
 lapack = library_dependency("liblapack")
 csdp = library_dependency("csdp", aliases=[libname], depends=[blas, lapack])
+patchf = Pkg.dir("CSDP", "deps", "src", "debug-mat.c")
 
 srcdir = joinpath(BinDeps.depsdir(csdp), "src", csdpversion, "lib")
 prefix = joinpath(BinDeps.depsdir(csdp), "usr")
@@ -21,7 +22,7 @@ function find_obj(makefile_path=Makefile)
     m = match(r"libsdp\.a\:(.+)", makefile)
     m != nothing || error("Could not find `libsdp.a` target in '$makefile_path'")
     objs = matchall(r"\w+\.o", m.captures[1])
-    objs = UTF8String[splitext(o)[1] for o in objs]
+    objs = UTF8String[splitext(o)[1] for o in [objs; basename(patchf)]]
 end
 
 
