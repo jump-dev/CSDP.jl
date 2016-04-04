@@ -1,3 +1,5 @@
+using Glob.glob
+
 function find_obj(makefile_path=Makefile)
     # patch: symlink debugging source
     patchsrc = "$srcdir/$(basename(patchf))"
@@ -8,6 +10,20 @@ function find_obj(makefile_path=Makefile)
     m != nothing || error("Could not find `libsdp.a` target in '$makefile_path'")
     objs = matchall(r"\w+\.o", m.captures[1])
     objs = UTF8String[splitext(o)[1] for o in [objs; basename(patchf)]]
+end
+
+function patch_int()
+    if JULIA_LAPACK
+        info("Patching INT --> LONG INT")
+        cfiles = [glob("*.c", srcdir); joinpath(srcdir, "..", "include", "declarations.h")]
+        for cfile in cfiles
+            content = readall(cfile)
+            content = replace(content, r"int ([^(]+);", s"long int \1;")
+            open(cfile, "w") do io
+                print(io, content)
+            end
+        end
+    end
 end
 
 

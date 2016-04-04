@@ -40,6 +40,7 @@ provides(BuildProcess,
              CreateDirectory(builddir)
              @build_steps begin
                   ChangeDirectory(srcdir)
+                  patch_int
                   compile_objs
              end
          end),

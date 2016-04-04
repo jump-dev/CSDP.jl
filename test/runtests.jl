@@ -9,5 +9,5 @@ const dasum = WORD_SIZE == 64 ? :dasum_64_ : :dasum_
 n1 = ccall((dasum, llapack), Float64, (Ptr{Int}, Ptr{Cdouble}, Ptr{Int}), &l, vec, &inc)
 @assert abs(n1 - 4) < 1e-15 "n1 = $n1"
 
-n1 = ccall( (:norm1, CSDP.csdp), Float64, (Int, Ptr{Cdouble}), length(vec), vec)
+n1 = ccall( (:norm1, CSDP.csdp), Float64, (Cint, Ptr{Cdouble}), length(vec), vec)
 @assert abs(n1 - 4) < 1e-15 "n1 = $n1"
