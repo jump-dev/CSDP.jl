@@ -1,7 +1,8 @@
 if !isdefined(:libn)
     const libn = Pkg.dir("CSDP", "deps", "usr", "lib", "ref.$(Libdl.dlext)")
+    const refc = Pkg.dir("CSDP", "test", "ref.c")
 end
-run(`gcc -fPIC -shared -o $libn -std=c99 ref.c`)
+run(`gcc -fPIC -shared -o $libn -std=c99 $refc`)
 
 const OP1 = UInt32(0)
 const OP2 = UInt32(1)
