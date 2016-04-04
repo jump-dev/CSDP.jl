@@ -14,7 +14,7 @@ if !JULIA_LAPACK
         depends = []
     end
 
-    if false
+    @unix_only begin
         blas = library_dependency("libblas", alias=["libblas.dll"])
         lapack = library_dependency("liblapack", alias=["libblas.dll"])
         depends = [blas, lapack]
