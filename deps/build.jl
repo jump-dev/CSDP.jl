@@ -18,6 +18,10 @@ cflags = ["-I$srcdir/../include",  "-DNOSHORTS"]
 Makefile = joinpath(srcdir, "Makefile")
 
 function find_obj(makefile_path=Makefile)
+    # patch: symlink debugging source
+    patchsrc = "$srcdir/$(basename(patchf))"
+    isfile(patchsrc) || symlink(patchf, patchsrc)
+
     makefile = readall(makefile_path)
     m = match(r"libsdp\.a\:(.+)", makefile)
     m != nothing || error("Could not find `libsdp.a` target in '$makefile_path'")
@@ -28,6 +32,7 @@ end
 
 function compile_objs()
     for o in find_obj()
+        info("CC $o.c")
         run(`gcc -fPIC $cflags -o $builddir/$o.o -c $srcdir/$o.c`)
     end
     objs = ["$builddir/$o.o" for o in find_obj()]
@@ -35,6 +40,7 @@ function compile_objs()
     cmd = `gcc -shared -o $dlpath $objs $libs`
     try
         run(cmd)
+        info("LINK --> $dlpath")
     catch
         println(cmd)
     end
