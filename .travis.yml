@@ -6,9 +6,6 @@ os:
 julia:
   - release
   - nightly
-before_install:
-  - sudo apt-get update -qq
-  - sudo apt-get install -qq liblapack3 libblas3
 
 notifications:
   email: false

@@ -11,12 +11,23 @@ end
 
 
 function compile_objs()
+    # libs = ["-l$l" for l in ["blas", "lapack"]]
+    lapack = Libdl.dlpath(LinAlg.LAPACK.liblapack)
+    lflag = replace(splitext(basename(lapack))[1], r"^lib", "")
+    libs = ["-L$(dirname(lapack))", "-l$lflag"]
+    # info(libs)
+    if endswith(LinAlg.LAPACK.liblapack, "64_")
+        for f in [:dnrm2, :dasum, :ddot, :idamax, :dgemm, :dgemv, :dger,
+                  :dtrsm, :dtrmv, :dpotrf, :dpotrs, :dpotri, :dtrtri]
+            push!(cflags, "-D$(f)_=$(f)_64_")
+        end
+        # info(cflags)
+    end
     for o in find_obj()
         info("CC $o.c")
         run(`gcc -fPIC $cflags -o $builddir/$o.o -c $srcdir/$o.c`)
     end
     objs = ["$builddir/$o.o" for o in find_obj()]
-    libs = ["-l$l" for l in ["blas", "lapack"]]
     cmd = `gcc -shared -o $dlpath $objs $libs`
     try
         run(cmd)
