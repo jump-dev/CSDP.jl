@@ -27,7 +27,10 @@ function compile_objs(JULIA_LAPACK=JULIA_LAPACK)
         end
     else
         libs = ["-l$l" for l in ["blas", "lapack"]]
-        @windows_only unshift!(libs, "-L$libdir")
+        @windows_only begin
+            unshift!(libs, "-L$libdir", "-march=x86-64", "-m32")
+            push!(cflags, "-march=x86-64", "-m32")
+        end
     end
 
     for o in find_obj()
