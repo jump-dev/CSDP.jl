@@ -1,22 +1,7 @@
-code = """
-struct S {
-  int n;
-  double *e;
-};
-double sum(struct S s) {
-  double r = 0;
-  for (int i = 0; i < s.n; i++)
-    r += s.e[i];
-  return r;
-}
-"""
-
 if !isdefined(:libn)
     const libn = Pkg.dir("CSDP", "deps", "usr", "lib", "ref.$(Libdl.dlext)")
 end
-open(`gcc -fPIC -shared -o $libn -std=c99 -x c -`, "w", STDOUT) do io
-    println(io, code)
-end
+run(`gcc -fPIC -shared -o $libn -std=c99 ref.c`)
 
 type S
     n::Cint
