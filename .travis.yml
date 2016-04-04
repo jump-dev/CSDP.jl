@@ -9,7 +9,7 @@ julia:
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-        sudo apt-get install liblapack3gf;
+        sudo apt-get install liblapack-dev libblas-dev;
     fi
 
 notifications:
