@@ -6,9 +6,19 @@ include("constants.jl")
 include("compile.jl")
 
 if !JULIA_LAPACK
-    blas = library_dependency("libblas")
-    lapack = library_dependency("liblapack")
-    depends = [blas, lapack]
+    @windows_only begin
+        info("Downloading DLLs to $libdir")
+        mkpath(libdir)
+        download("http://icl.cs.utk.edu/lapack-for-windows/libraries/VisualStudio/3.6.0/Dynamic-MINGW/Win64/liblapack.dll", "$libdir/liblapack.dll")
+        download("http://icl.cs.utk.edu/lapack-for-windows/libraries/VisualStudio/3.6.0/Dynamic-MINGW/Win64/libblas.dll", "$libdir/libblas.dll")
+        depends = []
+    end
+
+    if false
+        blas = library_dependency("libblas", alias=["libblas.dll"])
+        lapack = library_dependency("liblapack", alias=["libblas.dll"])
+        depends = [blas, lapack]
+    end
 else
     depends = []
 end
@@ -40,9 +50,6 @@ provides(SimpleBuild,
 #    URI("http://icl.cs.utk.edu/lapack-for-windows/libraries/VisualStudio/3.6.0/Dynamic-MINGW/Win64/liblapack.dll"),
 #    [lapack], unpacked_dir="bin$WORD_SIZE", os = :Windows)
 
-# provides(Binaries,
-#    URI("http://icl.cs.utk.edu/lapack-for-windows/libraries/VisualStudio/3.6.0/Dynamic-MINGW/Win64/libblas.dll"),
-#    [blas], unpacked_dir="bin$WORD_SIZE", os = :Windows)
 
 
 @BinDeps.install Dict(:csdp => :csdp)
