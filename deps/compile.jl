@@ -10,20 +10,24 @@ function find_obj(makefile_path=Makefile)
 end
 
 
-function compile_objs()
-    # libs = ["-l$l" for l in ["blas", "lapack"]]
-    lapack = Libdl.dlpath(LinAlg.LAPACK.liblapack)
-    lflag = replace(splitext(basename(lapack))[1], r"^lib", "")
-    libs = ["-L$(dirname(lapack))", "-l$lflag"]
-    # info(libs)
-    if endswith(LinAlg.LAPACK.liblapack, "64_")
-        # push!(cflags, "-march=x86-64")
-        for f in [:dnrm2, :dasum, :ddot, :idamax, :dgemm, :dgemv, :dger,
-                  :dtrsm, :dtrmv, :dpotrf, :dpotrs, :dpotri, :dtrtri]
-            push!(cflags, "-D$(f)_=$(f)_64_")
+function compile_objs(JULIA_LAPACK=JULIA_LAPACK)
+    if JULIA_LAPACK
+        lapack = Libdl.dlpath(LinAlg.LAPACK.liblapack)
+        lflag = replace(splitext(basename(lapack))[1], r"^lib", "")
+        libs = ["-L$(dirname(lapack))", "-l$lflag"]
+        info(libs)
+        if endswith(LinAlg.LAPACK.liblapack, "64_")
+            push!(cflags, "-march=x86-64", "-m64")
+            for f in [:dnrm2, :dasum, :ddot, :idamax, :dgemm, :dgemv, :dger,
+                      :dtrsm, :dtrmv, :dpotrf, :dpotrs, :dpotri, :dtrtri]
+                push!(cflags, "-D$(f)_=$(f)_64_")
+            end
+            # info(cflags)
         end
-        # info(cflags)
+    else
+        libs = ["-l$l" for l in ["blas", "lapack"]]
     end
+
     for o in find_obj()
         info("CC $o.c")
         run(`gcc -fPIC $cflags -o $builddir/$o.o -c $srcdir/$o.c`)

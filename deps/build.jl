@@ -5,9 +5,15 @@ using BinDeps
 include("constants.jl")
 include("compile.jl")
 
-# blas = library_dependency("libblas")
-# lapack = library_dependency("liblapack")
-csdp = library_dependency("csdp", aliases=[libname])
+if !JULIA_LAPACK
+    blas = library_dependency("libblas")
+    lapack = library_dependency("liblapack")
+    depends = [blas, lapack]
+else
+    depends = []
+end
+
+csdp = library_dependency("csdp", aliases=[libname], depends=depends)
 
 provides(Sources,
          URI("http://www.coin-or.org/download/source/Csdp/Csdp-$version.tgz"),

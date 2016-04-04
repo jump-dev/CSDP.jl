@@ -10,3 +10,5 @@ cflags      = ["-I$srcdir/../include",  "-DNOSHORTS"]
 libdir      = joinpath(prefix, "lib/")
 dlpath      = joinpath(libdir, libname)
 Makefile    = joinpath(srcdir, "Makefile")
+
+JULIA_LAPACK = false
