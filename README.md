@@ -23,6 +23,7 @@ Currently, only the Win32 builds work.
 ## Next Steps
 - [ ] Reconstruct example program.
 - [x] Therefore, one needs to reconstruct the `include/blockmat.h` types.
+- [ ] Supertype for all Matrix-Types
 - [ ] Maybe port `libcsdp` to use 64bit Lapack, aka replace “some `int`s” by `long int` (the variables used in a Lapack call).  When this was done, one could set `JULIA_LAPACK` to `true` in the `deps/constants.jl` file.
       The [`pycparser`](https://github.com/eliben/pycparser) or `Clang.cindex` might be useful for that.
 - [ ] Add a C header for the Lapack routines in order to check the types and reduce the possibility to crash.
