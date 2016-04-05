@@ -1,13 +1,13 @@
 using CSDP
 
-if !isdefined(:I)
-    I = [1 3
+if !isdefined(:J) || !isa(J, AbstractArray)
+    J = [1 3
          5 6]
-    I = map(Float64, I)
+    J = map(Float64, J)
 end
 
 
-br = CSDP.brec(reshape(I, length(I)), CSDP.MATRIX, 4)
+br = CSDP.brec(reshape(J, length(J)), CSDP.MATRIX, 4)
 ccall((:printb, CSDP.csdp), Void, (CSDP.blockrec,), br)
 bra = [br, br]
 block = CSDP.blockmatrix(1, pointer(bra))
