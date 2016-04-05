@@ -6,9 +6,9 @@ using Base.convert
 brec(b::Vector{Cdouble}, cat::blockcat, l::Int) =
     blockrec(blockdatarec(pointer(b)), cat, Cint(l))
 brec(b::Matrix{Float64}) =
-    brec(b[:], MATRIX, length(b))
+    brec(reshape(b, length(b)), MATRIX, length(b))
 brec(b::Diagonal{Float64}) = 
-    brec(b[:], DIAG, length(b))
+    brec(diag(b), DIAG, length(b))
 
 type Blockmatrix
     blocks::Vector{blockrec}
