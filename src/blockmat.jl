@@ -18,3 +18,7 @@ end
 
 Base.convert(::Type{blockmatrix}, b::Blockmatrix) =
     blockmatrix(length(b.blocks)-1, pointer(b.blocks))
+
+# TODO: Print-Function for Blockmatrix
+
+# use pointer_from_obj to construct sparseblocks
