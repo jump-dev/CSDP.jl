@@ -1,6 +1,8 @@
 # CSDP
 
 [![Build Status](https://travis-ci.org/EQt/CSDP.jl.svg?branch=master)](https://travis-ci.org/EQt/CSDP.jl)
+[![Build status](https://ci.appveyor.com/api/projects/status/23qb5jkbbhx4ritw/branch/master?svg=true)](https://ci.appveyor.com/project/EQt/csdp-jl)
+
 
 Julia wrapper to [CSDP](https://projects.coin-or.org/Csdp) semidefinite programming solver.
 On Unix systems, the source code is downloaded and build.
