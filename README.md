@@ -4,7 +4,6 @@
 
 Julia wrapper to [CSDP](https://projects.coin-or.org/Csdp) semidefinite programming solver.
 On Unix systems, the source code is downloaded and build.
-On Windows, the binaries of version 6.1.0 are just downloaded.
 
 ## Static Library
 The build system only provides a static library.
@@ -15,9 +14,15 @@ So far, I don't know how the libcsdp is installed or whether they assume that it
 That is why this package tries to parse the makefile and compiles it itself.
 
 On Windows you need the MinGW `gcc` compiler available in the `PATH`.
-Furthermore `libblas` and `liblapack` are needed to be installed.
+~~Furthermore `libblas` and `liblapack` are needed to be installed.~~
+Currently, only the Win32 builds work.
 
 
 ## Next Steps
-Reconstruct example program.
-Therefore, one needs to reconstruct the `include/blockmat.h` types.
+- [ ] Reconstruct example program.
+- [x] Therefore, one needs to reconstruct the `include/blockmat.h` types.
+- [ ] Maybe port `libcsdp` to use 64bit Lapack, aka replace “some `int`s” by `long int` (the variables used in a Lapack call).  When this was done, one could set `JULIA_LAPACK` to `true` in the `deps/constants.jl` file.
+- [ ] Add a C header for the Lapack routines in order to check the types and reduce the possibility to crash.
+      Use http://www.netlib.org/clapack/clapack.h as starting point.
+- [ ] Think about an own array type to circumvent the 1-index problems in `libcsdp`.
+- [ ] Map Julia's sparse arrays to `sparsematrixblock`.
