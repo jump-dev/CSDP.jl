@@ -10,7 +10,9 @@ if !JULIA_LAPACK
     @windows_only begin
         info("Downloading DLLs to $libdir")
         mkpath(libdir)
-        download("https://github.com/numpy/windows-wheel-builder/raw/master/atlas-builds/atlas-3.10.1-sse2-64/lib/numpy-atlas.dll", "$libdir/libatlas.dll")
+        atlas = "https://github.com/numpy/windows-wheel-builder/raw/master/atlas-builds"
+        download("https://raw.githubusercontent.com/numpy/windows-wheel-builder/master/atlas-builds/atlas-3.11.38-sse2-64/lib/numpy-atlas.dll",
+                 "$libdir/libatlas.dll")
         depends = []
     end
 
