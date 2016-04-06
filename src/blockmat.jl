@@ -77,19 +77,19 @@ Base.convert(::Type{sparseblock}, B::SparseBlock) =
                 )
 
 
-function Base.convert(::Type{constraintmatrix}, c::SparseBlockMatrix)
+function create_cmat(c::SparseBlockMatrix)
     blocks = map(sparseblock, c.blocks)
     numblocks = length(blocks)-1
-    for i=3:numblocks
-        blocks[i-1]
+    for i=2:numblocks
+        blocks[i].next = pointer_from_objref(blocks[i+1])
     end
-    constraintmatrix(pointer_from_objref(blocks[1]))
+    blocks
 end
 
 
 # function Base.convert(::{sparse
 
-export SparseBlockMatrix, blockmatrix, convert, sparseblock
+export SparseBlockMatrix, blockmatrix, convert, sparseblock, constraintmatrix, create_cmat
 
 """Solver status"""
 type Csdp
