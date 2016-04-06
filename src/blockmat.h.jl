@@ -10,22 +10,22 @@ const MATRIX = (UInt32)(1)
 const PACKEDMATRIX = (UInt32)(2)
 # end enum blockcat
 
-immutable blockdatarec
+type blockdatarec
     _blockdatarec::Ptr{Cdouble}
 end
 
-immutable blockrec
+type blockrec
     data::blockdatarec
     blockcategory::blockcat
     blocksize::Cint
 end
 
-immutable blockmatrix
+type blockmatrix
     nblocks::Cint
     blocks::Ptr{blockrec}
 end
 
-immutable sparseblock
+type sparseblock
     next::Ptr{sparseblock}
     nextbyblock::Ptr{sparseblock}
     entries::Ptr{Cdouble}
@@ -38,7 +38,7 @@ immutable sparseblock
     issparse::Cint
 end
 
-immutable constraintmatrix
+type constraintmatrix
     blocks::Ptr{sparseblock}
 end
 
@@ -47,7 +47,7 @@ end
 # Skipping MacroDefinition: ktoi ( k , lda ) ( ( k % lda ) + 1 )
 # Skipping MacroDefinition: ktoj ( k , lda ) ( ( k / lda ) + 1 )
 
-immutable paramstruc
+type paramstruc
     axtol::Cdouble
     atytol::Cdouble
     objtol::Cdouble
