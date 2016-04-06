@@ -35,7 +35,9 @@ provides(Binaries,
    URI("https://github.com/EQt/winlapack/blob/master/winlapack-$WORD_SIZE.7z?raw=true"),
    [lapack, blas], unpacked_dir="usr", os = :Windows)
 
+provides(Binaries,
+   URI("https://github.com/EQt/winlapack/blob/master/csdp-$WORD_SIZE.7z?raw=true"),
+   [csdp], unpacked_dir="usr", os = :Windows)
 
-@windows_only push!(BinDeps.defaults, BuildProcess)
+
 @BinDeps.install Dict(:csdp => :csdp)
-@windows_only pop!(BinDeps.defaults)
