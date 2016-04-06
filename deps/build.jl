@@ -32,8 +32,8 @@ provides(BuildProcess,
 
 # Lapack build https://icl.cs.utk.edu/lapack-for-windows/lapack/#build
 provides(Binaries,
-   URI("https://github.com/EQt/winlapack/blob/master/winlapack.7z?raw=true"),
-   [lapack, blas], unpacked_dir="bin$WORD_SIZE", os = :Windows)
+   URI("https://github.com/EQt/winlapack/blob/master/winlapack-$WORD_SIZE.7z?raw=true"),
+   [lapack, blas], unpacked_dir="usr", os = :Windows)
 
 
 @windows_only push!(BinDeps.defaults, BuildProcess)

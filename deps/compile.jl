@@ -43,15 +43,13 @@ function compile_objs(JULIA_LAPACK=JULIA_LAPACK)
         end
     else
         libs = ["-l$l" for l in ["blas", "lapack"]]
-        @windows_only begin
-            unshift!(libs, "-L$libdir", "-march=x86-64", "-m32")
-            push!(cflags, "-march=x86-64", "-m32")
-        end
+        @windows_only unshift!(libs, "-L$libdir")
     end
 
     for o in find_obj()
         info("CC $o.c")
-        run(`$CC -fPIC $cflags -o $builddir/$o.o -c $srcdir/$o.c`)
+        @unix_only push!(cflags, "-fPIC")
+        run(`$CC $cflags -o $builddir/$o.o -c $srcdir/$o.c`)
     end
     objs = ["$builddir/$o.o" for o in find_obj()]
     cmd = `gcc -shared -o $dlpath $objs $libs`
