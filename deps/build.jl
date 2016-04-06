@@ -4,26 +4,10 @@ using BinDeps
 
 include("constants.jl")
 include("compile.jl")
-
-if !JULIA_LAPACK
-    @windows_only begin
-        info("Downloading DLLs to $libdir")
-        mkpath(libdir)
-        download("http://icl.cs.utk.edu/lapack-for-windows/libraries/VisualStudio/3.6.0/Dynamic-MINGW/Win64/liblapack.dll", "$libdir/liblapack.dll")
-        download("http://icl.cs.utk.edu/lapack-for-windows/libraries/VisualStudio/3.6.0/Dynamic-MINGW/Win64/libblas.dll", "$libdir/libblas.dll")
-        depends = []
-    end
-
-    @unix_only begin
-        blas = library_dependency("libblas", alias=["libblas.dll"])
-        lapack = library_dependency("liblapack", alias=["libblas.dll"])
-        depends = [blas, lapack]
-    end
-else
-    depends = []
-end
-
-info("libname = $libname")
+# info("libname = $libname")
+blas = library_dependency("libblas", alias=["libblas.dll"])
+lapack = library_dependency("liblapack", alias=["liblapack.dll"])
+depends = JULIA_LAPACK ? [] : [blas, lapack]
 
 csdp = library_dependency("csdp", aliases=[libname], depends=depends)
 
@@ -46,12 +30,10 @@ provides(BuildProcess,
          end),
          [csdp])
 
-
-# TODO: provide win32 binaries
-# http://icl.cs.utk.edu/lapack-for-windows/lapack/#libraries_mingw
-# provides(Binaries,
-#    URI("http://icl.cs.utk.edu/lapack-for-windows/libraries/VisualStudio/3.6.0/Dynamic-MINGW/Win64/liblapack.dll"),
-#    [lapack], unpacked_dir="bin$WORD_SIZE", os = :Windows)
+# Lapack build https://icl.cs.utk.edu/lapack-for-windows/lapack/#build
+provides(Binaries,
+   URI("https://github.com/EQt/winlapack/blob/master/winlapack.7z?raw=true"),
+   [lapack, blas], unpacked_dir="bin$WORD_SIZE", os = :Windows)
 
 
 @windows_only push!(BinDeps.defaults, BuildProcess)
