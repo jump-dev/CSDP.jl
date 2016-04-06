@@ -5,18 +5,18 @@ using BinDeps
 include("constants.jl")
 include("compile.jl")
 
+# LaPack/BLAS dependencies
 if !JULIA_LAPACK
     @windows_only begin
         info("Downloading DLLs to $libdir")
         mkpath(libdir)
-        download("http://icl.cs.utk.edu/lapack-for-windows/libraries/VisualStudio/3.6.0/Dynamic-MINGW/Win64/liblapack.dll", "$libdir/liblapack.dll")
-        download("http://icl.cs.utk.edu/lapack-for-windows/libraries/VisualStudio/3.6.0/Dynamic-MINGW/Win64/libblas.dll", "$libdir/libblas.dll")
+        download("https://github.com/numpy/windows-wheel-builder/raw/master/atlas-builds/atlas-3.10.1-sse2-64/lib/numpy-atlas.dll", "$libdir/libatlas.dll")
         depends = []
     end
 
     @unix_only begin
-        blas = library_dependency("libblas", alias=["libblas.dll"])
-        lapack = library_dependency("liblapack", alias=["libblas.dll"])
+        blas = library_dependency("libblas",     alias=["libblas.dll"])
+        lapack = library_dependency("liblapack", alias=["liblapack.dll"])
         depends = [blas, lapack]
     end
 else
@@ -25,7 +25,7 @@ end
 
 info("libname = $libname")
 
-csdp = library_dependency("csdp", aliases=[libname], depends=depends)
+csdp = library_dependency("csdp", aliases=["csdp", "libcsdp", libname], depends=depends)
 
 provides(Sources,
          URI("http://www.coin-or.org/download/source/Csdp/Csdp-$version.tgz"),
@@ -45,14 +45,6 @@ provides(BuildProcess,
              end
          end),
          [csdp])
-
-
-# TODO: provide win32 binaries
-# http://icl.cs.utk.edu/lapack-for-windows/lapack/#libraries_mingw
-# provides(Binaries,
-#    URI("http://icl.cs.utk.edu/lapack-for-windows/libraries/VisualStudio/3.6.0/Dynamic-MINGW/Win64/liblapack.dll"),
-#    [lapack], unpacked_dir="bin$WORD_SIZE", os = :Windows)
-
 
 @windows_only push!(BinDeps.defaults, BuildProcess)
 @BinDeps.install Dict(:csdp => :csdp)

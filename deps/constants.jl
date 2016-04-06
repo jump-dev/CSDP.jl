@@ -7,7 +7,7 @@ srcdir      = Pkg.dir("CSDP", "deps", "src", csdpversion, "lib")
 prefix      = Pkg.dir("CSDP", "deps", "usr")
 builddir    = Pkg.dir("CSDP", "deps", "build")
 cflags      = ["-I$srcdir/../include",  "-DNOSHORTS"]
-libdir      = joinpath(prefix, @windows? "bin" : "lib/")
+libdir      = joinpath(prefix, @windows? "lib" : "lib")
 dlpath      = joinpath(libdir, libname)
 Makefile    = joinpath(srcdir, "Makefile")
 
