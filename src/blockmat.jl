@@ -30,6 +30,13 @@ type SparseBlock
     v::Vector{Cdouble}
 end
 
+type SparseBlockMatrix
+    blocks::Vector{SparseBlock}
+    SparseBlockMatrix(bs::AbstractMatrix...) =
+        new(SparseBlock[b for b in bs])
+end
+
+
 function Base.convert(::Type{SparseBlock}, A::AbstractMatrix)
     A = map(Cdouble, A)
     C = SparseMatrixCSC{Cdouble, Cint}(A)
@@ -53,12 +60,9 @@ function Base.convert(::Type{SparseBlock}, A::AbstractMatrix)
     SparseBlock(I,J,V)
 end
 
-    
 
-type SparseBlockMatrix
-    blocks::Vector{SparseBlock}
-    SparseBlockMatrix(bs::AbstractMatrix...) = 
-        new(SparseBlock[b for b in bs])
+function Base.convert(::Type{constraintmatrix}, c::SparseBlockMatrix)
+    numblocks = length(c.blocks)
 end
 
 
