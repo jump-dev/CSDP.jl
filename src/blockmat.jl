@@ -24,16 +24,45 @@ Base.convert(::Type{blockmatrix}, b::Blockmatrix) =
 
 # use pointer_from_obj to construct sparseblocks
 
-typealias SparseBlock SparseMatrixCSC{Cdouble,Cint}
+type SparseBlock
+    i::Vector{Cint}
+    j::Vector{Cint}
+    v::Vector{Cdouble}
+end
+
+function Base.convert(::Type{SparseBlock}, A::AbstractMatrix)
+    A = map(Cdouble, A)
+    C = SparseMatrixCSC{Cdouble, Cint}(A)
+    nn = nnz(C)
+    I = Array(Cint, nn+1)
+    J = Array(Cint, nn+1)
+    V = nonzeros(C)
+    rows = rowvals(C)
+    m, n = size(C)
+    k = 1 # number of written elements
+    I[1] = 0
+    J[1] = 0
+    for col = 1:n
+        for j in nzrange(C, col)
+            k += 1
+            row = rows[j]
+            I[k] = row
+            J[k] = col
+        end
+    end
+    SparseBlock(I,J,V)
+end
+
+    
 
 type SparseBlockMatrix
     blocks::Vector{SparseBlock}
-    function SparseBlockMatrix(bs::AbstractMatrix...)
-        bs = SparseBlock[map(Float64, b) for b in bs]
-        unshift!(bs, sparse([]))
-        new(bs)
-    end
+    SparseBlockMatrix(bs::AbstractMatrix...) = 
+        new(SparseBlock[b for b in bs])
 end
+
+
+# function Base.convert(::{sparse
 
 export SparseBlockMatrix, blockmatrix, convert
 
