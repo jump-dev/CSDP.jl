@@ -8,7 +8,7 @@ brec(b::Vector{Cdouble}, cat::blockcat, l::Int) =
 brec(b::Matrix{Float64}) =
     brec(reshape(b, length(b)), MATRIX, length(b))
 brec(b::Diagonal{Float64}) = 
-    brec(diag(b), DIAG, length(b))
+    brec([0; diag(b)], DIAG, length(b))
 
 type Blockmatrix
     blocks::Vector{blockrec}
