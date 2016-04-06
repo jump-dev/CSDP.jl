@@ -24,9 +24,15 @@ Base.convert(::Type{blockmatrix}, b::Blockmatrix) =
 
 # use pointer_from_obj to construct sparseblocks
 
-"""Julia type for a sparseblock"""
-type SparseBlock
+typealias SparseBlock SparseMatrixCSC{Cdouble,Int}
+
+type SparseBlockMatrix
+    blocks::Vector{SparseBlock}
+    SparseBlockMatrix(bs::AbstractMatrix...) =
+        new([sparse(map(Float64, b)) for b in bs])
 end
+
+export SparseBlockMatrix, blockmatrix, sparseblock
 
 """Solver status"""
 type Csdp
