@@ -14,6 +14,7 @@ type Blockmatrix
     blocks::Vector{blockrec}
     Blockmatrix(bs::AbstractMatrix...) =
         new([brec(map(Float64, b)) for b in bs])
+    Blockmatrix() = new([])
 end
 
 Base.convert(::Type{blockmatrix}, b::Blockmatrix) =
@@ -22,3 +23,19 @@ Base.convert(::Type{blockmatrix}, b::Blockmatrix) =
 # TODO: Print-Function for Blockmatrix
 
 # use pointer_from_obj to construct sparseblocks
+
+"""Julia type for a sparseblock"""
+type SparseBlock
+end
+
+"""Solver status"""
+type Csdp
+    n::Cint
+    k::Cint
+    X::Blockmatrix
+    y::Vector{Cdouble}
+    constant_offset::Cdouble
+    constraints::Vector{SparseBlock}
+    pobj::Cdouble
+    dobj::Cdouble
+end
