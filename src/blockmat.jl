@@ -13,7 +13,7 @@ brec(b::Diagonal{Float64}) =
 type Blockmatrix
     blocks::Vector{blockrec}
     Blockmatrix(bs::AbstractMatrix...) =
-        new([brec(map(Float64, b)) for b in bs])
+        new([brec(map(Float64, b)) for b in [Matrix[]; collect(bs)]])
     Blockmatrix() = new([])
 end
 
@@ -24,15 +24,18 @@ Base.convert(::Type{blockmatrix}, b::Blockmatrix) =
 
 # use pointer_from_obj to construct sparseblocks
 
-typealias SparseBlock SparseMatrixCSC{Cdouble,Int}
+typealias SparseBlock SparseMatrixCSC{Cdouble,Cint}
 
 type SparseBlockMatrix
     blocks::Vector{SparseBlock}
-    SparseBlockMatrix(bs::AbstractMatrix...) =
-        new([sparse(map(Float64, b)) for b in bs])
+    function SparseBlockMatrix(bs::AbstractMatrix...)
+        bs = SparseBlock[map(Float64, b) for b in bs]
+        unshift!(bs, sparse([]))
+        new(bs)
+    end
 end
 
-export SparseBlockMatrix, blockmatrix, sparseblock
+export SparseBlockMatrix, blockmatrix, convert
 
 """Solver status"""
 type Csdp
