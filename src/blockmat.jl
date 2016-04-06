@@ -28,6 +28,7 @@ type SparseBlock
     i::Vector{Cint}
     j::Vector{Cint}
     v::Vector{Cdouble}
+    n::Cint
 end
 
 type SparseBlockMatrix
@@ -40,35 +41,55 @@ end
 function Base.convert(::Type{SparseBlock}, A::AbstractMatrix)
     A = map(Cdouble, A)
     C = SparseMatrixCSC{Cdouble, Cint}(A)
-    nn = nnz(C)
-    I = Array(Cint, nn+1)
-    J = Array(Cint, nn+1)
-    V = nonzeros(C)
-    rows = rowvals(C)
     m, n = size(C)
-    k = 1 # number of written elements
-    I[1] = 0
-    J[1] = 0
+    @assert m == n
+    nn = nnz(C)
+    I = Cint[0]
+    J = Cint[0]
+    V = Cdouble[0]
+    vals = nonzeros(C)
+    rows = rowvals(C)
     for col = 1:n
         for j in nzrange(C, col)
-            k += 1
             row = rows[j]
-            I[k] = row
-            J[k] = col
+            if row <= col
+                push!(I, row)
+                push!(J, col)
+                push!(V, vals[j])
+            end
         end
     end
-    SparseBlock(I,J,V)
+    SparseBlock(I,J,V, n)
 end
 
 
+Base.convert(::Type{sparseblock}, B::SparseBlock) =
+    sparseblock(C_NULL,
+                C_NULL,
+                pointer(B.v),
+                pointer(B.i),
+                pointer(B.j),
+                length(B.i)-1,
+                -1,     # blocknum
+                B.n,    # blocksize
+                -1,     # constraintnum
+                1,      # issparse
+                )
+
+
 function Base.convert(::Type{constraintmatrix}, c::SparseBlockMatrix)
-    numblocks = length(c.blocks)
+    blocks = map(sparseblock, c.blocks)
+    numblocks = length(blocks)-1
+    for i=3:numblocks
+        blocks[i-1]
+    end
+    constraintmatrix(pointer_from_objref(blocks[1]))
 end
 
 
 # function Base.convert(::{sparse
 
-export SparseBlockMatrix, blockmatrix, convert
+export SparseBlockMatrix, blockmatrix, convert, sparseblock
 
 """Solver status"""
 type Csdp
