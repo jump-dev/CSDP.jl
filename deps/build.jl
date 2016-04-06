@@ -30,14 +30,10 @@ provides(BuildProcess,
          end),
          [csdp])
 
-# Lapack build https://icl.cs.utk.edu/lapack-for-windows/lapack/#build
+# Prebuilt DLLs for Windows
 provides(Binaries,
-   URI("https://github.com/EQt/winlapack/blob/master/winlapack-$WORD_SIZE.7z?raw=true"),
-   [lapack, blas], unpacked_dir="usr", os = :Windows)
-
-provides(Binaries,
-   URI("https://github.com/EQt/winlapack/blob/master/csdp-$WORD_SIZE.7z?raw=true"),
-   [csdp], unpacked_dir="usr", os = :Windows)
+   URI("https://github.com/EQt/winlapack/blob/master/win-csdp-$WORD_SIZE.7z?raw=true"),
+   [csdp, lapack, blas], unpacked_dir="usr", os = :Windows)
 
 
 @BinDeps.install Dict(:csdp => :csdp)
