@@ -76,5 +76,10 @@ A = [A1, A2]
 A_ = map(create_cmat, A)
 constraints = map(s -> CSDP.constraintmatrix(pointer(s)), A_)
 
-CSDP.write_prob("prob.dat-s", 7, 2, C, b, constraints)
+for b in C
+    CSDP.print_block(b)
+end
+
+
+# CSDP.write_prob("prob.dat-s", 7, 2, C, b, constraints)
 
