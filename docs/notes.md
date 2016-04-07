@@ -10,3 +10,5 @@ Another peculiar aspect is, that the C code uses Fortran like arrays, i.e. the f
 Only two dimensional arrays are accessed via the `ijtok` macro which starts at 0.
 
 Question: Is it necessary that all the matrices C, A1, and A2 in the example have the same block structure?
+
+Notify: The `sparseblock.nextbyblock` pointer is always `NULL` in the example.
