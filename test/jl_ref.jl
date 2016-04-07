@@ -2,9 +2,9 @@
 #
 
 if !isdefined(:libn)
-    const libn = Pkg.dir("CSDP", "deps", "usr", "lib", "ref.$(Libdl.dlext)")
-    mkdir(libn)
     const refc = Pkg.dir("CSDP", "test", "ref.c")
+    const libn = Pkg.dir("CSDP", "deps", "usr", "lib", "ref.$(Libdl.dlext)")
+    isdir(dirname(libn)) || mkdir(dirname(libn))
 end
 run(`gcc -fPIC -shared -o $libn -std=c99 $refc`)
 
@@ -41,6 +41,6 @@ r = R(OP2, length(vec), Ref(vec))
 ccall((:sum,libn), Cdouble, (R,), r)
 
 # Now call with S, instead of R
-Base.cconvert(::Type{S}, r::R) =
+Base.cconvert(::Type{R}, r::R) =
     S(r.c, r.n, Base.unsafe_convert(Ptr{Cdouble}, r.e))
 ccall((:sum,libn), Cdouble, (S,), r)

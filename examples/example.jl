@@ -72,3 +72,9 @@ A2 = SparseBlockMatrix(
                    1]))
 
 
+A = [A1, A2]
+A_ = map(create_cmat, A)
+constraints = map(s -> CSDP.constraintmatrix(pointer(s)), A_)
+
+CSDP.write_prob("prob.dat-s", 7, 2, C, b, constraints)
+

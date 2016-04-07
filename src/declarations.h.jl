@@ -210,7 +210,12 @@ function read_prob(fname::Ptr{UInt8},pn::Ptr{Cint},pk::Ptr{Cint},pC::Ptr{blockma
     ccall((:read_prob,CSDP.csdp),Cint,(Ptr{UInt8},Ptr{Cint},Ptr{Cint},Ptr{blockmatrix},Ptr{Ptr{Cdouble}},Ptr{Ptr{constraintmatrix}},Cint),fname,pn,pk,pC,pa,pconstraints,printlevel)
 end
 
-function write_prob(fname::Ptr{UInt8},n::Cint,k::Cint,C::blockmatrix,a::Ptr{Cdouble},constraints::Ptr{constraintmatrix})
+function write_prob(fname::ByteString,
+                    n::Int,
+                    k::Int,
+                    C::Blockmatrix,
+                    a::Vector{Cdouble},
+                    constraints::Vector{constraintmatrix})
     ccall((:write_prob,CSDP.csdp),Cint,(Ptr{UInt8},Cint,Cint,blockmatrix,Ptr{Cdouble},Ptr{constraintmatrix}),fname,n,k,C,a,constraints)
 end
 
