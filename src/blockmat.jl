@@ -31,9 +31,9 @@ type SparseBlock
     n::Cint
 end
 
-type SparseBlockMatrix
+type ConstraintMatrix
     blocks::Vector{SparseBlock}
-    SparseBlockMatrix(bs::AbstractMatrix...) =
+    ConstraintMatrix(bs::AbstractMatrix...) =
         new(SparseBlock[b for b in bs])
 end
 
@@ -77,7 +77,7 @@ Base.convert(::Type{sparseblock}, B::SparseBlock) =
                 )
 
 
-function create_cmat(c::SparseBlockMatrix)
+function create_cmat(c::ConstraintMatrix)
     blocks = map(sparseblock, c.blocks)
     numblocks = length(blocks)-1
     for i=2:numblocks
@@ -89,7 +89,7 @@ end
 
 # function Base.convert(::{sparse
 
-export SparseBlockMatrix, blockmatrix, convert, sparseblock, constraintmatrix, create_cmat
+export ConstraintMatrix, blockmatrix, convert, sparseblock, constraintmatrix, create_cmat
 
 """Solver status"""
 type Csdp

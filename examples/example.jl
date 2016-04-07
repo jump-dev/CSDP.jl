@@ -53,7 +53,7 @@ C3 = Diagonal{Float64}([0, 0])
 C = Blockmatrix(C1, C2, C3)
 b = [1.0, 2.0]
 
-A1 = SparseBlockMatrix(
+A1 = ConstraintMatrix(
    [3 1
     1 3],
           [0 0 0
@@ -62,7 +62,7 @@ A1 = SparseBlockMatrix(
        Diagonal([1,
                    0]))
 
-A2 = SparseBlockMatrix(
+A2 = ConstraintMatrix(
       [0 0
        0 0],
           [3 0 1
