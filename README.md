@@ -7,6 +7,13 @@
 Julia wrapper to [CSDP](https://projects.coin-or.org/Csdp) semidefinite programming solver.
 On Unix systems, the source code is downloaded and build.
 
+The original algorithm is described by
+B. Borchers.
+*CSDP, A C Library for Semidefinite Programming*.
+Optimization Methods and Software 11(1):613-623, 1999.
+DOI [10.1080/10556789908805765](http://dx.doi.org/10.1080/10556789908805765).
+[Preprint](http://euler.nmt.edu/~brian/csdppaper.pdf).
+
 ## Static Library
 The build system only provides a static library.
 The quite old (September 2010) [`pycsdp`](https://github.com/BenjaminKern/pycsdp) interface by [Benjamin Kern](http://ifatwww.et.uni-magdeburg.de/syst/about_us/people/kern/index.shtml) circumvents the problem by writing some C++ [code](https://github.com/BenjaminKern/pycsdp/tree/master/CXX) to which the static library is linked.
