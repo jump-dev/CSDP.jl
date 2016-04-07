@@ -1,5 +1,5 @@
 using CSDP
-reload("CSDP")
+# reload("CSDP")
 
 #=
 # Example copied from `example/example.c`
