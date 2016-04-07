@@ -10,11 +10,11 @@ const MATRIX = (UInt32)(1)
 const PACKEDMATRIX = (UInt32)(2)
 # end enum blockcat
 
-type blockdatarec
+immutable blockdatarec
     _blockdatarec::Ptr{Cdouble}
 end
 
-type blockrec
+immutable blockrec
     data::blockdatarec
     blockcategory::blockcat
     blocksize::Cint
