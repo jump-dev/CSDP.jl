@@ -21,12 +21,18 @@ void printb_(struct blockrec *b) {
 
 
 void print_sizeof() {
-  printf("sizeof(blockrec)              %d\n",
-         (int) sizeof(struct blockrec));
-  printf(" sizeof(enum blockcat)        %d\n",
+  printf("sizeof(void*)                 %d\n",
+         (int) sizeof(void*));
+  printf("sizeof(int)                   %d\n",
+         (int) sizeof(int));
+  printf("sizeof(enum blockcat)         %d\n",
          (int) sizeof(enum blockcat));
+  printf("sizeof(struct blockrec)       %d\n",
+         (int) sizeof(struct blockrec));
   printf("sizeof(struct blockmatrix)    %d\n",
          (int) sizeof(struct blockmatrix));
+  printf("sizeof(struct sparseblock)    %d\n",
+         (int) sizeof(struct sparseblock));
 }
 
 

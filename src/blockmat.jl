@@ -24,7 +24,7 @@ Base.convert(::Type{blockmatrix}, b::Blockmatrix) =
 
 # use pointer_from_obj to construct sparseblocks
 
-type SparseBlock
+immutable SparseBlock
     i::Vector{Cint}
     j::Vector{Cint}
     v::Vector{Cdouble}
@@ -80,9 +80,9 @@ Base.convert(::Type{sparseblock}, B::SparseBlock) =
 function create_cmat(c::ConstraintMatrix)
     blocks = map(sparseblock, c.blocks)
     numblocks = length(blocks)-1
-    for i=2:numblocks
-        blocks[i].next = pointer_from_objref(blocks[i+1])
-    end
+    ## for i=2:numblocks
+    ##     blocks[i].next = pointer_from_objref(blocks[i+1])
+    ## end
     blocks
 end
 

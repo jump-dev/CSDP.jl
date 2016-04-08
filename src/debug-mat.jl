@@ -11,3 +11,8 @@ function print_sparseblock(a::Ptr{sparseblock})
     ccall((:print_sparse_block, CSDP.csdp), Void, (Ptr{sparseblock},), a)
 end
 
+
+function print_sizeof()
+    ccall((:print_sizeof, CSDP.csdp), Void, ())
+end
+
