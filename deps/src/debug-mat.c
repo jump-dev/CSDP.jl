@@ -59,8 +59,9 @@ void print_sparse_block(struct sparseblock *b) {
   printf(" constraintnum: %d\n", b->constraintnum);
   printf(" blocknum: %d\n", b->blocknum);
   printf(" blocksize: %d\n", b->blocksize);
+  printf(" numentries: %d\n", b->numentries);
   if (b->blocksize <= 30) {
-    for (i = 1; i <= b->blocksize; i++) {
+    for (i = 1; i <= b->numentries; i++) {
       printf("  block[%d, %d] = %f\n",
              b->iindices[i],
              b->jindices[i],
