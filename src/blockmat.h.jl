@@ -20,7 +20,7 @@ immutable blockrec
     blocksize::Cint
 end
 
-type blockmatrix
+immutable blockmatrix
     nblocks::Cint
     blocks::Ptr{blockrec}
 end
