@@ -98,6 +98,4 @@ for block in constraints
     CSDP.print_sparseblock(block.blocks)
 end
 
-
-# CSDP.write_prob("prob.dat-s", 7, 2, C, b, constraints)
-
+CSDP.write_prob("prob.dat-s", 7, 2, C, b, constraints)

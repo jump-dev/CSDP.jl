@@ -78,12 +78,26 @@ Base.convert(::Type{sparseblock}, B::SparseBlock) =
 
 
 function create_cmat(c::ConstraintMatrix)
+    blocks = sparseblock[]
     blocks = map(sparseblock, c.blocks)
     numblocks = length(blocks)-1
-    ## for i=2:numblocks
-    ##     blocks[i].next = pointer_from_objref(blocks[i+1])
-    ## end
-    blocks
+    next = C_NULL
+
+    for B in c.blocks[end:-1:1]
+        unshift!(blocks, sparseblock(next,           # next
+                                     C_NULL,         # nextbyblock
+                                     pointer(B.v),   # entries
+                                     pointer(B.i),   # iindices
+                                     pointer(B.j),   # jindices
+                                     length(B.i)-1,  # numentries
+                                     -1,             # blocknum
+                                     B.n,            # blocksize
+                                     -1,             # constraintnum
+                                     1               # issparse
+                                     ))
+        next = pointer_from_objref(blocks[1])
+    end
+    return blocks
 end
 
 
