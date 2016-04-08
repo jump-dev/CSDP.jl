@@ -64,16 +64,16 @@ end
 
 
 Base.convert(::Type{sparseblock}, B::SparseBlock) =
-    sparseblock(C_NULL,
-                C_NULL,
-                pointer(B.v),
-                pointer(B.i),
-                pointer(B.j),
-                length(B.i)-1,
-                -1,     # blocknum
-                B.n,    # blocksize
-                -1,     # constraintnum
-                1,      # issparse
+    sparseblock(C_NULL,         # next
+                C_NULL,         # nextbyblock
+                pointer(B.v),   # entries
+                pointer(B.i),   # iindices
+                pointer(B.j),   # jindices
+                length(B.i)-1,  # numentries
+                -1,             # blocknum
+                B.n,            # blocksize
+                -1,             # constraintnum
+                1,              # issparse
                 )
 
 
