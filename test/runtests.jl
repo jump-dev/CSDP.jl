@@ -17,3 +17,5 @@ catch
     println(llapack)
     rethrow()
 end
+
+include("../examples/example.jl")
