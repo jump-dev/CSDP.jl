@@ -79,7 +79,7 @@ A1 = ConstraintMatrix(
            0 0 0],
        Diagonal([1,
                    0]))
-
+#
 A2 = ConstraintMatrix(
       [0 0
        0 0],
@@ -88,16 +88,16 @@ A2 = ConstraintMatrix(
            1 0 5],
        Diagonal([0,
                    1]))
-
-
 A = [A1, A2]
 A_ = map(create_cmat, A)
-constraints = map(s -> CSDP.constraintmatrix(pointer(s)), A_)
-
-for block in constraints
-    CSDP.print_sparseblock(block.blocks)
+constraints = map(A_) do s
+    CSDP.constraintmatrix(Ptr{sparseblock}(pointer_from_objref(s[1])))
 end
-#println(A_[1])
+
+# for block in constraints
+#     CSDP.print_sparseblock(block.blocks)
+# end
+# println(A_[1])
 # println(pointer(constraints))
 # println(first(A_))
 
