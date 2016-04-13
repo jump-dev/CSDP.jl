@@ -52,8 +52,8 @@ FILE *fid;
 
 void print_sparse_block(struct sparseblock *b) {
   int i;
-  fid = stderr;
-  printf("Printing block: %p\n", b);
+  fid = stdout;
+  fprintf(fid, "\n* Printing block: %p\n", b);
   if (b == NULL)
     return;
   fprintf(fid, " next: %p\n", b->next);
@@ -79,7 +79,7 @@ void  print_constraints(int k,
                         struct constraintmatrix *constraints)
 {
   int i, j;
-  FILE *fid = stderr;
+  fid = stdout;
   struct sparseblock *p;
 
   for (i=1; i<=k; i++)
