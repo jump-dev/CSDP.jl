@@ -72,3 +72,30 @@ void print_sparse_block(struct sparseblock *b) {
   }
   print_sparse_block(b->next);
 }
+
+void  print_constraints(int k,
+                        struct constraintmatrix *constraints)
+{
+  int i, j;
+  FILE *fid = stderr;
+  struct sparseblock *p;
+
+  for (i=1; i<=k; i++)
+    {
+      fprintf(fid, "printing constraints[%d].blocks\n", i);
+      p=constraints[i].blocks;
+      while (p != NULL)
+        {
+          print_sparse_block(p);
+          for (j=1; j<=p->numentries; j++)
+            {
+              fprintf(fid, "i=%d, j=%d\n", i, j);
+              fprintf(fid,"%d %d %d %d %.18e \n",i,p->blocknum,
+                      p->iindices[j],
+                      p->jindices[j],
+                      p->entries[j]);
+            };
+          p=p->next;
+        };
+    };
+}

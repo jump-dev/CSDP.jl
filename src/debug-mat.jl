@@ -16,3 +16,6 @@ function print_sizeof()
     ccall((:print_sizeof, CSDP.csdp), Void, ())
 end
 
+function print_constraints(k::Cint, C::Vector{constraintmatrix})
+    ccall((:print_constraints, CSDP.csdp), Void, (Cint, Ptr{constraintmatrix}), k, C)
+end
