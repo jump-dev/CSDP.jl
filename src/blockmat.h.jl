@@ -20,12 +20,12 @@ immutable blockrec
     blocksize::Cint
 end
 
-immutable blockmatrix
+type blockmatrix
     nblocks::Cint
     blocks::Ptr{blockrec}
 end
 
-immutable sparseblock
+type sparseblock
     next::Ptr{sparseblock}
     nextbyblock::Ptr{sparseblock}
     entries::Ptr{Cdouble}
@@ -38,7 +38,7 @@ immutable sparseblock
     issparse::Cint
 end
 
-type constraintmatrix
+immutable constraintmatrix
     blocks::Ptr{sparseblock}
 end
 

@@ -14,6 +14,8 @@ type Blockmatrix
     blocks::Vector{blockrec}
     Blockmatrix(bs::AbstractMatrix{Float64}...) =
         new([brec(b) for b in [Matrix{Float64}[]; collect(bs)]])
+    Blockmatrix(bs::AbstractMatrix...) =
+        Blockmatrix([map(Float64, b) for b in bs]...)
     Blockmatrix() = new([])
 end
 
@@ -37,6 +39,10 @@ type ConstraintMatrix
         new(SparseBlock[b for b in bs])
 end
 
+@inline function ptr{X}(x::X)
+    Base.reinterpret(Base.Ptr{X}, Base.pointer_from_objref(x))
+end
+
 
 function Base.convert(::Type{SparseBlock}, A::AbstractMatrix)
     A = map(Cdouble, A)
@@ -44,9 +50,9 @@ function Base.convert(::Type{SparseBlock}, A::AbstractMatrix)
     m, n = size(C)
     @assert m == n
     nn = nnz(C)
-    I = Cint[0]
-    J = Cint[0]
-    V = Cdouble[0]
+    I = Cint[]
+    J = Cint[]
+    V = Cdouble[]
     vals = nonzeros(C)
     rows = rowvals(C)
     for col = 1:n
@@ -63,33 +69,17 @@ function Base.convert(::Type{SparseBlock}, A::AbstractMatrix)
 end
 
 
-Base.convert(::Type{sparseblock}, B::SparseBlock) =
-    sparseblock(C_NULL,         # next
-                C_NULL,         # nextbyblock
-                pointer(B.v),   # entries
-                pointer(B.i),   # iindices
-                pointer(B.j),   # jindices
-                length(B.i)-1,  # numentries
-                -1,             # blocknum
-                B.n,            # blocksize
-                -1,             # constraintnum
-                1,              # issparse
-                )
-
-
 function create_cmat(c::ConstraintMatrix)
     blocks = sparseblock[]
-    blocks = map(sparseblock, c.blocks)
-    numblocks = length(blocks)-1
     next = C_NULL
 
     for B in c.blocks[end:-1:1]
         unshift!(blocks, sparseblock(next,           # next
                                      C_NULL,         # nextbyblock
-                                     pointer(B.v),   # entries
-                                     pointer(B.i),   # iindices
-                                     pointer(B.j),   # jindices
-                                     length(B.i)-1,  # numentries
+                                     pointer(B.v)-sizeof(Cdouble), # entries
+                                     pointer(B.i)-sizeof(Cint), # iindices
+                                     pointer(B.j)-sizeof(Cint), # jindices
+                                     length(B.i),    # numentries
                                      -1,             # blocknum
                                      B.n,            # blocksize
                                      -1,             # constraintnum
@@ -103,7 +93,7 @@ end
 
 # function Base.convert(::{sparse
 
-export ConstraintMatrix, blockmatrix, convert, sparseblock, constraintmatrix, create_cmat
+export ConstraintMatrix, blockmatrix, convert, sparseblock, constraintmatrix, create_cmat, ptr
 
 """Solver status"""
 type Csdp

@@ -48,27 +48,62 @@ void printm(struct blockmatrix A) {
 
 }
 
+FILE *fid;
 
 void print_sparse_block(struct sparseblock *b) {
   int i;
-  printf("Printing block: %p\n", b);
+  fid = stdout;
+  fprintf(fid, "\n* Printing block: %p\n", b);
   if (b == NULL)
     return;
-  printf(" next: %p\n", b->next);
-  printf(" nextbyblock: %p\n", b->nextbyblock);
-  printf(" constraintnum: %d\n", b->constraintnum);
-  printf(" blocknum: %d\n", b->blocknum);
-  printf(" blocksize: %d\n", b->blocksize);
-  printf(" numentries: %d\n", b->numentries);
+  fprintf(fid, " next: %p\n", b->next);
+  fprintf(fid, " nextbyblock: %p\n", b->nextbyblock);
+  fprintf(fid, " constraintnum: %d\n", b->constraintnum);
+  fprintf(fid, " blocknum: %d\n", b->blocknum);
+  fprintf(fid, " blocksize: %d\n", b->blocksize);
+  fprintf(fid, " numentries: %d\n", b->numentries);
   if (b->blocksize <= 30) {
     for (i = 1; i <= b->numentries; i++) {
-      printf("  block[%d, %d] = %f\n",
-             b->iindices[i],
-             b->jindices[i],
-             b->entries[i]);
+      fprintf(fid, "  block[%d, %d] = %f\n",
+              b->iindices[i],
+              b->jindices[i],
+              b->entries[i]);
     }
   } else {
-    printf(" TOO LARGE\n");
+    fprintf(fid, " TOO LARGE\n");
   }
   print_sparse_block(b->next);
+}
+
+void  print_constraints(int k,
+                        struct constraintmatrix *constraints)
+{
+  int i, j;
+  fid = stdout;
+  struct sparseblock *p;
+
+  fprintf(fid, "constraints == %p\n", constraints);
+
+  for (i=1; i<=k; i++)
+    {
+      fprintf(fid, "\n\nprinting constraints[%d].blocks\n", i);
+      p=constraints[i].blocks;
+      while (p != NULL)
+        {
+          fprintf(fid, "p == %p\n\n", p);
+          print_sparse_block(p);
+          fprintf(fid, "\n");
+          for (j=1; j<=p->numentries; j++)
+            {
+              fprintf(fid, "i=%d, j=%d\n", i, j);
+              fprintf(fid,"%d %d %d %d %f \n",
+                      i,
+                      p->blocknum,
+                      p->iindices[j],
+                      p->jindices[j],
+                      p->entries[j]);
+            };
+          p=p->next;
+        };
+    };
 }

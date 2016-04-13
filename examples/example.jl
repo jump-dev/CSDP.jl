@@ -43,31 +43,40 @@ using CSDP
 
 =#
 
-if !isdefined(:C1)
-    C1 = Float64[[2 1]
-                 [1 2]]
-end
-println("&C1 = $(pointer(C1))")
-C1b = CSDP.brec(C1)
-println("brec(C1) = $C1b")
-CSDP.print_block(C1b)
+# if !isdefined(:C1)
+#     C1 = Float64[[2 1]
+#                  [1 2]]
+# end
+# println("&C1 = $(pointer(C1))")
+# C1b = CSDP.brec(C1)
+# println("brec(C1) = $C1b")
+# CSDP.print_block(C1b)
 
-if !isdefined(:C2)
-    C2 = Float64[[3 0 1]
-                 [0 2 0]
-                 [1 0 3]]
-    println("&C2 = $(pointer(C2))")
-end
+# if !isdefined(:C2)
+#     C2 = Float64[[3 0 1]
+#                  [0 2 0]
+#                  [1 0 3]]
+#     println("&C2 = $(pointer(C2))")
+# end
 
-C3 = Diagonal{Float64}([0, 0])
+# C3 = Diagonal{Float64}([0, 0])
 
-println("&C3 = $(pointer(diag(C3)))")
+# println("&C3 = $(pointer(diag(C3)))")
 
-C = Blockmatrix(C1, C2, C3)
+# C = Blockmatrix(C1, C2, C3)
 
-for block in C.blocks
-    CSDP.print_block(block)
-end
+# for block in C.blocks
+#     CSDP.print_block(block)
+# end
+
+C = Blockmatrix(
+   [2 1
+    1 2],
+         [3 0 1
+          0 2 0
+          1 0 3],
+       Diagonal([0,
+                   0]))
 
 b = [1.0, 2.0]
 
@@ -79,7 +88,7 @@ A1 = ConstraintMatrix(
            0 0 0],
        Diagonal([1,
                    0]))
-
+#
 A2 = ConstraintMatrix(
       [0 0
        0 0],
@@ -88,14 +97,30 @@ A2 = ConstraintMatrix(
            1 0 5],
        Diagonal([0,
                    1]))
-
-
 A = [A1, A2]
-A_ = map(create_cmat, A)
-constraints = map(s -> CSDP.constraintmatrix(pointer(s)), A_)
-
-@unix_only for block in constraints
-    CSDP.print_sparseblock(block.blocks)
+constraints = map(A) do s
+    s = create_cmat(s)
+    CSDP.constraintmatrix(Ptr{sparseblock}(pointer_from_objref(s[1])))
 end
 
-CSDP.write_prob("prob.dat-s", 7, 2, C, b, constraints)
+# for block in constraints
+#     CSDP.print_sparseblock(block.blocks)
+# end
+# println(A_[1])
+# println(pointer(constraints))
+# println(first(A_))
+
+# CSDP.print_constraints(Cint(2), constraints)
+
+n = 7
+k = 2
+CSDP.write_prob("prob.dat-s", n, k, C, b, constraints)
+
+X = CSDP.blockmatrix(0, C_NULL)
+Z = CSDP.blockmatrix(0, C_NULL)
+type MyPtr{T}
+    e::Ptr{T}
+end
+y = MyPtr{Cdouble}(C_NULL)
+ptr_y = reinterpret(Ptr{Ptr{Cdouble}}, ptr(y))
+CSDP.initsoln(Cint(7),Cint(2),blockmatrix(C),pointer(b),pointer(constraints),ptr(X),ptr_y,ptr(Z))
