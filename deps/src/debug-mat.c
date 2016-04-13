@@ -82,6 +82,8 @@ void  print_constraints(int k,
   fid = stdout;
   struct sparseblock *p;
 
+  fprintf(fid, "constraints == %p\n", constraints);
+
   for (i=1; i<=k; i++)
     {
       fprintf(fid, "\n\nprinting constraints[%d].blocks\n", i);
