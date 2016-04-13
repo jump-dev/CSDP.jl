@@ -43,33 +43,33 @@ using CSDP
 
 =#
 
-if !isdefined(:C1)
-    C1 = Float64[[2 1]
-                 [1 2]]
-end
-println("&C1 = $(pointer(C1))")
-C1b = CSDP.brec(C1)
-println("brec(C1) = $C1b")
-CSDP.print_block(C1b)
+# if !isdefined(:C1)
+#     C1 = Float64[[2 1]
+#                  [1 2]]
+# end
+# println("&C1 = $(pointer(C1))")
+# C1b = CSDP.brec(C1)
+# println("brec(C1) = $C1b")
+# CSDP.print_block(C1b)
 
-if !isdefined(:C2)
-    C2 = Float64[[3 0 1]
-                 [0 2 0]
-                 [1 0 3]]
-    println("&C2 = $(pointer(C2))")
-end
+# if !isdefined(:C2)
+#     C2 = Float64[[3 0 1]
+#                  [0 2 0]
+#                  [1 0 3]]
+#     println("&C2 = $(pointer(C2))")
+# end
 
-C3 = Diagonal{Float64}([0, 0])
+# C3 = Diagonal{Float64}([0, 0])
 
-println("&C3 = $(pointer(diag(C3)))")
+# println("&C3 = $(pointer(diag(C3)))")
 
-C = Blockmatrix(C1, C2, C3)
+# C = Blockmatrix(C1, C2, C3)
 
-for block in C.blocks
-    CSDP.print_block(block)
-end
+# for block in C.blocks
+#     CSDP.print_block(block)
+# end
 
-b = [1.0, 2.0]
+# b = [1.0, 2.0]
 
 A1 = ConstraintMatrix(
    [3 1
@@ -98,4 +98,6 @@ for block in constraints
     CSDP.print_sparseblock(block.blocks)
 end
 
-CSDP.write_prob("prob.dat-s", 7, 2, C, b, constraints)
+CSDP.print_constraints(Cint(2), constraints)
+
+# CSDP.write_prob("prob.dat-s", 7, 2, C, b, constraints)
