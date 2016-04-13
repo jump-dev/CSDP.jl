@@ -25,7 +25,7 @@ immutable blockmatrix
     blocks::Ptr{blockrec}
 end
 
-immutable sparseblock
+type sparseblock
     next::Ptr{sparseblock}
     nextbyblock::Ptr{sparseblock}
     entries::Ptr{Cdouble}

@@ -94,11 +94,13 @@ A = [A1, A2]
 A_ = map(create_cmat, A)
 constraints = map(s -> CSDP.constraintmatrix(pointer(s)), A_)
 
-# for block in constraints
-#     CSDP.print_sparseblock(block.blocks)
-# end
-println(constraints)
+for block in constraints
+    CSDP.print_sparseblock(block.blocks)
+end
+#println(A_[1])
+# println(pointer(constraints))
+# println(first(A_))
 
-CSDP.print_constraints(Cint(2), constraints)
+# CSDP.print_constraints(Cint(2), constraints)
 
 # CSDP.write_prob("prob.dat-s", 7, 2, C, b, constraints)

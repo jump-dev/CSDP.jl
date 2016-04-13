@@ -17,14 +17,14 @@ function print_sizeof()
 end
 
 function print_constraints(k::Cint, C::Vector{constraintmatrix})
-    ccall((:print_constraints, CSDP.csdp), Void, (Cint, Ptr{constraintmatrix}), k, C)
+    ccall((:print_constraints, CSDP.csdp), Void, (Cint, Ptr{constraintmatrix}), k, pointer(C) - sizeof(eltype(C)))
 end
 
 
 using Base.show
 
 function Base.show(io::IO, b::sparseblock)
-    println(io, "\nsparseblock(")
+    println(io, "\nsparseblock(", pointer_from_objref(b))
     println(io, " next          :  ",  b.next         )
     println(io, " nextbyblock   :  ",  b.nextbyblock  )
     println(io, " entries       :  ",  b.entries      )

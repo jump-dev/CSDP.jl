@@ -70,9 +70,9 @@ function create_cmat(c::ConstraintMatrix)
     for B in c.blocks[end:-1:1]
         unshift!(blocks, sparseblock(next,           # next
                                      C_NULL,         # nextbyblock
-                                     pointer(B.v)-1, # entries
-                                     pointer(B.i)-1, # iindices
-                                     pointer(B.j)-1, # jindices
+                                     pointer(B.v)-sizeof(Cdouble), # entries
+                                     pointer(B.i)-sizeof(Cint), # iindices
+                                     pointer(B.j)-sizeof(Cint), # jindices
                                      length(B.i),    # numentries
                                      -1,             # blocknum
                                      B.n,            # blocksize
