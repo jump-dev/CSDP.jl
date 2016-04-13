@@ -14,6 +14,8 @@ type Blockmatrix
     blocks::Vector{blockrec}
     Blockmatrix(bs::AbstractMatrix{Float64}...) =
         new([brec(b) for b in [Matrix{Float64}[]; collect(bs)]])
+    Blockmatrix(bs::AbstractMatrix...) =
+        Blockmatrix([map(Float64, b) for b in bs]...)
     Blockmatrix() = new([])
 end
 

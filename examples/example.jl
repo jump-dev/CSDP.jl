@@ -69,7 +69,16 @@ using CSDP
 #     CSDP.print_block(block)
 # end
 
-# b = [1.0, 2.0]
+C = Blockmatrix(
+   [2 1
+    1 2],
+         [3 0 1
+          0 2 0
+          1 0 3],
+       Diagonal([0,
+                   0]))
+
+b = [1.0, 2.0]
 
 A1 = ConstraintMatrix(
    [3 1
@@ -103,4 +112,4 @@ end
 
 # CSDP.print_constraints(Cint(2), constraints)
 
-# CSDP.write_prob("prob.dat-s", 7, 2, C, b, constraints)
+CSDP.write_prob("prob.dat-s", 7, 2, C, b, constraints)
