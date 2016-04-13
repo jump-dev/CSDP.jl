@@ -89,8 +89,8 @@ A2 = ConstraintMatrix(
        Diagonal([0,
                    1]))
 A = [A1, A2]
-A_ = map(create_cmat, A)
-constraints = map(A_) do s
+constraints = map(A) do s
+    s = create_cmat(s)
     CSDP.constraintmatrix(Ptr{sparseblock}(pointer_from_objref(s[1])))
 end
 
