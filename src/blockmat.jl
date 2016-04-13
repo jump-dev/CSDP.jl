@@ -73,20 +73,20 @@ function Base.convert(::Type{SparseBlock}, A::AbstractMatrix)
 end
 
 
-function create_cmat(c::ConstraintMatrix)
+function create_cmat(c::ConstraintMatrix, cn=-1)
     blocks = sparseblock[]
     next = C_NULL
-
-    for B in c.blocks[end:-1:1]
+    
+    for (i,B) in collect(enumerate(c.blocks))[end:-1:1]
         unshift!(blocks, sparseblock(next,           # next
                                      C_NULL,         # nextbyblock
                                      pointer(B.v)-sizeof(Cdouble), # entries
                                      pointer(B.i)-sizeof(Cint), # iindices
                                      pointer(B.j)-sizeof(Cint), # jindices
                                      length(B.i),    # numentries
-                                     -1,             # blocknum
+                                     i,              # blocknum
                                      B.n,            # blocksize
-                                     -1,             # constraintnum
+                                     cn,             # constraintnum
                                      1               # issparse
                                      ))
         next = pointer_from_objref(blocks[1])
@@ -94,10 +94,15 @@ function create_cmat(c::ConstraintMatrix)
     return blocks
 end
 
+function cmat(s, i=-1)
+    s = create_cmat(s, i)
+    CSDP.constraintmatrix(Ptr{sparseblock}(pointer_from_objref(s[1])))
+end
+
 
 # function Base.convert(::{sparse
 
-export ConstraintMatrix, blockmatrix, convert, sparseblock, constraintmatrix, create_cmat, fptr, ptr
+export ConstraintMatrix, blockmatrix, convert, sparseblock, constraintmatrix, create_cmat, fptr, ptr, cmat
 
 """Solver status"""
 type Csdp

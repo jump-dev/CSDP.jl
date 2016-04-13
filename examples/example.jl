@@ -98,10 +98,9 @@ A2 = ConstraintMatrix(
        Diagonal([0,
                    1]))
 A = [A1, A2]
-constraints = map(A) do s
-    s = create_cmat(s)
-    CSDP.constraintmatrix(Ptr{sparseblock}(pointer_from_objref(s[1])))
-end
+
+constraints = [cmat(s, i) for (i,s) in enumerate(A)]
+
 
 # for block in constraints
 #     CSDP.print_sparseblock(block.blocks)
