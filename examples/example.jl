@@ -120,7 +120,6 @@ bC = blockmatrix(C)
 
 CSDP.write_prob("prob.dat-s", n, k, C, b, constraints)
 
-#=
 
 X = CSDP.blockmatrix(0, C_NULL)
 Z = CSDP.blockmatrix(0, C_NULL)
@@ -142,4 +141,3 @@ CSDP.initsoln(Cint(7),Cint(2),
 XB = pointer_to_array(X.blocks, 2)
 ret=CSDP.easy_sdp(Cint(7),Cint(2),blockmatrix(C),pointer(b),pointer(constraints),0.0,ptr(X),ptr_y,ptr(Z),pointer(pobj),pointer(dobj))
 
-=#
