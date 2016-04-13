@@ -217,7 +217,7 @@ function write_prob(fname::ByteString,
                     a::Vector{Cdouble},
                     constraints::Vector{constraintmatrix})
     ccall((:write_prob,CSDP.csdp),Cint,(Ptr{UInt8},Cint,Cint,blockmatrix,Ptr{Cdouble},Ptr{constraintmatrix}),
-          fname,n,k,C,pointer(a)-sizeof(eltype(a)),constraints)
+          fname,n,k,C,fptr(a),constraints)
 end
 
 function write_sol(fname::Ptr{UInt8},n::Cint,k::Cint,X::blockmatrix,y::Ptr{Cdouble},Z::blockmatrix)

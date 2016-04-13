@@ -19,8 +19,12 @@ type Blockmatrix
     Blockmatrix() = new([])
 end
 
+@inline function fptr{T}(x::Vector{T})
+    pointer(x) - sizeof(T)
+end
+
 Base.convert(::Type{blockmatrix}, b::Blockmatrix) =
-    blockmatrix(length(b.blocks), pointer(b.blocks)-sizeof(eltype(b.blocks)))
+    blockmatrix(length(b.blocks), fptr(b.blocks))
 
 # TODO: Print-Function for Blockmatrix
 
@@ -93,7 +97,7 @@ end
 
 # function Base.convert(::{sparse
 
-export ConstraintMatrix, blockmatrix, convert, sparseblock, constraintmatrix, create_cmat, ptr
+export ConstraintMatrix, blockmatrix, convert, sparseblock, constraintmatrix, create_cmat, fptr, ptr
 
 """Solver status"""
 type Csdp
