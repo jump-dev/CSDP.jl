@@ -94,9 +94,10 @@ A = [A1, A2]
 A_ = map(create_cmat, A)
 constraints = map(s -> CSDP.constraintmatrix(pointer(s)), A_)
 
-for block in constraints
-    CSDP.print_sparseblock(block.blocks)
-end
+# for block in constraints
+#     CSDP.print_sparseblock(block.blocks)
+# end
+println(constraints)
 
 CSDP.print_constraints(Cint(2), constraints)
 
