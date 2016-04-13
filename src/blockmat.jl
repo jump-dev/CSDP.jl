@@ -44,9 +44,9 @@ function Base.convert(::Type{SparseBlock}, A::AbstractMatrix)
     m, n = size(C)
     @assert m == n
     nn = nnz(C)
-    I = Cint[0]
-    J = Cint[0]
-    V = Cdouble[0]
+    I = Cint[]
+    J = Cint[]
+    V = Cdouble[]
     vals = nonzeros(C)
     rows = rowvals(C)
     for col = 1:n
@@ -63,20 +63,6 @@ function Base.convert(::Type{SparseBlock}, A::AbstractMatrix)
 end
 
 
-Base.convert(::Type{sparseblock}, B::SparseBlock) =
-    sparseblock(C_NULL,         # next
-                C_NULL,         # nextbyblock
-                pointer(B.v),   # entries
-                pointer(B.i),   # iindices
-                pointer(B.j),   # jindices
-                length(B.i)-1,  # numentries
-                -1,             # blocknum
-                B.n,            # blocksize
-                -1,             # constraintnum
-                1,              # issparse
-                )
-
-
 function create_cmat(c::ConstraintMatrix)
     blocks = sparseblock[]
     next = C_NULL
@@ -84,10 +70,10 @@ function create_cmat(c::ConstraintMatrix)
     for B in c.blocks[end:-1:1]
         unshift!(blocks, sparseblock(next,           # next
                                      C_NULL,         # nextbyblock
-                                     pointer(B.v),   # entries
-                                     pointer(B.i),   # iindices
-                                     pointer(B.j),   # jindices
-                                     length(B.i)-1,  # numentries
+                                     pointer(B.v)-1, # entries
+                                     pointer(B.i)-1, # iindices
+                                     pointer(B.j)-1, # jindices
+                                     length(B.i),    # numentries
                                      -1,             # blocknum
                                      B.n,            # blocksize
                                      -1,             # constraintnum
