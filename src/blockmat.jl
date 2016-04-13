@@ -79,8 +79,6 @@ Base.convert(::Type{sparseblock}, B::SparseBlock) =
 
 function create_cmat(c::ConstraintMatrix)
     blocks = sparseblock[]
-    blocks = map(sparseblock, c.blocks)
-    numblocks = length(blocks)-1
     next = C_NULL
 
     for B in c.blocks[end:-1:1]
