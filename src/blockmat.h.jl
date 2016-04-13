@@ -38,7 +38,7 @@ immutable sparseblock
     issparse::Cint
 end
 
-type constraintmatrix
+immutable constraintmatrix
     blocks::Ptr{sparseblock}
 end
 
