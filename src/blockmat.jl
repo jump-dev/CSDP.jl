@@ -13,14 +13,14 @@ brec(b::Diagonal{Float64}) =
 type Blockmatrix
     blocks::Vector{blockrec}
     Blockmatrix(bs::AbstractMatrix{Float64}...) =
-        new([brec(b) for b in [Matrix{Float64}[]; collect(bs)]])
+        new([brec(b) for b in bs])
     Blockmatrix(bs::AbstractMatrix...) =
         Blockmatrix([map(Float64, b) for b in bs]...)
     Blockmatrix() = new([])
 end
 
 Base.convert(::Type{blockmatrix}, b::Blockmatrix) =
-    blockmatrix(length(b.blocks)-1, pointer(b.blocks))
+    blockmatrix(length(b.blocks), pointer(b.blocks)-sizeof(eltype(b.blocks)))
 
 # TODO: Print-Function for Blockmatrix
 
