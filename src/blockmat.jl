@@ -4,7 +4,7 @@
 using Base.convert
 
 brec(b::Vector{Cdouble}, cat::blockcat, l::Int) =
-    blockrec(blockdatarec(pointer(b)), cat, Cint(l))
+    blockrec(blockdatarec(pointer(b)), cat, Cint(isqrt(l)))
 brec(b::Matrix{Float64}) =
     brec(reshape(b, length(b)), MATRIX, length(b))
 brec(b::Diagonal{Float64}) = 
