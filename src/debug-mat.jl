@@ -19,3 +19,21 @@ end
 function print_constraints(k::Cint, C::Vector{constraintmatrix})
     ccall((:print_constraints, CSDP.csdp), Void, (Cint, Ptr{constraintmatrix}), k, C)
 end
+
+
+using Base.show
+
+function Base.show(io::IO, b::sparseblock)
+    println(io, "\nsparseblock(")
+    println(io, " next          :  ",  b.next         )
+    println(io, " nextbyblock   :  ",  b.nextbyblock  )
+    println(io, " entries       :  ",  b.entries      )
+    println(io, " iindices      :  ",  b.iindices     )
+    println(io, " jindices      :  ",  b.jindices     )
+    println(io, " numentries    :  ",  b.numentries   )
+    println(io, " blocknum      :  ",  b.blocknum     )
+    println(io, " blocksize     :  ",  b.blocksize    )
+    println(io, " constraintnum :  ",  b.constraintnum)
+    println(io, " issparse      :  ",  b.issparse     )
+    println(io, ")")
+end
