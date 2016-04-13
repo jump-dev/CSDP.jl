@@ -123,4 +123,6 @@ type MyPtr{T}
 end
 y = MyPtr{Cdouble}(C_NULL)
 ptr_y = reinterpret(Ptr{Ptr{Cdouble}}, ptr(y))
-CSDP.initsoln(Cint(7),Cint(2),blockmatrix(C),pointer(b),pointer(constraints),ptr(X),ptr_y,ptr(Z))
+ptr_X = Ptr{CSDP.blockmatrix}(Libc.malloc(sizeof(CSDP.blockmatrix)))
+ptr_Z = Ptr{CSDP.blockmatrix}(Libc.malloc(sizeof(CSDP.blockmatrix)))
+CSDP.initsoln(Cint(7),Cint(2),blockmatrix(C),pointer(b),pointer(constraints),ptr_X,ptr_y,ptr_Z)
