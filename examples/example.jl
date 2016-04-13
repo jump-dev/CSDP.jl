@@ -43,40 +43,40 @@ using CSDP
 
 =#
 
-# if !isdefined(:C1)
-#     C1 = Float64[[2 1]
-#                  [1 2]]
-# end
-# println("&C1 = $(pointer(C1))")
-# C1b = CSDP.brec(C1)
-# println("brec(C1) = $C1b")
-# CSDP.print_block(C1b)
+if !isdefined(:C1)
+    C1 = Float64[[2 1]
+                 [1 2]]
+end
+println("&C1 = $(pointer(C1))")
+C1b = CSDP.brec(C1)
+println("brec(C1) = $C1b")
+CSDP.print_block(C1b)
 
-# if !isdefined(:C2)
-#     C2 = Float64[[3 0 1]
-#                  [0 2 0]
-#                  [1 0 3]]
-#     println("&C2 = $(pointer(C2))")
-# end
+if !isdefined(:C2)
+    C2 = Float64[[3 0 1]
+                 [0 2 0]
+                 [1 0 3]]
+    println("&C2 = $(pointer(C2))")
+end
 
-# C3 = Diagonal{Float64}([0, 0])
+C3 = Diagonal{Float64}([0, 0])
 
-# println("&C3 = $(pointer(diag(C3)))")
+println("&C3 = $(pointer(diag(C3)))")
 
-# C = Blockmatrix(C1, C2, C3)
+C = Blockmatrix(C1, C2, C3)
 
-# for block in C.blocks
-#     CSDP.print_block(block)
-# end
+for block in C.blocks
+    CSDP.print_block(block)
+end
 
-C = Blockmatrix(
-   [2 1
-    1 2],
-         [3 0 1
-          0 2 0
-          1 0 3],
-       Diagonal([0,
-                   0]))
+## C = Blockmatrix(
+##    [2 1
+##     1 2],
+##          [3 0 1
+##           0 2 0
+##           1 0 3],
+##        Diagonal([0,
+##                    0]))
 
 b = [1.0, 2.0]
 
@@ -114,7 +114,14 @@ end
 
 n = 7
 k = 2
+
+bC = blockmatrix(C)
+@show bC
+@show bC.nblocks
+
 CSDP.write_prob("prob.dat-s", n, k, C, b, constraints)
+
+#=
 
 X = CSDP.blockmatrix(0, C_NULL)
 Z = CSDP.blockmatrix(0, C_NULL)
@@ -127,9 +134,13 @@ pobj = Cdouble[0.0]
 dobj = Cdouble[0.0]
 y = MyPtr{Cdouble}(C_NULL)
 ptr_y = reinterpret(Ptr{Ptr{Cdouble}}, ptr(y))
-ptr_X = Ptr{CSDP.blockmatrix}(Libc.malloc(sizeof(CSDP.blockmatrix)))
-ptr_Z = Ptr{CSDP.blockmatrix}(Libc.malloc(sizeof(CSDP.blockmatrix)))
-CSDP.initsoln(Cint(7),Cint(2),blockmatrix(C),pointer(b),pointer(constraints),ptr(X),ptr_y,ptr(Z))
+# ptr_X = Ptr{CSDP.blockmatrix}(Libc.malloc(sizeof(CSDP.blockmatrix)))
+# ptr_Z = Ptr{CSDP.blockmatrix}(Libc.malloc(sizeof(CSDP.blockmatrix)))
+CSDP.initsoln(Cint(7),Cint(2),
+              blockmatrix(C),
+              fptr(b),
+              pointer(constraints),ptr(X),ptr_y,ptr(Z))
 XB = pointer_to_array(X.blocks, 2)
 ret=CSDP.easy_sdp(Cint(7),Cint(2),blockmatrix(C),pointer(b),pointer(constraints),0.0,ptr(X),ptr_y,ptr(Z),pointer(pobj),pointer(dobj))
 
+=#
