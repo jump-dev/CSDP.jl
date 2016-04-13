@@ -39,6 +39,10 @@ type ConstraintMatrix
         new(SparseBlock[b for b in bs])
 end
 
+@inline function ptr{X}(x::X)
+    Base.reinterpret(Base.Ptr{X}, Base.pointer_from_objref(x))
+end
+
 
 function Base.convert(::Type{SparseBlock}, A::AbstractMatrix)
     A = map(Cdouble, A)
@@ -89,7 +93,7 @@ end
 
 # function Base.convert(::{sparse
 
-export ConstraintMatrix, blockmatrix, convert, sparseblock, constraintmatrix, create_cmat
+export ConstraintMatrix, blockmatrix, convert, sparseblock, constraintmatrix, create_cmat, ptr
 
 """Solver status"""
 type Csdp

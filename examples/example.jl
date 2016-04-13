@@ -112,4 +112,15 @@ end
 
 # CSDP.print_constraints(Cint(2), constraints)
 
-CSDP.write_prob("prob.dat-s", 7, 2, C, b, constraints)
+n = 7
+k = 2
+CSDP.write_prob("prob.dat-s", n, k, C, b, constraints)
+
+X = CSDP.blockmatrix(0, C_NULL)
+Z = CSDP.blockmatrix(0, C_NULL)
+type MyPtr{T}
+    e::Ptr{T}
+end
+y = MyPtr{Cdouble}(C_NULL)
+ptr_y = reinterpret(Ptr{Ptr{Cdouble}}, ptr(y))
+CSDP.initsoln(Cint(7),Cint(2),blockmatrix(C),pointer(b),pointer(constraints),ptr(X),ptr_y,ptr(Z))
