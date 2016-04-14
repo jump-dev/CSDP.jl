@@ -94,6 +94,17 @@ function create_cmat(c::ConstraintMatrix, cn=-1)
     return blocks
 end
 
+
+function free_blockmatrix(m::blockmatrix)
+    block_ptr = m.blocks
+    blocks = pointer_to_array(block_ptr + sizeof(blockrec), m.nblocks)
+    for b in blocks
+        Libc.free(b.data._blockdatarec)
+    end
+    Libc.free(block_ptr)
+end
+export free_blockmatrix
+
 function cmat(s, i=-1)
     s = create_cmat(s, i)
     CSDP.constraintmatrix(Ptr{sparseblock}(pointer_from_objref(s[1])))

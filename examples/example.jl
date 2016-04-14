@@ -123,11 +123,6 @@ CSDP.write_prob("prob.dat-s", n, k, C, b, constraints)
 
 X = CSDP.blockmatrix(0, C_NULL)
 Z = CSDP.blockmatrix(0, C_NULL)
-
-function free_blockmatrix(m::CSDP.blockmatrix)
-    # TODO: implement
-end
-
 finalizer(X, free_blockmatrix)
 finalizer(Z, free_blockmatrix)
 if !isdefined(:MyPtr)
@@ -176,8 +171,6 @@ ret = CSDP.easy_sdp(Cint(7),                # n
                     pointer(dobj))
 
 output = ASCIIString(readavailable(rd))
-close(rd)
-close(wr)
 redirect_stdout(oldstdout)
 println("Bye")
 println(output)
