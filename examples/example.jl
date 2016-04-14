@@ -123,6 +123,13 @@ CSDP.write_prob("prob.dat-s", n, k, C, b, constraints)
 
 X = CSDP.blockmatrix(0, C_NULL)
 Z = CSDP.blockmatrix(0, C_NULL)
+
+function free_blockmatrix(m::CSDP.blockmatrix)
+    # TODO: implement
+end
+
+finalizer(X, free_blockmatrix)
+finalizer(Z, free_blockmatrix)
 if !isdefined(:MyPtr)
     type MyPtr{T}
         e::Ptr{T}
