@@ -3,6 +3,14 @@
 # Capitalized are the corresponding Julia types
 using Base.convert
 
+@inline function fptr{T}(x::Vector{T})
+    pointer(x) - sizeof(T)
+end
+
+@inline function ptr{X}(x::X)
+    Base.reinterpret(Base.Ptr{X}, Base.pointer_from_objref(x))
+end
+
 brec(b::Vector{Cdouble}, cat::blockcat, l::Int) =
     blockrec(blockdatarec(pointer(b)), cat, Cint(isqrt(l)))
 brec(b::Matrix{Float64}) =
@@ -19,10 +27,6 @@ type Blockmatrix
     Blockmatrix() = new([])
 end
 
-@inline function fptr{T}(x::Vector{T})
-    pointer(x) - sizeof(T)
-end
-
 Base.convert(::Type{blockmatrix}, b::Blockmatrix) =
     blockmatrix(length(b.blocks), fptr(b.blocks))
 
@@ -37,14 +41,11 @@ immutable SparseBlock
     n::Cint
 end
 
+
 type ConstraintMatrix
     blocks::Vector{SparseBlock}
     ConstraintMatrix(bs::AbstractMatrix...) =
         new(SparseBlock[b for b in bs])
-end
-
-@inline function ptr{X}(x::X)
-    Base.reinterpret(Base.Ptr{X}, Base.pointer_from_objref(x))
 end
 
 
