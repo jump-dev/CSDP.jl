@@ -134,14 +134,30 @@ y = MyPtr{Cdouble}(C_NULL)
 ptr_y = reinterpret(Ptr{Ptr{Cdouble}}, ptr(y))
 # ptr_X = Ptr{CSDP.blockmatrix}(Libc.malloc(sizeof(CSDP.blockmatrix)))
 # ptr_Z = Ptr{CSDP.blockmatrix}(Libc.malloc(sizeof(CSDP.blockmatrix)))
-CSDP.initsoln(Cint(7),Cint(2),
+CSDP.initsoln(Cint(7),
+              Cint(2),
               blockmatrix(C),
               fptr(b),
-              pointer(constraints),ptr(X),ptr_y,ptr(Z))
+              pointer(constraints),
+              ptr(X),
+              ptr_y,
+              ptr(Z))
 # XB = pointer_to_array(X.blocks, 2)
 println("\n\n**** X ******")
 CSDP.printm(X)
 println("\n\n**** Z ******")
 CSDP.printm(Z)
-# ret=CSDP.easy_sdp(Cint(7),Cint(2),blockmatrix(C),pointer(b),pointer(constraints),0.0,ptr(X),ptr_y,ptr(Z),pointer(pobj),pointer(dobj))
+println("\n\n**** y ******")
+println(y)
+ret = CSDP.easy_sdp(Cint(7),                # n
+                    Cint(2),                # k
+                    blockmatrix(C),         # C
+                    fptr(b),
+                    pointer(constraints),
+                    0.0,
+                    ptr(X),
+                    ptr_y,
+                    ptr(Z),
+                    pointer(pobj),
+                    pointer(dobj))
 
