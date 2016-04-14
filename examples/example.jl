@@ -68,17 +68,13 @@ using CSDP
 C = Blockmatrix(
    [2 1
     1 2],
-         [3 0 1
-          0 2 0
-          1 0 3],
-       Diagonal([0,
-                   0]))
-
-for block in C.blocks
-    CSDP.print_block(block)
-end
-
-
+        [3 0 1
+         0 2 0
+         1 0 3],
+      Diagonal([0,
+                  0]))
+gc()
+CSDP.printm(blockmatrix(C))
 
 b = [1.0, 2.0]
 
@@ -102,16 +98,6 @@ A2 = ConstraintMatrix(
 A = [A1, A2]
 
 constraints = [cmat(s, i) for (i,s) in enumerate(A)]
-
-
-# for block in constraints
-#     CSDP.print_sparseblock(block.blocks)
-# end
-# println(A_[1])
-# println(pointer(constraints))
-# println(first(A_))
-
-# CSDP.print_constraints(Cint(2), constraints)
 
 n = 7
 k = 2
