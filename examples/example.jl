@@ -138,7 +138,7 @@ CSDP.initsoln(Cint(7),
               Cint(2),
               blockmatrix(C),
               fptr(b),
-              pointer(constraints),
+              fptr(constraints),
               ptr(X),
               ptr_y,
               ptr(Z))
@@ -149,15 +149,18 @@ println("\n\n**** Z ******")
 CSDP.printm(Z)
 println("\n\n**** y ******")
 println(y)
+
+println("\n\n**** constraints ******")
+println(constraints)
+
 ret = CSDP.easy_sdp(Cint(7),                # n
                     Cint(2),                # k
                     blockmatrix(C),         # C
                     fptr(b),
-                    pointer(constraints),
+                    fptr(constraints),
                     0.0,
                     ptr(X),
                     ptr_y,
                     ptr(Z),
                     pointer(pobj),
                     pointer(dobj))
-
