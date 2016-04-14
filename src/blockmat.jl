@@ -96,12 +96,7 @@ end
 
 
 function free_blockmatrix(m::blockmatrix)
-    block_ptr = m.blocks
-    blocks = pointer_to_array(block_ptr + sizeof(blockrec), m.nblocks)
-    for b in blocks
-        Libc.free(b.data._blockdatarec)
-    end
-    Libc.free(block_ptr)
+    ccall((:free_mat, CSDP.csdp), Void, (blockmatrix,), m)
 end
 export free_blockmatrix
 
