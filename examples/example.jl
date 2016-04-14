@@ -160,6 +160,9 @@ println(y)
 println("\n\n**** constraints ******")
 println(constraints)
 
+# https://thenewphalls.wordpress.com/2014/03/21/capturing-output-in-julia/
+oldstdout = STDOUT
+rd, wr = redirect_stdout()
 ret = CSDP.easy_sdp(Cint(7),                # n
                     Cint(2),                # k
                     blockmatrix(C),         # C
@@ -171,3 +174,10 @@ ret = CSDP.easy_sdp(Cint(7),                # n
                     ptr(Z),
                     pointer(pobj),
                     pointer(dobj))
+
+output = ASCIIString(readavailable(rd))
+close(rd)
+close(wr)
+redirect_stdout(oldstdout)
+println("Bye")
+println(output)
