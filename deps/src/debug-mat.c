@@ -54,7 +54,7 @@ void printm(struct blockmatrix A) {
   int blk;
   printf("A.nblocks = %d\n", A.nblocks);
   printf("A.blocks  = %p\n", A.blocks);
-  for (blk=0; blk <= A.nblocks; blk++) {
+  for (blk=1; blk <= A.nblocks; blk++) {
     printf("block[%d]: %p\n", blk, &A.blocks[blk]);
     printb(A.blocks[blk]);
   }
