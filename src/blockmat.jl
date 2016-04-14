@@ -10,6 +10,7 @@ end
 @inline function ptr{X}(x::X)
     Base.reinterpret(Base.Ptr{X}, Base.pointer_from_objref(x))
 end
+export fptr, ptr
 
 brec(b::Vector{Cdouble}, cat::blockcat, l::Int) =
     blockrec(blockdatarec(pointer(b)), cat, Cint(isqrt(l)))
@@ -28,10 +29,6 @@ end
 
 Base.convert(::Type{blockmatrix}, b::Blockmatrix) =
     blockmatrix(length(b.blocks), fptr(b.blocks))
-
-# TODO: Print-Function for Blockmatrix
-
-# use pointer_from_obj to construct sparseblocks
 
 immutable SparseBlock
     i::Vector{Cint}
@@ -113,9 +110,7 @@ function cmat(s, i=-1)
 end
 
 
-# function Base.convert(::{sparse
-
-export ConstraintMatrix, blockmatrix, convert, sparseblock, constraintmatrix, create_cmat, fptr, ptr, cmat
+export ConstraintMatrix, convert
 
 """Solver status"""
 type Csdp

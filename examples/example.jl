@@ -73,8 +73,9 @@ C = Blockmatrix(
          1 0 3],
       Diagonal([0,
                   0]))
+
 gc()
-CSDP.printm(blockmatrix(C))
+printm(C)
 
 b = [1.0, 2.0]
 
@@ -95,9 +96,8 @@ A2 = ConstraintMatrix(
            1 0 5],
        Diagonal([0,
                    1]))
-A = [A1, A2]
 
-constraints = [cmat(s, i) for (i,s) in enumerate(A)]
+constraints = [CSDP.cmat(s, i) for (i,s) in enumerate([A1, A2])]
 
 n = 7
 k = 2
@@ -113,7 +113,7 @@ y = Cvector{Cdouble}(C_NULL)
 
 CSDP.initsoln(Cint(7),
               Cint(2),
-              blockmatrix(C),
+              CSDP.blockmatrix(C),
               fptr(b),
               fptr(constraints),
               ptr(X),
@@ -138,7 +138,7 @@ oldstdout = STDOUT
 rd, wr = redirect_stdout()
 ret = CSDP.easy_sdp(Cint(7),                # n
                     Cint(2),                # k
-                    blockmatrix(C),         # C
+                    CSDP.blockmatrix(C),
                     fptr(b),
                     fptr(constraints),
                     0.0,
