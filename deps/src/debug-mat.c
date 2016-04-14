@@ -10,9 +10,20 @@ void printb(struct blockrec b) {
   printf(" blocksize:     %d\n", b.blocksize);
   printf(" data.vec:      %p\n", b.data.vec);
   if (b.blocksize <= 16) {
-    size = b.blocksize * b.blocksize;
-    for (i = 0; i < size; i++)
-      printf("  %f\n", b.data.vec[i]);
+    switch (b.blockcategory) {
+    case MATRIX:
+      size = b.blocksize * b.blocksize;
+      for (i = 0; i < size; i++)
+        printf("  %f\n", b.data.vec[i]);
+      break;
+    case DIAG:
+      for (i = 1; i <= b.blocksize; i++)
+        printf("  %f\n", b.data.vec[i]);
+      break;
+    default:
+      fprintf(stderr, "UNKNOWN blockcat: %d",
+              (int) b.blockcategory);
+    }
   }
 }
 
