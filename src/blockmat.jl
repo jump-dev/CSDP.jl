@@ -24,7 +24,6 @@ type Blockmatrix
         new([brec(b) for b in bs])
     Blockmatrix(bs::AbstractMatrix...) =
         Blockmatrix([map(Float64, b) for b in bs]...)
-    Blockmatrix() = new([])
 end
 
 Base.convert(::Type{blockmatrix}, b::Blockmatrix) =
