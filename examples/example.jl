@@ -114,10 +114,6 @@ constraints = [cmat(s, i) for (i,s) in enumerate(A)]
 n = 7
 k = 2
 
-bC = blockmatrix(C)
-@show bC
-@show bC.nblocks
-
 CSDP.write_prob("prob.dat-s", n, k, C, b, constraints)
 
 
