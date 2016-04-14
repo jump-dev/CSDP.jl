@@ -123,15 +123,9 @@ CSDP.write_prob("prob.dat-s", n, k, C, b, constraints)
 
 X = CSDP.blockmatrix(0, C_NULL)
 Z = CSDP.blockmatrix(0, C_NULL)
-if !isdefined(:MyPtr)
-    type MyPtr{T}
-        e::Ptr{T}
-    end
-end
 pobj = Cdouble[0.0]
 dobj = Cdouble[0.0]
-y = MyPtr{Cdouble}(C_NULL)
-ptr_y = reinterpret(Ptr{Ptr{Cdouble}}, ptr(y))
+y = Cvector{Cdouble}(C_NULL)
 
 CSDP.initsoln(Cint(7),
               Cint(2),
@@ -139,10 +133,11 @@ CSDP.initsoln(Cint(7),
               fptr(b),
               fptr(constraints),
               ptr(X),
-              ptr_y,
+              pointer(y),
               ptr(Z))
 finalizer(X, free_blockmatrix)
 finalizer(Z, free_blockmatrix)
+finalizer(y, s -> Libc.free(s.e))
 
 println("\n\n**** X ******")
 CSDP.printm(X)
@@ -164,7 +159,7 @@ ret = CSDP.easy_sdp(Cint(7),                # n
                     fptr(constraints),
                     0.0,
                     ptr(X),
-                    ptr_y,
+                    pointer(y),
                     ptr(Z),
                     pointer(pobj),
                     pointer(dobj))

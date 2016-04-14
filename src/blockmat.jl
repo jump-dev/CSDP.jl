@@ -95,6 +95,13 @@ function create_cmat(c::ConstraintMatrix, cn=-1)
 end
 
 
+type Cvector{T}
+    e::Ptr{T}
+end
+export Cvector
+
+Base.pointer{T}(x::Cvector{T}) = reinterpret(Ptr{Ptr{T}}, pointer_from_objref(x))
+
 function free_blockmatrix(m::blockmatrix)
     ccall((:free_mat, CSDP.csdp), Void, (blockmatrix,), m)
 end
