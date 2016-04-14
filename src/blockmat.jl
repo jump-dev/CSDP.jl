@@ -20,9 +20,12 @@ brec(b::Diagonal{Float64}) =
     blockrec(blockdatarec(fptr(diag(b))), DIAG, Cint(isqrt(length(b))))
 
 type Blockmatrix
+    ob::Vector{Union{Matrix{Float64},Diagonal{Float64}}} # original matrices
     blocks::Vector{blockrec}
-    Blockmatrix(bs::AbstractMatrix{Float64}...) =
-        new([brec(b) for b in bs])
+    function Blockmatrix(bs::AbstractMatrix{Float64}...)
+        ob = collect(bs)
+        new(ob, [brec(b) for b in ob])
+    end
     Blockmatrix(bs::AbstractMatrix...) =
         Blockmatrix([map(Float64, b) for b in bs]...)
 end
