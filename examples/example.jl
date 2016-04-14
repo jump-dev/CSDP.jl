@@ -138,6 +138,10 @@ CSDP.initsoln(Cint(7),Cint(2),
               blockmatrix(C),
               fptr(b),
               pointer(constraints),ptr(X),ptr_y,ptr(Z))
-XB = pointer_to_array(X.blocks, 2)
-ret=CSDP.easy_sdp(Cint(7),Cint(2),blockmatrix(C),pointer(b),pointer(constraints),0.0,ptr(X),ptr_y,ptr(Z),pointer(pobj),pointer(dobj))
+# XB = pointer_to_array(X.blocks, 2)
+println("\n\n**** X ******")
+CSDP.printm(X)
+println("\n\n**** Z ******")
+CSDP.printm(Z)
+# ret=CSDP.easy_sdp(Cint(7),Cint(2),blockmatrix(C),pointer(b),pointer(constraints),0.0,ptr(X),ptr_y,ptr(Z),pointer(pobj),pointer(dobj))
 
