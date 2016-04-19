@@ -19,5 +19,5 @@ n1 = ccall( (:norm1, CSDP.csdp), Float64, (Cint, Ptr{Cdouble}), length(vec), vec
 @assert abs(n1 - 4) < 1e-15 "n1 = $n1"
 
 cd("../examples/") do 
-    include("example.jl")
+    include(joinpath(pwd(), "example.jl"))
 end
