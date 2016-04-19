@@ -152,3 +152,9 @@ output = ASCIIString(readavailable(rd))
 redirect_stdout(oldstdout)
 println("Bye")
 println(output)
+
+## TODO
+# • return solution matrix X (as Julia::Matrix)
+# • show a Blockmatrix accordingly
+# • make more user friendly interface
+# • integrate in SemidefinitePorgramming.jl
