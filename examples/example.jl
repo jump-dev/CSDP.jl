@@ -151,7 +151,14 @@ ret = CSDP.easy_sdp(Cint(7),                # n
 output = ASCIIString(readavailable(rd))
 redirect_stdout(oldstdout)
 println("Bye")
-println(output)
+# println(output)
+
+println("\n\n**** X ******")
+CSDP.printm(X)
+println("\n\n**** Z ******")
+CSDP.printm(Z)
+println("\n\n**** y ******")
+println(y)
 
 y_sol = pointer_to_array(y.e + sizeof(Cdouble), k)
 
@@ -162,20 +169,23 @@ y_sol = pointer_to_array(y.e + sizeof(Cdouble), k)
 # • integrate in SemidefinitePorgramming.jl
 
 
-fname = "prob.dat-s"
-CSDP.write_sol(pointer(fname), Cint(n), Cint(k), X, y.e, Z)
-
-bs = pointer_to_array(X.blocks + sizeof(CSDP.blockrec), X.nblocks)
-Bs = map(bs) do b
-    let s = b.blocksize, c = b.blockcategory, d = b.data._blockdatarec
-        if b.blockcategory == CSDP.MATRIX
-            pointer_to_array(d, (s, s))
-        elseif b.blockcategory == CSDP.DIAG
-            diagm(pointer_to_array(d + sizeof(Cdouble), s))
-        else
-            error("Unknown block category $(b.blockcategory)")
+function Blockmatrix(X::CSDP.blockmatrix)
+    bs = pointer_to_array(X.blocks + sizeof(CSDP.blockrec), X.nblocks)
+    Bs = map(bs) do b
+        let s = b.blocksize, c = b.blockcategory, d = b.data._blockdatarec
+            if b.blockcategory == CSDP.MATRIX
+                pointer_to_array(d, (s, s))
+            elseif b.blockcategory == CSDP.DIAG
+                diagm(pointer_to_array(d + sizeof(Cdouble), s))
+            else
+                error("Unknown block category $(b.blockcategory)")
+            end
         end
     end
+    Blockmatrix(Bs, bs)
 end
 
+X_sol = Blockmatrix(X)
+Z_sol = Blockmatrix(Z)
 
+CSDP.write_sol("prob.dat-s", n, k, X_sol, y, Z_sol)

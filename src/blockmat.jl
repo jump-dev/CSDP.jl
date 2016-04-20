@@ -22,6 +22,7 @@ brec(b::Diagonal{Float64}) =
 type Blockmatrix
     ob::Vector{Union{Matrix{Float64},Diagonal{Float64}}} # original matrices
     blocks::Vector{blockrec}
+    Blockmatrix(ob, blocks) = new(ob, blocks)
     function Blockmatrix(bs::AbstractMatrix{Float64}...)
         ob = collect(bs)
         new(ob, [brec(b) for b in ob])

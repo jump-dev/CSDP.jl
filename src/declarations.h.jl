@@ -220,9 +220,36 @@ function write_prob(fname::ByteString,
           fname,n,k,C,fptr(a),fptr(constraints))
 end
 
-function write_sol(fname::Ptr{UInt8},n::Cint,k::Cint,X::blockmatrix,y::Ptr{Cdouble},Z::blockmatrix)
-    ccall((:write_sol,CSDP.csdp),Cint,(Ptr{UInt8},Cint,Cint,blockmatrix,Ptr{Cdouble},blockmatrix),fname,n,k,X,y,Z)
+function write_sol(fname::ByteString,
+                   n::Int,
+                   k::Int,
+                   X::blockmatrix,
+                   y::Ptr{Cdouble},
+                   Z::blockmatrix)
+    ccall((:write_sol,CSDP.csdp),Cint,
+          (Ptr{UInt8},
+           Cint,
+           Cint,
+           blockmatrix,
+           Ptr{Cdouble},
+           blockmatrix),fname,n,k,X,y,Z)
 end
+
+function write_sol(fname::ByteString,
+                   n::Int,
+                   k::Int,
+                   X::Blockmatrix,
+                   y::Cvector{Cdouble},
+                   Z::Blockmatrix)
+    ccall((:write_sol,CSDP.csdp),Cint,
+          (Ptr{UInt8},
+           Cint,
+           Cint,
+           blockmatrix,
+           Ptr{Cdouble},
+           blockmatrix),fname,n,k,X,y.e,Z)
+end
+
 
 function free_prob(n::Cint,k::Cint,C::blockmatrix,a::Ptr{Cdouble},constraints::Ptr{constraintmatrix},X::blockmatrix,y::Ptr{Cdouble},Z::blockmatrix)
     ccall((:free_prob,CSDP.csdp),Void,(Cint,Cint,blockmatrix,Ptr{Cdouble},Ptr{constraintmatrix},blockmatrix,Ptr{Cdouble},blockmatrix),n,k,C,a,constraints,X,y,Z)
