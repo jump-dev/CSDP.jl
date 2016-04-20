@@ -3,11 +3,11 @@
 # Capitalized are the corresponding Julia types
 using Base.convert
 
-@inline function fptr{T}(x::Vector{T})
+function fptr{T}(x::Vector{T})
     pointer(x) - sizeof(T)
 end
 
-@inline function ptr{X}(x::X)
+function ptr{X}(x::X)
     Base.reinterpret(Base.Ptr{X}, Base.pointer_from_objref(x))
 end
 export fptr, ptr
