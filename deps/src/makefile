@@ -1,7 +1,7 @@
 csdp   = Csdp-6.1.1
 libs   = -lblas -llapack
 build  = ../build
-CFLAGS = -DNOSHORTS -I$(csdp)/include
+CFLAGS = -DNOSHORTS -I$(csdp)/include -g
 
 srcs = $(shell ls $(csdp)/lib/*.c)
 objs = $(patsubst $(csdp)/lib/%.c,$(build)/%.o,$(srcs))
