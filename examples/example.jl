@@ -153,13 +153,17 @@ redirect_stdout(oldstdout)
 println("Bye")
 println(output)
 
+y_sol = pointer_to_array(y.e + sizeof(Cdouble), k)
+
 ## TODO
 # • return solution matrix X (as Julia::Matrix)
 # • show a Blockmatrix accordingly
 # • make more user friendly interface
 # • integrate in SemidefinitePorgramming.jl
 
-CSDP.write_sol(pointer("prob.dat-s"), Cint(n), Cint(k), X, y.e, Z)
+
+fname = "prob.dat-s"
+CSDP.write_sol(pointer(fname), Cint(n), Cint(k), X, y.e, Z)
 
 bs = pointer_to_array(X.blocks + sizeof(CSDP.blockrec), X.nblocks)
 Bs = map(bs) do b
