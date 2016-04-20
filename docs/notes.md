@@ -19,3 +19,9 @@ Another peculiar aspect is, that the C code uses Fortran like arrays, i.e. the f
 Only two dimensional arrays are accessed via the `ijtok` macro which starts at 0.
 
 To overcome the issues, one has to always add another element to the array or one should add -1 to the pointer.
+
+
+# Mutable vs Immutable
+A major problem seems to be the the question whether `blockmatrix` should be immutable or not:
+On the one hand, in some C functions the `blockmatrix` has to be handed over; so the memory alignment, which is better for immutable's, is important.
+On the other hand, `blockmatrix` has to be allocated by `init_sol`; that is why it has to be mutable. 
