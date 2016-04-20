@@ -159,6 +159,8 @@ println(output)
 # • make more user friendly interface
 # • integrate in SemidefinitePorgramming.jl
 
+CSDP.write_sol(pointer("prob.dat-s"), Cint(n), Cint(k), X, y.e, Z)
+
 bs = pointer_to_array(X.blocks + sizeof(CSDP.blockrec), X.nblocks)
 Bs = map(bs) do b
     let s = b.blocksize, c = b.blockcategory, d = b.data._blockdatarec
@@ -171,3 +173,5 @@ Bs = map(bs) do b
         end
     end
 end
+
+
