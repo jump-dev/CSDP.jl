@@ -158,3 +158,16 @@ println(output)
 # • show a Blockmatrix accordingly
 # • make more user friendly interface
 # • integrate in SemidefinitePorgramming.jl
+
+bs = pointer_to_array(X.blocks + sizeof(CSDP.blockrec), X.nblocks)
+Bs = map(bs) do b
+    let s = b.blocksize, c = b.blockcategory, d = b.data._blockdatarec
+        if b.blockcategory == CSDP.MATRIX
+            pointer_to_array(d, (s, s))
+        elseif b.blockcategory == CSDP.DIAG
+            diagm(pointer_to_array(d + sizeof(Cdouble), s))
+        else
+            error("Unknown block category $(b.blockcategory)")
+        end
+    end
+end
