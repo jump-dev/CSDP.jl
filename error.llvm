@@ -1,0 +1,73 @@
+Bitcast requires both operands to be pointer or neither
+  %41 = bitcast %blockmatrix* %6 to { i64, i64 }, !dbg !455
+Wrong types for attribute: byval nest noalias nocapture signext sret zeroext
+  %42 = call i32 inttoptr (i64 140206288431225 to i32 (i8*, i32, i32, { i64, i64 }, double*, { i64, i64 })*)(i8* inreg %34, i32 inreg %35, i32 inreg %36, { i64, i64 } inreg %38, double* inreg %39, { i64, i64 } byval %41), !dbg !455
+Broken module found, verification continues.
+
+; Function Attrs: sspreq
+define i32 @julia_write_sol_21190(%jl_value_t*, i32, i32, %blockmatrix*, double*, %blockmatrix*) #4 {
+top:
+  %n = alloca i32, !dbg !452
+  %k = alloca i32, !dbg !452
+  %X = alloca %blockmatrix, !dbg !452, !julia_type !453
+  %y = alloca double*, !dbg !452
+  %Z = alloca %blockmatrix, !dbg !452, !julia_type !453
+  %6 = alloca %blockmatrix
+  %7 = alloca %jl_value_t*, i32 4, !dbg !452
+  %8 = getelementptr %jl_value_t** %7, i32 2, !dbg !452
+  %9 = getelementptr %jl_value_t** %7, i32 2, !dbg !452
+  %10 = getelementptr %jl_value_t** %7, i32 0, !dbg !452
+  %11 = bitcast %jl_value_t** %10 to i64*, !dbg !452
+  store i64 4, i64* %11, !dbg !452
+  %12 = getelementptr %jl_value_t** %7, i32 1, !dbg !452
+  %13 = bitcast %jl_value_t** %12 to %jl_value_t***, !dbg !452
+  %14 = load %jl_value_t*** @jl_pgcstack, !dbg !452
+  store %jl_value_t** %14, %jl_value_t*** %13, !dbg !452
+  store %jl_value_t** %7, %jl_value_t*** @jl_pgcstack, !dbg !452
+  %15 = getelementptr %jl_value_t** %9, i32 0, !dbg !452
+  store %jl_value_t* null, %jl_value_t** %15, !dbg !452
+  %16 = getelementptr %jl_value_t** %9, i32 1, !dbg !452
+  store %jl_value_t* null, %jl_value_t** %16, !dbg !452
+  store i32 %1, i32* %n, !dbg !452
+  store i32 %2, i32* %k, !dbg !452
+  %17 = select i1 true, %blockmatrix* %3, %blockmatrix* %3, !dbg !452, !julia_type !453
+  %18 = load %blockmatrix* %17, !dbg !452
+  store %blockmatrix %18, %blockmatrix* %X, !dbg !452
+  store double* %4, double** %y, !dbg !452
+  %19 = select i1 true, %blockmatrix* %5, %blockmatrix* %5, !dbg !452, !julia_type !453
+  %20 = load %blockmatrix* %19, !dbg !452
+  store %blockmatrix %20, %blockmatrix* %Z, !dbg !452
+  %21 = getelementptr %jl_value_t** %9, i32 0, !dbg !454
+  store %jl_value_t* inttoptr (i64 140206467295792 to %jl_value_t*), %jl_value_t** %21, !dbg !454
+  %22 = getelementptr %jl_value_t** %9, i32 1, !dbg !454
+  store %jl_value_t* inttoptr (i64 140206467097088 to %jl_value_t*), %jl_value_t** %22, !dbg !454
+  %23 = getelementptr %jl_value_t** %9, i32 0, !dbg !454
+  %24 = call %jl_value_t* @jl_apply_generic(%jl_value_t* inttoptr (i64 140206426962800 to %jl_value_t*), %jl_value_t** %23, i32 2), !dbg !454
+  %25 = getelementptr %jl_value_t** %9, i32 0, !dbg !454
+  store %jl_value_t* %24, %jl_value_t** %25, !dbg !454
+  %26 = getelementptr %jl_value_t** %9, i32 0, !dbg !454
+  %27 = call %jl_value_t* @jl_apply_generic(%jl_value_t* inttoptr (i64 140206445983440 to %jl_value_t*), %jl_value_t** %26, i32 1), !dbg !454
+  %28 = bitcast %jl_value_t* %0 to i8*, !dbg !455
+  %29 = getelementptr i8* %28, i64 0, !dbg !455
+  %30 = bitcast i8* %29 to %jl_value_t**, !dbg !455
+  %31 = load %jl_value_t** %30, !dbg !455, !tbaa %jtbaa_immut
+  %32 = bitcast %jl_value_t* %31 to %jl_array_t*, !dbg !455
+  %33 = getelementptr inbounds %jl_array_t* %32, i32 0, i32 0, !dbg !455
+  %34 = load i8** %33, !dbg !455, !tbaa %jtbaa_arrayptr, !julia_type !461
+  %35 = load i32* %n, !dbg !455
+  %36 = load i32* %k, !dbg !455
+  %37 = bitcast %blockmatrix* %17 to { i64, i64 }*, !dbg !455
+  %38 = load { i64, i64 }* %37, !dbg !455
+  %39 = load double** %y, !dbg !455
+  %40 = load %blockmatrix* %19, !dbg !455
+  store %blockmatrix %40, %blockmatrix* %6, !dbg !455
+  %41 = bitcast %blockmatrix* %6 to { i64, i64 }, !dbg !455
+  %42 = call i32 inttoptr (i64 140206288431225 to i32 (i8*, i32, i32, { i64, i64 }, double*, { i64, i64 })*)(i8* inreg %34, i32 inreg %35, i32 inreg %36, { i64, i64 } inreg %38, double* inreg %39, { i64, i64 } byval %41), !dbg !455
+  %43 = getelementptr %jl_value_t** %7, i32 1, !dbg !455
+  %44 = load %jl_value_t** %43, !dbg !455
+  %45 = bitcast %jl_value_t* %44 to %jl_value_t**, !dbg !455
+  store %jl_value_t** %45, %jl_value_t*** @jl_pgcstack, !dbg !455
+  ret i32 %42, !dbg !455
+}
+
+# http://llvm.org/docs/LangRef.html#bitcast-to-instruction

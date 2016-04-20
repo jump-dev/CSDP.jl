@@ -221,18 +221,21 @@ function write_prob(fname::ByteString,
 end
 
 function write_sol(fname::ByteString,
-                   n::Int,
-                   k::Int,
+                   n::Cint,
+                   k::Cint,
                    X::blockmatrix,
                    y::Ptr{Cdouble},
                    Z::blockmatrix)
-    ccall((:write_sol,CSDP.csdp),Cint,
+    println("********** Alright " + @__FILE__)
+    ccall((:write_sol,CSDP.csdp),
+          Cint,
           (Ptr{UInt8},
            Cint,
            Cint,
            blockmatrix,
            Ptr{Cdouble},
-           blockmatrix),fname,n,k,X,y,Z)
+           blockmatrix),
+          fname,n,k,X,y,Z)
 end
 
 function write_sol(fname::ByteString,
@@ -241,6 +244,7 @@ function write_sol(fname::ByteString,
                    X::Blockmatrix,
                    y::Cvector{Cdouble},
                    Z::Blockmatrix)
+    println("********** Alright " + @__FILE__)
     ccall((:write_sol,CSDP.csdp),Cint,
           (Ptr{UInt8},
            Cint,
