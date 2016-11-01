@@ -5,7 +5,7 @@ end
 function printm(A::blockmatrix)
     ccall((:printm, CSDP.csdp), Void, (blockmatrix,), A)
 end
-printm(A::Blockmatrix) = printm(blockmatrix(A))
+printm(A::BlockMatrix) = printm(A.csdp)
 export printm
 
 print_sparseblock(A::sparseblock) = print_sparseblock(pointer_from_objref(A))
