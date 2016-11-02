@@ -5,14 +5,14 @@ using CSDP
 # Example copied from `example/example.c`
    An example showing how to call the easy_sdp() interface to CSDP.  In
    this example, we solve the problem
- 
+
       max tr(C*X)
           tr(A1*X)=1
           tr(A2*X)=2
           X >= 0       (X is PSD)
- 
-   where 
- 
+
+   where
+
     C=[2 1
        1 2
            3 0 1
@@ -27,7 +27,7 @@ using CSDP
            0 0 0
            0 0 0
                  1
-                   0] 
+                   0]
 
    A2=[0 0
        0 0
@@ -35,11 +35,11 @@ using CSDP
            0 4 0
            1 0 5
                  0
-                   1] 
+                   1]
 
   Notice that all of the matrices have block diagonal structure.  The first
   block is of size 2x2.  The second block is of size 3x3.  The third block
-  is a diagonal block of size 2.  
+  is a diagonal block of size 2.
 
 =#
 
@@ -65,7 +65,7 @@ using CSDP
 
 # C = Blockmatrix(C1, C2, C3)
 
-C = Blockmatrix(
+C = BlockMatrix(
    [2 1
     1 2],
         [3 0 1
@@ -74,12 +74,9 @@ C = Blockmatrix(
       Diagonal([0,
                   0]))
 
-gc()
-printm(C)
-
 b = [1.0, 2.0]
 
-A1 = ConstraintMatrix(
+A1 = ConstraintMatrix(1,
    [3 1
     1 3],
           [0 0 0
@@ -88,7 +85,7 @@ A1 = ConstraintMatrix(
        Diagonal([1,
                    0]))
 #
-A2 = ConstraintMatrix(
+A2 = ConstraintMatrix(2,
       [0 0
        0 0],
           [3 0 1
@@ -97,70 +94,24 @@ A2 = ConstraintMatrix(
        Diagonal([0,
                    1]))
 
-constraints = [CSDP.cmat(s, i) for (i,s) in enumerate([A1, A2])]
+constraints = [A.csdp for A in [A1, A2]]
 
-n = 7
-k = 2
+CSDP.write_prob("prob.dat-s", C, b, constraints)
 
-CSDP.write_prob("prob.dat-s", n, k, C, b, constraints)
-
-
-X = CSDP.blockmatrix(0, C_NULL)
-Z = CSDP.blockmatrix(0, C_NULL)
 pobj = Cdouble[0.0]
 dobj = Cdouble[0.0]
-y = Cvector{Cdouble}(C_NULL)
 
-CSDP.initsoln(Cint(7),
-              Cint(2),
-              CSDP.blockmatrix(C),
-              fptr(b),
-              fptr(constraints),
-              ptr(X),
-              pointer(y),
-              ptr(Z))
-finalizer(X, free_blockmatrix)
-finalizer(Z, free_blockmatrix)
-finalizer(y, s -> Libc.free(s.e))
-
-println("\n\n**** X ******")
-CSDP.printm(X)
-println("\n\n**** Z ******")
-CSDP.printm(Z)
-println("\n\n**** y ******")
-println(y)
-
-println("\n\n**** constraints ******")
-println(constraints)
+X, y, Z = initsoln(C, b, constraints)
 
 # https://thenewphalls.wordpress.com/2014/03/21/capturing-output-in-julia/
 oldstdout = STDOUT
 rd, wr = redirect_stdout()
-ret = CSDP.easy_sdp(Cint(7),                # n
-                    Cint(2),                # k
-                    CSDP.blockmatrix(C),
-                    fptr(b),
-                    fptr(constraints),
-                    0.0,
-                    ptr(X),
-                    pointer(y),
-                    ptr(Z),
-                    pointer(pobj),
-                    pointer(dobj))
+pobj, dobj = easy_sdp(C, b, constraints, X, y, Z)
 
-output = ASCIIString(readavailable(rd))
+output = String(readavailable(rd))
 redirect_stdout(oldstdout)
-println("Bye")
-# println(output)
 
-println("\n\n**** X ******")
-CSDP.printm(X)
-println("\n\n**** Z ******")
-CSDP.printm(Z)
-println("\n\n**** y ******")
-println(y)
-
-y_sol = pointer_to_array(y.e + sizeof(Cdouble), k)
+#y_sol = pointer_to_array(y.e + sizeof(Cdouble), k)
 
 ## TODO
 # • return solution matrix X (as Julia::Matrix)
@@ -169,23 +120,23 @@ y_sol = pointer_to_array(y.e + sizeof(Cdouble), k)
 # • integrate in SemidefinitePorgramming.jl
 
 
-function Blockmatrix(X::CSDP.blockmatrix)
-    bs = pointer_to_array(X.blocks + sizeof(CSDP.blockrec), X.nblocks)
-    Bs = map(bs) do b
-        let s = b.blocksize, c = b.blockcategory, d = b.data._blockdatarec
-            if b.blockcategory == CSDP.MATRIX
-                pointer_to_array(d, (s, s))
-            elseif b.blockcategory == CSDP.DIAG
-                diagm(pointer_to_array(d + sizeof(Cdouble), s))
-            else
-                error("Unknown block category $(b.blockcategory)")
-            end
-        end
-    end
-    Blockmatrix(Bs, bs)
-end
+#   function Blockmatrix(X::CSDP.blockmatrix)
+#       bs = pointer_to_array(X.blocks + sizeof(CSDP.blockrec), X.nblocks)
+#       Bs = map(bs) do b
+#           let s = b.blocksize, c = b.blockcategory, d = b.data._blockdatarec
+#               if b.blockcategory == CSDP.MATRIX
+#                   pointer_to_array(d, (s, s))
+#               elseif b.blockcategory == CSDP.DIAG
+#                   diagm(pointer_to_array(d + sizeof(Cdouble), s))
+#               else
+#                   error("Unknown block category $(b.blockcategory)")
+#               end
+#           end
+#       end
+#       Blockmatrix(Bs, bs)
+#   end
+#
+#   X_sol = Blockmatrix(X)
+#   Z_sol = Blockmatrix(Z)
 
-X_sol = Blockmatrix(X)
-Z_sol = Blockmatrix(Z)
-
-CSDP.write_sol("prob.dat-s", n, k, X_sol, y, Z_sol)
+CSDP.write_sol("prob.sol", X, y, Z)

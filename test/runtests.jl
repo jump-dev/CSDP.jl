@@ -18,6 +18,11 @@ end
 n1 = ccall( (:norm1, CSDP.csdp), Float64, (Cint, Ptr{Cdouble}), length(vec), vec)
 @assert abs(n1 - 4) < 1e-15 "n1 = $n1"
 
-cd("../examples/") do 
-    include(joinpath(pwd(), "example.jl"))
+@testset "Example" begin
+    cd("../examples/") do
+        include(joinpath(pwd(), "example.jl"))
+        @test size(X) == (7, 7)
+        @test length(y) == 2
+        @test size(Z) == (7, 7)
+    end
 end
