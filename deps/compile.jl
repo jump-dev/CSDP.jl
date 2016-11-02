@@ -48,7 +48,7 @@ function compile_objs(JULIA_LAPACK=JULIA_LAPACK)
 
     for o in find_obj()
         info("CC $o.c")
-        @unix_only push!(cflags, "-fPIC")
+        @static if is_unix()  push!(cflags, "-fPIC") end
         run(`$CC $cflags -o $builddir/$o.o -c $srcdir/$o.c`)
     end
     objs = ["$builddir/$o.o" for o in find_obj()]
