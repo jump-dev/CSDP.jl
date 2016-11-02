@@ -32,7 +32,7 @@ provides(BuildProcess,
 
 # Prebuilt DLLs for Windows
 provides(Binaries,
-   URI("https://github.com/EQt/winlapack/blob/master/win-csdp-$WORD_SIZE.7z?raw=true"),
+   URI("https://github.com/EQt/winlapack/blob/master/win-csdp-$(Sys.WORD_SIZE).7z?raw=true"),
    [csdp, lapack, blas], unpacked_dir="usr", os = :Windows)
 
 
