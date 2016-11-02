@@ -3,7 +3,7 @@ using Glob.glob
 function find_obj(makefile_path=Makefile)
     # patch: symlink debugging source
     patchsrc = "$srcdir/$(basename(patchf))"
-    mylink = @windows? cp : symlink
+    mylink = @static is_windows() ? cp : symlink
     isfile(patchsrc) || mylink(patchf, patchsrc)
     makefile = readall(makefile_path)
     m = match(r"libsdp\.a\:(.+)", makefile)
@@ -43,7 +43,7 @@ function compile_objs(JULIA_LAPACK=JULIA_LAPACK)
         end
     else
         libs = ["-l$l" for l in ["blas", "lapack"]]
-        @windows_only unshift!(libs, "-L$libdir")
+        @static if is_windows() unshift!(libs, "-L$libdir") end
     end
 
     for o in find_obj()
