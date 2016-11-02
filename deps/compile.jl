@@ -5,7 +5,7 @@ function find_obj(makefile_path=Makefile)
     patchsrc = "$srcdir/$(basename(patchf))"
     mylink = @static is_windows() ? cp : symlink
     isfile(patchsrc) || mylink(patchf, patchsrc)
-    makefile = readall(makefile_path)
+    makefile = readstring(makefile_path)
     m = match(r"libsdp\.a\:(.+)", makefile)
     m != nothing || error("Could not find `libsdp.a` target in '$makefile_path'")
     objs = matchall(r"\w+\.o", m.captures[1])
@@ -17,7 +17,7 @@ function patch_int()
         info("Patching INT --> LONG INT")
         cfiles = [glob("*.c", srcdir); joinpath(srcdir, "..", "include", "declarations.h")]
         for cfile in cfiles
-            content = readall(cfile)
+            content = readstring(cfile)
             content = replace(content, r"int ([^(]+);", s"long int \1;")
             open(cfile, "w") do io
                 print(io, content)
