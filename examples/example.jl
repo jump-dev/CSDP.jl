@@ -43,28 +43,6 @@ using CSDP
 
 =#
 
-# if !isdefined(:C1)
-#     C1 = Float64[[2 1]
-#                  [1 2]]
-# end
-# println("&C1 = $(pointer(C1))")
-# C1b = CSDP.brec(C1)
-# println("brec(C1) = $C1b")
-# CSDP.print_block(C1b)
-
-# if !isdefined(:C2)
-#     C2 = Float64[[3 0 1]
-#                  [0 2 0]
-#                  [1 0 3]]
-#     println("&C2 = $(pointer(C2))")
-# end
-
-# C3 = Diagonal{Float64}([0, 0])
-
-# println("&C3 = $(pointer(diag(C3)))")
-
-# C = Blockmatrix(C1, C2, C3)
-
 C = BlockMatrix(
    [2 1
     1 2],
@@ -84,7 +62,7 @@ A1 = ConstraintMatrix(1,
            0 0 0],
        Diagonal([1,
                    0]))
-#
+
 A2 = ConstraintMatrix(2,
       [0 0
        0 0],
@@ -110,8 +88,6 @@ pobj, dobj = easy_sdp(C, b, constraints, X, y, Z)
 
 output = String(readavailable(rd))
 redirect_stdout(oldstdout)
-
-#y_sol = pointer_to_array(y.e + sizeof(Cdouble), k)
 
 ## TODO
 # • return solution matrix X (as Julia::Matrix)
