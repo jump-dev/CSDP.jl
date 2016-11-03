@@ -44,7 +44,13 @@ function compile_objs(JULIA_LAPACK=JULIA_LAPACK)
     else
         libs = ["-l$l" for l in ["blas", "lapack"]]
         @static if is_windows() unshift!(libs, "-L$libdir") end
+        # libs = @static is_windows() ? ["-L$libdir", "-latlas"] : ["-l$l" for l in ["blas", "lapack"]]
+        # @static if is_windows()
+        #     unshift!(libs, "-march=x86-64")
+        #     push!(cflags, "-march=x86-64")
+        # end
     end
+
 
     for o in find_obj()
         info("CC $o.c")
