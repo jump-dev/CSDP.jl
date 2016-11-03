@@ -26,13 +26,16 @@ For Windows, a pre-compiled DLL is downloaded (unless you configure the `build.j
 <!-- On Windows you need the MinGW `gcc` compiler available in the `PATH`.
     Currently, only the Win32 builds work. -->
 
-## Next Steps
-- [x] Reconstruct example program.
-- [x] Therefore, one needs to reconstruct the `include/blockmat.h` types.
-- [ ] Supertype for all Matrix-Types
-- [ ] Maybe port `libcsdp` to use 64bit Lapack, aka replace “some `int`s” by `long int` (the variables used in a Lapack call).  When this was done, one could set `JULIA_LAPACK` to `true` in the `deps/constants.jl` file.
+
+## Next Steps (TODOs)
+- [ ] Return solution matrix X (as Julia::Matrix)
+- [ ] Show a Blockmatrix accordingly
+- [ ] Integrate in SemidefinitePorgramming.jl
+- [ ] Make more user friendly interface
+- [ ] Maybe port `libcsdp` to use 64bit Lapack, aka replace “some `int`s” by `long int` (the variables used in a Lapack call).
+      When this was done, one could set `JULIA_LAPACK` to `true` in the `deps/constants.jl` file.
       The [`pycparser`](https://github.com/eliben/pycparser) or `Clang.cindex` might be useful for that.
 - [ ] Add a C header for the Lapack routines in order to check the types and reduce the possibility to crash.
       Use http://www.netlib.org/clapack/clapack.h as starting point.
-- [ ] Think about an own array type to circumvent the 1-index problems in `libcsdp`.
+- [ ] Maybe think about an own array type to circumvent the 1-index problems in `libcsdp`.
 - [ ] Map Julia's sparse arrays to `sparsematrixblock`.

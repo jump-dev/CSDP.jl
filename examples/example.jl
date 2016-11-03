@@ -89,11 +89,4 @@ pobj, dobj = easy_sdp(C, b, constraints, X, y, Z)
 output = String(readavailable(rd))
 redirect_stdout(oldstdout)
 
-## TODO
-# • return solution matrix X (as Julia::Matrix)
-# • show a Blockmatrix accordingly
-# • make more user friendly interface
-# • integrate in SemidefinitePorgramming.jl
-
-
 CSDP.write_sol("prob.sol", X, y, Z)
