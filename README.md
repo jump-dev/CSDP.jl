@@ -39,3 +39,5 @@ For Windows, a pre-compiled DLL is downloaded (unless you configure the `build.j
       Use http://www.netlib.org/clapack/clapack.h as starting point.
 - [ ] Maybe think about an own array type to circumvent the 1-index problems in `libcsdp`.
 - [ ] Map Julia's sparse arrays to `sparsematrixblock`.
+- [ ] Upload `libcsdp.dll` for Windows via Appveyor deployment as described at
+      [JuliaCon](https://www.youtube.com/watch?v=XKdKdfHB2KM&index=12&list=PLP8iPy9hna6SQPwZUDtAM59-wPzCPyD_S)
