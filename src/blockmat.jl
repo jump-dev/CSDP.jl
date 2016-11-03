@@ -88,6 +88,24 @@ function BlockMatrix(csdp::blockmatrix)
     BlockMatrix(jblocks, blocks, csdp)
 end
 
+## Old function for that...
+#   function Blockmatrix(X::CSDP.blockmatrix)
+#       bs = pointer_to_array(X.blocks + sizeof(CSDP.blockrec), X.nblocks)
+#       Bs = map(bs) do b
+#           let s = b.blocksize, c = b.blockcategory, d = b.data._blockdatarec
+#               if b.blockcategory == CSDP.MATRIX
+#                   pointer_to_array(d, (s, s))
+#               elseif b.blockcategory == CSDP.DIAG
+#                   diagm(pointer_to_array(d + sizeof(Cdouble), s))
+#               else
+#                   error("Unknown block category $(b.blockcategory)")
+#               end
+#           end
+#       end
+#       Blockmatrix(Bs, bs)
+#   end
+
+
 function size(A::BlockMatrix)
     n = sum([block.csdp.blocksize for block in A.jblocks])
     (n, n)

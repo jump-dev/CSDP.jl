@@ -96,23 +96,4 @@ redirect_stdout(oldstdout)
 # • integrate in SemidefinitePorgramming.jl
 
 
-#   function Blockmatrix(X::CSDP.blockmatrix)
-#       bs = pointer_to_array(X.blocks + sizeof(CSDP.blockrec), X.nblocks)
-#       Bs = map(bs) do b
-#           let s = b.blocksize, c = b.blockcategory, d = b.data._blockdatarec
-#               if b.blockcategory == CSDP.MATRIX
-#                   pointer_to_array(d, (s, s))
-#               elseif b.blockcategory == CSDP.DIAG
-#                   diagm(pointer_to_array(d + sizeof(Cdouble), s))
-#               else
-#                   error("Unknown block category $(b.blockcategory)")
-#               end
-#           end
-#       end
-#       Blockmatrix(Bs, bs)
-#   end
-#
-#   X_sol = Blockmatrix(X)
-#   Z_sol = Blockmatrix(Z)
-
 CSDP.write_sol("prob.sol", X, y, Z)
