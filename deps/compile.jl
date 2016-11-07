@@ -3,8 +3,7 @@ using Glob.glob
 function find_obj(makefile_path=Makefile)
     # patch: symlink debugging source
     patchsrc = "$srcdir/$(basename(patchf))"
-    mylink = @static is_windows() ? cp : symlink
-    isfile(patchsrc) || mylink(patchf, patchsrc)
+    isfile(patchsrc) || cp(patchf, patchsrc)
     makefile = readstring(makefile_path)
     m = match(r"libsdp\.a\:(.+)", makefile)
     m != nothing || error("Could not find `libsdp.a` target in '$makefile_path'")
