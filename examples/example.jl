@@ -1,5 +1,4 @@
 using CSDP
-# reload("CSDP")
 
 #=
 # Example copied from `example/example.c`
@@ -76,17 +75,8 @@ constraints = [A.csdp for A in [A1, A2]]
 
 CSDP.write_prob("prob.dat-s", C, b, constraints)
 
-pobj = Cdouble[0.0]
-dobj = Cdouble[0.0]
-
 X, y, Z = initsoln(C, b, constraints)
 
-# https://thenewphalls.wordpress.com/2014/03/21/capturing-output-in-julia/
-oldstdout = STDOUT
-rd, wr = redirect_stdout()
 pobj, dobj = easy_sdp(C, b, constraints, X, y, Z)
-
-output = String(readavailable(rd))
-redirect_stdout(oldstdout)
 
 CSDP.write_sol("prob.sol", X, y, Z)
