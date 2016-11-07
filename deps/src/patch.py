@@ -41,5 +41,11 @@ def clapack_header(clapack_h = "clapack.h"):
 
         
 fnames = [c.spelling for c in function_decl()]
-ms = [re.match("([di].+)_", fn) for fn in fnames]
-fnames = [m.group(1) for m in ms if m]
+fnames = [fn for fn in fnames if re.match("([di].+)_", fn)]
+
+clapack = clapack_header()
+lapack_fs = function_decl("clapack.h")
+cs = {c.spelling : c for c in lapack_fs if c.spelling in fnames}
+
+for c in cs.values():
+    print(clapack[c.extent.start.offset:c.extent.end.offset])
