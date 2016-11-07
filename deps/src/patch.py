@@ -8,6 +8,7 @@ import os
 import re
 import requests
 import sys
+import shutil
 
 
 HEADER    = "Csdp-6.1.1/include/declarations.h"
@@ -50,8 +51,8 @@ def substr(s, c):
     return s[c.extent.start.offset:c.extent.end.offset+1]
 
 
-def patch(out = sys.stdout):
-    cursors = function_decl(HEADER)
+def patch(origin_header, out = sys.stdout):
+    cursors = function_decl(origin_header)
     wrong = {c.spelling : c for c in cursors
                if re.match(LAPACK_RE, c.spelling)}
     fnames = [c.spelling for c in cursors
@@ -61,7 +62,7 @@ def patch(out = sys.stdout):
     lapack_fs = function_decl("clapack.h")
     correct = {c.spelling : c for c in lapack_fs if c.spelling in fnames}
 
-    header = open(HEADER).read()
+    header = open(origin_header).read()
     pos = 0
     for fn in fnames:
         c = correct[fn]
@@ -73,7 +74,15 @@ def patch(out = sys.stdout):
             print(open("lapack.h").read(), file=out)
         print(repl, file=out)
         pos = b+1
+    print(header[pos:], file=out)
 
 
 if __name__ == "__main__":
-    patch()
+    header_backup = HEADER + ".bak.h"
+    header_new    = HEADER + ".new"
+    if not os.path.exists(header_backup):
+        shutil.copy(HEADER, header_backup)
+        print("Creating backup " + header_backup)
+    with open(header_new, "w") as io:
+        patch(header_backup, io)
+    shutil.move(header_new, HEADER)
