@@ -2,8 +2,6 @@ using Glob.glob
 
 function find_obj(makefile_path=Makefile)
     # patch: symlink debugging source
-    patchsrc = "$srcdir/$(basename(patchf))"
-    isfile(patchsrc) || cp(patchf, patchsrc)
     makefile = readstring(makefile_path)
     m = match(r"libsdp\.a\:(.+)", makefile)
     m != nothing || error("Could not find `libsdp.a` target in '$makefile_path'")
@@ -12,6 +10,9 @@ function find_obj(makefile_path=Makefile)
 end
 
 function patch_int()
+    let patchsrc = "$srcdir/$(basename(patchf))"
+        isfile(patchsrc) || cp(patchf, patchsrc)
+    end
     if JULIA_LAPACK
         info("Patching INT --> integer")
         cfiles = [glob("*.c", srcdir); [joinpath(srcdir, "..", "include", "$d.h")
