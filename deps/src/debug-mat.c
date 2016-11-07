@@ -3,11 +3,11 @@
 
 
 void printb(struct blockrec b) {
-  integer i;
-  integer size;
+  int i;
+  int size;
   printf("blockrec:\n");
-  printf(" blockcategory: %ld\n", b.blockcategory);
-  printf(" blocksize:     %ld\n", b.blocksize);
+  printf(" blockcategory: %d\n", b.blockcategory);
+  printf(" blocksize:     %d\n", b.blocksize);
   printf(" data.vec:      %p\n", b.data.vec);
   if (b.blocksize <= 16) {
     switch (b.blockcategory) {
@@ -21,7 +21,7 @@ void printb(struct blockrec b) {
         printf("  %f\n", b.data.vec[i]);
       break;
     default:
-      fprintf(stderr, "UNKNOWN blockcat: %ld",
+      fprintf(stderr, "UNKNOWN blockcat: %d",
               (int) b.blockcategory);
     }
   }
@@ -34,28 +34,28 @@ void printb_(struct blockrec *b) {
 
 
 void print_sizeof() {
-  printf("sizeof(void*)                 %ld\n",
+  printf("sizeof(void*)                 %d\n",
          (int) sizeof(void*));
-  printf("sizeof(int)                   %ld\n",
+  printf("sizeof(int)                   %d\n",
          (int) sizeof(int));
-  printf("sizeof(enum blockcat)         %ld\n",
+  printf("sizeof(enum blockcat)         %d\n",
          (int) sizeof(enum blockcat));
-  printf("sizeof(struct blockrec)       %ld\n",
+  printf("sizeof(struct blockrec)       %d\n",
          (int) sizeof(struct blockrec));
-  printf("sizeof(struct blockmatrix)    %ld\n",
+  printf("sizeof(struct blockmatrix)    %d\n",
          (int) sizeof(struct blockmatrix));
-  printf("sizeof(struct sparseblock)    %ld\n",
+  printf("sizeof(struct sparseblock)    %d\n",
          (int) sizeof(struct sparseblock));
 }
 
 
 
 void printm(struct blockmatrix A) {
-  integer blk;
-  printf("A.nblocks = %ld\n", A.nblocks);
+  int blk;
+  printf("A.nblocks = %d\n", A.nblocks);
   printf("A.blocks  = %p\n", A.blocks);
   for (blk=1; blk <= A.nblocks; blk++) {
-    printf("block[%ld]: %p\n", blk, &A.blocks[blk]);
+    printf("block[%d]: %p\n", blk, &A.blocks[blk]);
     printb(A.blocks[blk]);
   }
 
@@ -64,20 +64,20 @@ void printm(struct blockmatrix A) {
 FILE *fid;
 
 void print_sparse_block(struct sparseblock *b) {
-  integer i;
+  int i;
   fid = stdout;
   fprintf(fid, "\n* Printing block: %p\n", b);
   if (b == NULL)
     return;
   fprintf(fid, " next: %p\n", b->next);
   fprintf(fid, " nextbyblock: %p\n", b->nextbyblock);
-  fprintf(fid, " constraintnum: %ld\n", b->constraintnum);
-  fprintf(fid, " blocknum: %ld\n", b->blocknum);
-  fprintf(fid, " blocksize: %ld\n", b->blocksize);
-  fprintf(fid, " numentries: %ld\n", b->numentries);
+  fprintf(fid, " constraintnum: %d\n", b->constraintnum);
+  fprintf(fid, " blocknum: %d\n", b->blocknum);
+  fprintf(fid, " blocksize: %d\n", b->blocksize);
+  fprintf(fid, " numentries: %d\n", b->numentries);
   if (b->blocksize <= 30) {
     for (i = 1; i <= b->numentries; i++) {
-      fprintf(fid, "  block[%ld, %ld] = %f\n",
+      fprintf(fid, "  block[%d, %d] = %f\n",
               b->iindices[i],
               b->jindices[i],
               b->entries[i]);
@@ -88,10 +88,10 @@ void print_sparse_block(struct sparseblock *b) {
   print_sparse_block(b->next);
 }
 
-void  print_constraints(integer k,
+void  print_constraints(int k,
                         struct constraintmatrix *constraints)
 {
-  integer i, j;
+  int i, j;
   fid = stdout;
   struct sparseblock *p;
 
@@ -99,7 +99,7 @@ void  print_constraints(integer k,
 
   for (i=1; i<=k; i++)
     {
-      fprintf(fid, "\n\nprinting constraints[%ld].blocks\n", i);
+      fprintf(fid, "\n\nprinting constraints[%d].blocks\n", i);
       p=constraints[i].blocks;
       while (p != NULL)
         {
@@ -108,8 +108,8 @@ void  print_constraints(integer k,
           fprintf(fid, "\n");
           for (j=1; j<=p->numentries; j++)
             {
-              fprintf(fid, "i=%ld, j=%ld\n", i, j);
-              fprintf(fid,"%ld %ld %ld %ld %f \n",
+              fprintf(fid, "i=%d, j=%d\n", i, j);
+              fprintf(fid,"%d %d %d %d %f \n",
                       i,
                       p->blocknum,
                       p->iindices[j],
