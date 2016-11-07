@@ -13,12 +13,13 @@ function find_obj(makefile_path=Makefile)
 end
 
 function patch_int()
-    if false #JULIA_LAPACK
-        info("Patching INT --> LONG INT")
+    if JULIA_LAPACK
+        info("Patching INT --> integer")
         cfiles = [glob("*.c", srcdir); joinpath(srcdir, "..", "include", "declarations.h")]
         for cfile in cfiles
             content = readstring(cfile)
-            content = replace(content, r"int ([^(]+);", s"long int \1;")
+            content = replace(content, r"int ([^(]+);", s"integer \1;")
+            content = replace(content, r"%d", s"%ld")
             open(cfile, "w") do io
                 print(io, content)
             end
@@ -34,7 +35,7 @@ function compile_objs(JULIA_LAPACK=JULIA_LAPACK)
         libs = ["-L$(dirname(lapack))", "-l$lflag"]
         info(libs)
         if endswith(LinAlg.LAPACK.liblapack, "64_")
-            push!(cflags, "-march=x86-64", "-m64")
+            push!(cflags, "-march=x86-64", "-m64", "-Dinteger=long")
             for f in [:dnrm2, :dasum, :ddot, :idamax, :dgemm, :dgemv, :dger,
                       :dtrsm, :dtrmv, :dpotrf, :dpotrs, :dpotri, :dtrtri]
                 push!(cflags, "-D$(f)_=$(f)_64_")

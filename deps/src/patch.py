@@ -70,8 +70,6 @@ def patch(origin_header, out = sys.stdout):
         a, b = w.extent.start.offset, w.extent.end.offset
         repl = substr(clapack, c)
         print(header[pos:a], file=out)
-        if pos == 0:
-            print(open("lapack.h").read(), file=out)
         print(repl, file=out)
         pos = b+1
     print(header[pos:], file=out)
