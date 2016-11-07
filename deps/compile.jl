@@ -9,17 +9,36 @@ function find_obj(makefile_path=Makefile)
     m = match(r"libsdp\.a\:(.+)", makefile)
     m != nothing || error("Could not find `libsdp.a` target in '$makefile_path'")
     objs = matchall(r"\w+\.o", m.captures[1])
-    objs = UTF8String[splitext(o)[1] for o in [objs; basename(patchf)]]
+    objs = String[splitext(o)[1] for o in [objs; basename(patchf)]]
 end
 
 function patch_int()
     if JULIA_LAPACK
         info("Patching INT --> integer")
-        cfiles = [glob("*.c", srcdir); joinpath(srcdir, "..", "include", "declarations.h")]
+        cfiles = [glob("*.c", srcdir); [joinpath(srcdir, "..", "include", "$d.h")
+                                        for d in ["declarations", "blockmat", "parameters"]]]
         for cfile in cfiles
+            # if basename(cfile) == "initparams.c"
+            #     println("Skipping ...")
+            #     continue
+            # end
+            println(cfile)
             content = readstring(cfile)
             content = replace(content, r"int ([^(]+);", s"integer \1;")
-            content = replace(content, r"%d", s"%ld")
+            content = replace(content, r"int ", s"integer ")
+            content = replace(content, r"int \*", s"integer *")
+            content = replace(content, r"integer mycompare", s"int mycompare")
+            if true # || splitext(basename(cfile))[1] in ["debug-matc",
+                    #                             "readsol",
+                    #                             "linesearch",
+                    #                             "makefill",
+                    #                             "writeprob",
+                    #                             "writesol",
+                    #                             "initparams",
+                    #                             "sdp"]
+                content = replace(content, r"%d", s"%ld")
+                content = replace(content, r"%2d", s"%2ld")
+            end
             open(cfile, "w") do io
                 print(io, content)
             end
