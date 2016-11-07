@@ -6,7 +6,7 @@ void printb(struct blockrec b) {
   int i;
   int size;
   printf("blockrec:\n");
-  printf(" blockcategory: %d\n", b.blockcategory);
+  printf(" blockcategory: %d\n", (int) b.blockcategory);
   printf(" blocksize:     %d\n", b.blocksize);
   printf(" data.vec:      %p\n", b.data.vec);
   if (b.blocksize <= 16) {
