@@ -3,15 +3,16 @@
 from clang.cindex import Index
 from  clang.cindex import CursorKind as C
 import os
+import re
 
 HEADER = "Csdp-6.1.1/include/declarations.h"
 
-idx = Index.create()
-tu = idx.parse(HEADER)
-children = list(tu.cursor.get_children())
-
-lapack = [c.spelling for c in children
-          if c.kind == C.FUNCTION_DECL and c.spelling.endswith("_")]
+def function_decl(header = HEADER):
+    """Return list of cursors to all function declarations in header"""
+    idx = Index.create()
+    tu = idx.parse(header)
+    return [c for c in tu.cursor.get_children()
+            if c.kind == C.FUNCTION_DECL]
 
 
 def cblas_header(cblas_h = "cblas.h"):
@@ -26,5 +27,19 @@ def cblas_header(cblas_h = "cblas.h"):
     else:
         return open(cblas_h).read()
 
+def clapack_header(clapack_h = "clapack.h"):
+    """Return the clapack header as string (is downloaded if not found)"""
+    clapack_url = "http://www.netlib.org/clapack/clapack.h"
+    if not os.path.exists(clapack_h):
+        r = requests.get(clapack_url)
+        assert r.status_code == 200
+        with open(clapack_h, "w") as io:
+            io.write(r.content)
+        return r.content
+    else:
+        return open(clapack_h).read()
 
         
+fnames = [c.spelling for c in function_decl()]
+ms = [re.match("([di].+)_", fn) for fn in fnames]
+fnames = [m.group(1) for m in ms if m]
