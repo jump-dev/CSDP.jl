@@ -17,27 +17,15 @@ function patch_int()
         cfiles = [glob("*.c", srcdir); [joinpath(srcdir, "..", "include", "$d.h")
                                         for d in ["declarations", "blockmat", "parameters"]]]
         for cfile in cfiles
-            # if basename(cfile) == "initparams.c"
-            #     println("Skipping ...")
-            #     continue
-            # end
-            println(cfile)
+            # println(cfile)
             content = readstring(cfile)
             content = replace(content, r"int ([^(]+);", s"integer \1;")
             content = replace(content, r"int ", s"integer ")
             content = replace(content, r"int \*", s"integer *")
             content = replace(content, r"integer mycompare", s"int mycompare")
-            if true # || splitext(basename(cfile))[1] in ["debug-matc",
-                    #                             "readsol",
-                    #                             "linesearch",
-                    #                             "makefill",
-                    #                             "writeprob",
-                    #                             "writesol",
-                    #                             "initparams",
-                    #                             "sdp"]
-                content = replace(content, r"%d", s"%ld")
-                content = replace(content, r"%2d", s"%2ld")
-            end
+            content = replace(content, r"\(int\)", s"(integer)")
+            content = replace(content, r"%d", s"%ld")
+            content = replace(content, r"%2d", s"%2ld")
             open(cfile, "w") do io
                 print(io, content)
             end
