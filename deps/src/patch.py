@@ -1,11 +1,14 @@
+#!/usr/bin/env python
 # Starting point https://github.com/llvm-mirror/clang/blob/master/bindings/python/examples/cindex/cindex-dump.py
 
 from clang.cindex import Index
 from  clang.cindex import CursorKind as C
 import os
 import re
+import requests
 
-HEADER = "Csdp-6.1.1/include/declarations.h"
+HEADER    = "Csdp-6.1.1/include/declarations.h"
+LAPACK_RE = "([di].+)_"
 
 def function_decl(header = HEADER):
     """Return list of cursors to all function declarations in header"""
@@ -39,13 +42,29 @@ def clapack_header(clapack_h = "clapack.h"):
     else:
         return open(clapack_h).read()
 
-        
-fnames = [c.spelling for c in function_decl()]
-fnames = [fn for fn in fnames if re.match("([di].+)_", fn)]
+
+def substr(s, c):
+    return s[c.extent.start.offset:c.extent.end.offset+1]
+
+cursors = function_decl(HEADER)
+wrong = {c.spelling : c for c in cursors
+           if re.match(LAPACK_RE, c.spelling)}
+fnames = [c.spelling for c in cursors
+          if re.match(LAPACK_RE, c.spelling)]
 
 clapack = clapack_header()
 lapack_fs = function_decl("clapack.h")
-cs = {c.spelling : c for c in lapack_fs if c.spelling in fnames}
+correct = {c.spelling : c for c in lapack_fs if c.spelling in fnames}
 
-for c in cs.values():
-    print(clapack[c.extent.start.offset:c.extent.end.offset])
+header = open(HEADER).read()
+pos = 0
+for fn in fnames:
+    c = correct[fn]
+    w = wrong[fn]
+    a, b = w.extent.start.offset, w.extent.end.offset
+    repl = substr(clapack, c)
+    print(header[pos:a])
+    if pos == 0:
+        print(open("lapack.h").read())
+    print(repl)
+    pos = b+1
