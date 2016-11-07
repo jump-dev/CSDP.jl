@@ -20,15 +20,15 @@ function patch_int()
         for cfile in cfiles
             # println(cfile)
             content = readstring(cfile)
-            content = replace(content, r"int ([^(]+);", s"integer \1;")
-            content = replace(content, r"int ", s"integer ")
-            content = replace(content, r"int \*", s"integer *")
-            content = replace(content, r"integer mycompare", s"int mycompare")
-            content = replace(content, r"\(int\)", s"(integer)")
-            content = replace(content, r"%d", s"%ld")
-            content = replace(content, r"%2d", s"%2ld")
-            open(cfile, "w") do io
-                print(io, content)
+            for (re,subst) in
+                [(r"int ([^(]+);", s"integer \1;"),
+                 (r"int ", s"integer "),
+                 (r"int \*", s"integer *"),
+                 (r"integer mycompare", s"int mycompare"),
+                 (r"\(int\)", s"(integer)"),
+                 (r"%d", s"%ld"),
+                 (r"%2d", s"%2ld")]
+                content = replace(content, re, subst)
             end
         end
     end
