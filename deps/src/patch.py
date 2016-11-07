@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 # Starting point https://github.com/llvm-mirror/clang/blob/master/bindings/python/examples/cindex/cindex-dump.py
 
+from __future__ import print_function
 from clang.cindex import Index
 from  clang.cindex import CursorKind as C
 import os
 import re
 import requests
+import sys
+
 
 HEADER    = "Csdp-6.1.1/include/declarations.h"
 LAPACK_RE = "([di].+)_"
@@ -46,25 +49,31 @@ def clapack_header(clapack_h = "clapack.h"):
 def substr(s, c):
     return s[c.extent.start.offset:c.extent.end.offset+1]
 
-cursors = function_decl(HEADER)
-wrong = {c.spelling : c for c in cursors
-           if re.match(LAPACK_RE, c.spelling)}
-fnames = [c.spelling for c in cursors
-          if re.match(LAPACK_RE, c.spelling)]
 
-clapack = clapack_header()
-lapack_fs = function_decl("clapack.h")
-correct = {c.spelling : c for c in lapack_fs if c.spelling in fnames}
+def patch(out = sys.stdout):
+    cursors = function_decl(HEADER)
+    wrong = {c.spelling : c for c in cursors
+               if re.match(LAPACK_RE, c.spelling)}
+    fnames = [c.spelling for c in cursors
+              if re.match(LAPACK_RE, c.spelling)]
 
-header = open(HEADER).read()
-pos = 0
-for fn in fnames:
-    c = correct[fn]
-    w = wrong[fn]
-    a, b = w.extent.start.offset, w.extent.end.offset
-    repl = substr(clapack, c)
-    print(header[pos:a])
-    if pos == 0:
-        print(open("lapack.h").read())
-    print(repl)
-    pos = b+1
+    clapack = clapack_header()
+    lapack_fs = function_decl("clapack.h")
+    correct = {c.spelling : c for c in lapack_fs if c.spelling in fnames}
+
+    header = open(HEADER).read()
+    pos = 0
+    for fn in fnames:
+        c = correct[fn]
+        w = wrong[fn]
+        a, b = w.extent.start.offset, w.extent.end.offset
+        repl = substr(clapack, c)
+        print(header[pos:a], file=out)
+        if pos == 0:
+            print(open("lapack.h").read(), file=out)
+        print(repl, file=out)
+        pos = b+1
+
+
+if __name__ == "__main__":
+    patch()
