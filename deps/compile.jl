@@ -13,7 +13,7 @@ function find_obj(makefile_path=Makefile)
 end
 
 function patch_int()
-    if JULIA_LAPACK
+    if false #JULIA_LAPACK
         info("Patching INT --> LONG INT")
         cfiles = [glob("*.c", srcdir); joinpath(srcdir, "..", "include", "declarations.h")]
         for cfile in cfiles
@@ -39,7 +39,7 @@ function compile_objs(JULIA_LAPACK=JULIA_LAPACK)
                       :dtrsm, :dtrmv, :dpotrf, :dpotrs, :dpotri, :dtrtri]
                 push!(cflags, "-D$(f)_=$(f)_64_")
             end
-            # info(cflags)
+            info(cflags)
         end
     else
         libs = ["-l$l" for l in ["blas", "lapack"]]
