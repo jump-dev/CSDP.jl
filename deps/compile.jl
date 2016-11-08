@@ -14,7 +14,7 @@ function patch_int()
         isfile(patchsrc) || cp(patchf, patchsrc)
     end
     if JULIA_LAPACK
-        info("Patching INT --> integer")
+        info("Patching int --> integer")
         cfiles = [glob("*.c", srcdir); [joinpath(srcdir, "..", "include", "$d.h")
                                         for d in ["declarations",
                                                   "blockmat",
@@ -32,6 +32,9 @@ function patch_int()
                  (r"%2d", s"%2ld"),
                  (r" int ", s" integer ")]
                 content = replace(content, re, subst)
+            end
+            open(cfile, "w") do io
+                print(io, content)
             end
         end
     end
