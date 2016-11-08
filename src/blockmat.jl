@@ -16,7 +16,7 @@ end
 export fptr, ptr
 
 function mywrap(X::blockmatrix)
-    finalizer(X, free_blockmatrix)
+    # finalizer(X, free_blockmatrix)
     BlockMatrix(X)
 end
 
