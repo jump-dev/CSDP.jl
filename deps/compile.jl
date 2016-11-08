@@ -58,6 +58,8 @@ function compile_objs(JULIA_LAPACK=JULIA_LAPACK)
                 end
             end
             info(cflags)
+        else
+            # push!(cflags, "-Dinteger=int")
         end
     else
         libs = ["-l$l" for l in ["blas", "lapack"]]
