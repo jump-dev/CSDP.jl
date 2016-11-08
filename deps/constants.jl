@@ -11,5 +11,5 @@ libdir      = joinpath(prefix, @static is_windows() ? "bin" : "lib/")
 dlpath      = joinpath(libdir, libname)
 Makefile    = joinpath(srcdir, "Makefile")
 
-JULIA_LAPACK = true
+JULIA_LAPACK = false
 CC = get(ENV, "CCOMPILER", "gcc")
