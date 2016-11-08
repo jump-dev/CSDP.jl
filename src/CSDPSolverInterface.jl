@@ -33,8 +33,9 @@ function setvartype!(m::CSDPMathProgModel, vtype, blk, i, j)
 end
 
 function loadproblem!(m::CSDPMathProgModel, filename::AbstractString)
-    if endswith(filename,".dat-s") || endswith(filename,".dat-s.gz")
-       read_sdpa(m.inner,filename)
+    if endswith(filename,".dat-s")
+       m.C, m.b, As = read_prob(filename)
+       m.As = [ConstraintMatrix(As[i], i) for i in 1:length(As)]
     else
        error("unrecognized input format extension in $filename")
     end
@@ -58,7 +59,6 @@ end
 
 function optimize!(m::CSDPMathProgModel)
     As = map(A->A.csdp, m.As)
-    write_prob("prob.dat-s", m.C, m.b, As)
 
     m.X, m.y, m.Z = initsoln(m.C, m.b, As)
     m.status, m.pobj, m.dobj = easy_sdp(m.C, m.b, As, m.X, m.y, m.Z)
