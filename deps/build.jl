@@ -6,8 +6,8 @@ include("constants.jl")
 include("compile.jl")
 
 # info("libname = $libname")
-blas = library_dependency("libblas", alias=["libblas.dll"])
-lapack = library_dependency("liblapack", alias=["liblapack.dll"])
+# blas = library_dependency("libblas", alias=["libblas.dll"])
+# lapack = library_dependency("liblapack", alias=["liblapack.dll"])
 
 # LaPack/BLAS dependencies
 if !JULIA_LAPACK
