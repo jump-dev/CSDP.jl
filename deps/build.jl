@@ -46,4 +46,7 @@ provides(BuildProcess,
 #    URI("https://github.com/EQt/winlapack/blob/master/win-csdp-$(Sys.WORD_SIZE).7z?raw=true"),
 #    [csdp, lapack, blas], unpacked_dir="usr", os = :Windows)
 
+
+@static if is_windows()  push!(BinDeps.defaults, BuildProcess) end
+
 @BinDeps.install Dict(:csdp => :csdp)
