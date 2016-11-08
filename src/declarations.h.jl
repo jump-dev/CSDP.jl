@@ -1,6 +1,7 @@
 # Julia wrapper for header: include/declarations.h
-# Automatically generated using Clang.jl wrap_c, version 0.0.0
+# Automatically generated using Clang.jl wrap_c, version 0.0.0 and then modified as some places
 
+export read_prob
 
 function triu(A::blockmatrix)
     ccall((:triu,CSDP.csdp),Void,(blockmatrix,),A)
@@ -178,8 +179,12 @@ function initparams(params::Ptr{paramstruc},pprintlevel::Ptr{Cint})
     ccall((:initparams,CSDP.csdp),Void,(Ptr{paramstruc},Ptr{Cint}),params,pprintlevel)
 end
 
-function initsoln(n::Cint,k::Cint,C::blockmatrix,a::Ptr{Cdouble},constraints::Ptr{constraintmatrix},pX0::Ptr{blockmatrix},py0::Ptr{Ptr{Cdouble}},pZ0::Ptr{blockmatrix})
-    ccall((:initsoln,CSDP.csdp),Void,(Cint,Cint,blockmatrix,Ptr{Cdouble},Ptr{constraintmatrix},Ptr{blockmatrix},Ptr{Ptr{Cdouble}},Ptr{blockmatrix}),n,k,C,a,constraints,pX0,py0,pZ0)
+function initsoln(n::Cint,k::Cint,C::blockmatrix,a::Ptr{Cdouble},constraints::Ptr{constraintmatrix})
+    X = Ref{blockmatrix}(blockmatrix(0, C_NULL))
+    y = Ref{Ptr{Cdouble}}(C_NULL)
+    Z = Ref{blockmatrix}(blockmatrix(0, C_NULL))
+    ccall((:initsoln,CSDP.csdp),Void,(Cint,Cint,blockmatrix,Ptr{Cdouble},Ptr{constraintmatrix},Ref{blockmatrix},Ref{Ptr{Cdouble}},Ref{blockmatrix}),n,k,C,a,constraints,X,y,Z)
+    X[], y[], Z[]
 end
 
 function trans(A::blockmatrix)
@@ -206,8 +211,22 @@ function read_sol(fname::Ptr{UInt8},n::Cint,k::Cint,C::blockmatrix,pX::Ptr{block
     ccall((:read_sol,CSDP.csdp),Cint,(Ptr{UInt8},Cint,Cint,blockmatrix,Ptr{blockmatrix},Ptr{Ptr{Cdouble}},Ptr{blockmatrix}),fname,n,k,C,pX,py,pZ)
 end
 
-function read_prob(fname::Ptr{UInt8},pn::Ptr{Cint},pk::Ptr{Cint},pC::Ptr{blockmatrix},pa::Ptr{Ptr{Cdouble}},pconstraints::Ptr{Ptr{constraintmatrix}},printlevel::Cint)
-    ccall((:read_prob,CSDP.csdp),Cint,(Ptr{UInt8},Ptr{Cint},Ptr{Cint},Ptr{blockmatrix},Ptr{Ptr{Cdouble}},Ptr{Ptr{constraintmatrix}},Cint),fname,pn,pk,pC,pa,pconstraints,printlevel)
+function read_prob(fname::String,printlevel::Integer=0)
+    n = Ref{Cint}(0)
+    k = Ref{Cint}(0)
+    C = Ref{blockmatrix}(blockmatrix(0, C_NULL))
+    a = Ref{Ptr{Cdouble}}(C_NULL)
+    constraints = Ref{Ptr{constraintmatrix}}(C_NULL)
+    ccall((:read_prob,CSDP.csdp),Cint,(Ptr{UInt8},Ref{Cint},Ref{Cint},Ref{blockmatrix},Ref{Ptr{Cdouble}},Ref{Ptr{constraintmatrix}},Cint),fname,n,k,C,a,constraints,printlevel)
+    C = mywrap(C[])
+    a = mywrap(a[], k[])
+    constraints = mywrap(constraints[], k[])
+    # Nothing to free as the constraintmatrix is immutable
+    # the array is allocated as an array of bitstype in CSDP
+    # the array of blocks, .. inside should be free'd though
+    #constraints = map(c->ConstraintMatrix(c, k[]), constraints)
+    @assert n[] == size(C, 1)
+    C, a, constraints
 end
 
 function write_prob(fname::String,
@@ -245,8 +264,11 @@ function sdp(n::Cint,k::Cint,C::blockmatrix,a::Ptr{Cdouble},constant_offset::Cdo
     ccall((:sdp,CSDP.csdp),Cint,(Cint,Cint,blockmatrix,Ptr{Cdouble},Cdouble,Ptr{constraintmatrix},Ptr{Ptr{sparseblock}},constraintmatrix,blockmatrix,Ptr{Cdouble},blockmatrix,blockmatrix,blockmatrix,Ptr{Cdouble},Ptr{Cdouble},blockmatrix,blockmatrix,blockmatrix,Ptr{Cdouble},Ptr{Cdouble},Ptr{Cdouble},Ptr{Cdouble},Ptr{Cdouble},Ptr{Cdouble},Ptr{Cdouble},Ptr{Cdouble},Ptr{Cdouble},blockmatrix,Ptr{Cdouble},blockmatrix,blockmatrix,Ptr{Cdouble},Ptr{Cdouble},blockmatrix,blockmatrix,Ptr{Cdouble},Ptr{Cdouble},Ptr{Cdouble},Cint,paramstruc),n,k,C,a,constant_offset,constraints,byblocks,fill,X,y,Z,cholxinv,cholzinv,pobj,dobj,work1,work2,work3,workvec1,workvec2,workvec3,workvec4,workvec5,workvec6,workvec7,workvec8,diagO,bestx,besty,bestz,Zi,O,rhs,dZ,dX,dy,dy1,Fp,printlevel,parameters)
 end
 
-function easy_sdp(n::Cint,k::Cint,C::blockmatrix,a::Ptr{Cdouble},constraints::Ptr{constraintmatrix},constant_offset::Cdouble,pX::Ptr{blockmatrix},py::Ptr{Ptr{Cdouble}},pZ::Ptr{blockmatrix},ppobj::Ptr{Cdouble},pdobj::Ptr{Cdouble})
-    ccall((:easy_sdp,CSDP.csdp),Cint,(Cint,Cint,blockmatrix,Ptr{Cdouble},Ptr{constraintmatrix},Cdouble,Ptr{blockmatrix},Ptr{Ptr{Cdouble}},Ptr{blockmatrix},Ptr{Cdouble},Ptr{Cdouble}),n,k,C,a,constraints,constant_offset,pX,py,pZ,ppobj,pdobj)
+function easy_sdp(n::Cint,k::Cint,C::blockmatrix,a::Ptr{Cdouble},constraints::Ptr{constraintmatrix},constant_offset::Cdouble,pX::Ptr{blockmatrix},py::Ptr{Ptr{Cdouble}},pZ::Ptr{blockmatrix})
+    pobj = Ref{Cdouble}(.0)
+    dobj = Ref{Cdouble}(.0)
+    status = ccall((:easy_sdp,CSDP.csdp),Cint,(Cint,Cint,blockmatrix,Ptr{Cdouble},Ptr{constraintmatrix},Cdouble,Ptr{blockmatrix},Ptr{Ptr{Cdouble}},Ptr{blockmatrix},Ref{Cdouble},Ref{Cdouble}),n,k,C,a,constraints,constant_offset,pX,py,pZ,pobj,dobj)
+    status, pobj[], dobj[]
 end
 
 function tweakgap(n::Cint,k::Cint,a::Ptr{Cdouble},constraints::Ptr{constraintmatrix},gap::Cdouble,Z::blockmatrix,dZ::blockmatrix,y::Ptr{Cdouble},dy::Ptr{Cdouble},work1::blockmatrix,work2::blockmatrix,work3::blockmatrix,work4::blockmatrix,workvec1::Ptr{Cdouble},workvec2::Ptr{Cdouble},workvec3::Ptr{Cdouble},workvec4::Ptr{Cdouble},printlevel::Cint)

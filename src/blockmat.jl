@@ -1,7 +1,7 @@
 # Data types declared in `include/blockmat.h`
 # Small type names are the C types
 # Capitalized are the corresponding Julia types
-import Base.convert, Base.size
+import Base.convert, Base.size, Base.getindex, Base.setindex!
 
 # Utils
 
@@ -14,6 +14,21 @@ function ptr{X}(x::X)
     Base.reinterpret(Base.Ptr{X}, Base.pointer_from_objref(x))
 end
 export fptr, ptr
+
+function mywrap(X::blockmatrix)
+    finalizer(X, free_blockmatrix)
+    BlockMatrix(X)
+end
+
+function mywrap{T}(x::Ptr{T}, len)
+    # I give false to unsafe_wrap to specify that Julia do not own the array so it should not free it
+    # because the pointer it has has an offset
+    y = unsafe_wrap(Array, x + sizeof(T), len, false)
+    # fptr takes care of this offset
+    finalizer(y, s -> Libc.free(fptr(s)))
+    y
+end
+
 
 # The problem is
 # max ⟨C, X⟩
@@ -37,7 +52,7 @@ type BlockRec <: AbstractMatrix{Cdouble}
     csdp::blockrec
 end
 function BlockRec(a::Vector{Cdouble}, cat::blockcat, l::Int)
-    # Why pointer and not fptr ????
+    # /!\ the matrix is not 1-indexed
     BlockRec(a, blockrec(blockdatarec(pointer(a)), cat, Cint(isqrt(l))))
 end
 function BlockRec(A::Matrix)
@@ -47,11 +62,44 @@ function BlockRec(A::Diagonal)
     a = Vector{Cdouble}(diag(A))
     BlockRec(a, blockrec(blockdatarec(fptr(a)), DIAG, Cint(isqrt(length(A)))))
 end
+function blockreczeros(n)
+    BlockRec(zeros(Cdouble, n^2), MATRIX, n^2)
+end
 
 function size(A::BlockRec)
     n = A.csdp.blocksize
     (n, n)
 end
+function getindex(A::BlockRec, i, j)
+    n = A.csdp.blocksize
+    if A.csdp.blockcategory == MATRIX
+        A._blockdatarec[i+(j-1)*n]
+    elseif  A.csdp.blockcategory == DIAG
+        if i == j
+            A._blockdatarec[i]
+        else
+            0
+        end
+    else
+        error("Invalid category")
+    end
+end
+function setindex!(A::BlockRec, v, i, j)
+    n = A.csdp.blocksize
+    if A.csdp.blockcategory == MATRIX
+        A._blockdatarec[i+(j-1)*n] = v
+        A._blockdatarec[j+(i-1)*n] = v
+    elseif  A.csdp.blockcategory == DIAG
+        if i == j
+            A._blockdatarec[i] = v
+        else
+            error("Cannot set off-diagonal entry of diagonal matrix")
+        end
+    else
+        error("Invalid category")
+    end
+end
+
 
 # blockmatrix
 type BlockMatrix <: AbstractMatrix{Cdouble}
@@ -60,15 +108,14 @@ type BlockMatrix <: AbstractMatrix{Cdouble}
     csdp::blockmatrix
 end
 
-function BlockMatrix(As::AbstractVector)
-    jblocks = map(BlockRec, As)
+function BlockMatrix(jblocks::AbstractVector{BlockRec})
     blocks = map(block->block.csdp, jblocks)
     csdp = blockmatrix(length(blocks), fptr(blocks))
     BlockMatrix(jblocks, blocks, csdp)
 end
-function BlockMatrix(As::AbstractMatrix...)
-    BlockMatrix(collect(As))
-end
+BlockMatrix(As::AbstractVector) = BlockMatrix(map(BlockRec, As))
+BlockMatrix(As::AbstractMatrix...) = BlockMatrix(collect(As))
+blockmatzeros(blkdims) = BlockMatrix(map(blockreczeros, blkdims))
 
 function BlockMatrix(csdp::blockmatrix)
     # I give false so that Julia does not try to free it
@@ -116,25 +163,31 @@ end
 # * sparseblock contains a sparse description of the entries of a block
 # * constraintmatrix contains a linked list of the blocks
 
-immutable SparseBlock <: AbstractMatrix{Cdouble}
+type SparseBlock <: AbstractMatrix{Cdouble}
     i::Vector{Cint}
     j::Vector{Cint}
     v::Vector{Cdouble}
     n::Cint
+    csdp::Nullable{sparseblock}
+    function SparseBlock(i::Vector{Cint}, j::Vector{Cint}, v::Vector{Cdouble}, n::Integer, csdp)
+        new(i, j, v, n, csdp)
+    end
 end
 
-function Base.convert(::Type{SparseBlock}, A::AbstractMatrix)
+function SparseBlock(i::Vector{Cint}, j::Vector{Cint}, v::Vector{Cdouble}, n::Integer)
+    SparseBlock(i, j, v, n, nothing)
+end
+
+function convert(::Type{SparseBlock}, A::SparseMatrixCSC{Cdouble})
     n = Base.LinAlg.checksquare(A)
-    A = map(Cdouble, A)
-    C = SparseMatrixCSC{Cdouble, Cint}(A)
-    nn = nnz(C)
+    nn = nnz(A)
     I = Cint[]
     J = Cint[]
     V = Cdouble[]
-    vals = nonzeros(C)
-    rows = rowvals(C)
+    vals = nonzeros(A)
+    rows = rowvals(A)
     for col = 1:n
-        for j in nzrange(C, col)
+        for j in nzrange(A, col)
             row = rows[j]
             if row <= col
                 push!(I, row)
@@ -143,23 +196,102 @@ function Base.convert(::Type{SparseBlock}, A::AbstractMatrix)
             end
         end
     end
-    SparseBlock(I,J,V, n)
+    SparseBlock(I, J, V, n)
+end
+convert(::Type{SparseBlock}, A::AbstractMatrix{Cdouble}) = SparseBlock(SparseMatrixCSC{Cdouble, Cint}(A))
+convert(::Type{SparseBlock}, A::AbstractMatrix) = SparseBlock(map(Cdouble, A))
+function sparseblockzeros(n)
+    SparseBlock(Cint[], Cint[], Cdouble[], n)
 end
 
 function size(A::SparseBlock)
     (A.n, A.n)
 end
+function findindices(A::SparseBlock, i, j)
+    if i > A.n || j > A.n || i <= 0 || j <= 0
+        error("Invalid indices")
+    end
+    for k in 1:length(A.i)
+        if A.i[k] == i && A.j[k] == j
+            return k
+        end
+    end
+    return 0
+end
+function getindex(A::SparseBlock, i, j)
+    k = findindices(A, i, j)
+    if k == 0
+        0
+    else
+        A.v[k]
+    end
+end
+function setindex!(A::SparseBlock, v, i, j)
+    k = findindices(A, i, j)
+    if k == 0
+        push!(A.i, i)
+        push!(A.j, j)
+        push!(A.v, v)
+        if !isnull(A.csdp)
+            @assert get(A.csdp).numentries + 1 == length(A.i)
+            get(A.csdp).numentries = length(A.i)
+            # If push! has reallocated it, we need to change the pointer
+            get(A.csdp).entries = fptr(A.v)
+            get(A.csdp).iindices = fptr(A.i)
+            get(A.csdp).jindices = fptr(A.j)
+        end
+    else
+        A.v[k] = v
+    end
+end
+
 
 type ConstraintMatrix <: AbstractMatrix{Cdouble}
     jblocks::Vector{SparseBlock}
-    blocks::Vector{sparseblock}
     csdp::constraintmatrix
-    function ConstraintMatrix(i, bs::AbstractMatrix...)
-        jblocks = SparseBlock[b for b in bs]
-        blocks = create_cmat(jblocks, i)
-        csdp = constraintmatrix(Ptr{sparseblock}(pointer_from_objref(blocks[1])))
-        new(jblocks, blocks, csdp)
+end
+
+function ConstraintMatrix(constr, jblocks::AbstractVector{SparseBlock})
+    if isempty(jblocks)
+        error("No variable")
     end
+    next = C_NULL
+    for blocknum in length(jblocks):-1:1
+        jblock = jblocks[blocknum]
+        @assert length(jblock.i) == length(jblock.j) == length(jblock.v)
+        block = sparseblock(next,             # next
+                            C_NULL,           # nextbyblock
+                            fptr(jblock.v),   # entries
+                            fptr(jblock.i),   # iindices
+                            fptr(jblock.j),   # jindices
+                            length(jblock.i), # numentries
+                            blocknum,         # blocknum
+                            jblock.n,         # blocksize
+                            constr,           # constraintnum
+                            1                 # issparse
+                            )
+        jblock.csdp = block
+        next = pointer_from_objref(block)
+    end
+    csdp = constraintmatrix(Ptr{sparseblock}(next))
+    ConstraintMatrix(jblocks, csdp)
+end
+ConstraintMatrix(i, bs::AbstractMatrix...) = ConstraintMatrix(i, SparseBlock[b for b in bs])
+constrmatzeros(i, blkdims) = ConstraintMatrix(i, map(sparseblockzeros, blkdims))
+
+# I need sparseblock to be immutable for this function to work
+# but this is kind of annoying since I want to modify its entries in setindex!(::SparseBlock, ...)
+function ConstraintMatrix(csdp::constraintmatrix, k::Integer)
+    # I take care to free the blocks array when necessary in mywrap since CSDP won't take care of that (see the code of read_prob)
+    blocks = unsafe_wrap(Array, csdp.blocks, k, true) # FIXME this is a linked list, not an array...
+    jblocks = map(blocks) do csdp
+        ne = csdp.numentries
+        i = mywrap(csdp.iindices, ne)
+        j = mywrap(csdp.jindices, ne)
+        v = mywrap(csdp.entries, ne)
+        SparseBlock(i, j, v, csdp.blocksize, csdp)
+    end
+    ConstraintMatrix(jblocks, blocks, csdp)
 end
 
 function size(A::ConstraintMatrix)
@@ -167,36 +299,34 @@ function size(A::ConstraintMatrix)
     (n, n)
 end
 
-# Convert a Vector{SparseBlock} to a Vector{sparseblock}
-function create_cmat(sblocks::Vector{SparseBlock}, cn=-1)
-    blocks = sparseblock[]
-    next = C_NULL
 
-    for (i,B) in collect(enumerate(sblocks))[end:-1:1]
-        @assert length(B.i) == length(B.j) == length(B.v)
-        unshift!(blocks, sparseblock(next,           # next
-                                     C_NULL,         # nextbyblock
-                                     fptr(B.v), # entries
-                                     fptr(B.i), # iindices
-                                     fptr(B.j), # jindices
-                                     length(B.i),              # numentries
-                                     i,              # blocknum
-                                     B.n,            # blocksize
-                                     cn,             # constraintnum
-                                     1               # issparse
-                                     ))
-        next = pointer_from_objref(blocks[1])
+function getindex(A::Union{BlockMatrix, ConstraintMatrix}, i::Integer, j::Integer)
+    (i < 0 || j < 0) && error("invalid indices")
+    for block in A.jblocks
+        n = size(block, 1)
+        if i <= n && j <= n
+            return block[i,j]
+        elseif i <= n || j <= n
+            return 0
+        else
+            i -= n
+            j -= n
+        end
     end
-    return blocks
+    error("invalid indices")
 end
 
+# Not really part of AbstractMatrix
+function getindex(A::Union{BlockMatrix, ConstraintMatrix}, i::Integer)
+    A.jblocks[i]
+end
 
 function free_blockmatrix(m::blockmatrix)
     ccall((:free_mat, CSDP.csdp), Void, (blockmatrix,), m)
 end
 export free_blockmatrix
 
-export BlockMatrix, ConstraintMatrix, convert
+export BlockMatrix, ConstraintMatrix
 
 """Solver status"""
 type Csdp
