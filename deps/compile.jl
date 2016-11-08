@@ -16,7 +16,9 @@ function patch_int()
     if JULIA_LAPACK
         info("Patching INT --> integer")
         cfiles = [glob("*.c", srcdir); [joinpath(srcdir, "..", "include", "$d.h")
-                                        for d in ["declarations", "blockmat", "parameters"]]]
+                                        for d in ["declarations",
+                                                  "blockmat",
+                                                  "parameters"]]]
         for cfile in cfiles
             println(cfile)
             content = readstring(cfile)
@@ -43,7 +45,7 @@ function compile_objs(JULIA_LAPACK=JULIA_LAPACK)
         libs = ["-L$(dirname(lapack))", "-l$lflag"]
         info(libs)
         if endswith(LinAlg.LAPACK.liblapack, "64_")
-            push!(cflags, "-march=x86-64", "-m64", "-Dinteger=long")
+            push!(cflags, "-march=x86-64", "-m64", "-Dinteger=long", "-Dint=long")
             for f in [:dnrm2, :dasum, :ddot, :idamax, :dgemm, :dgemv, :dger,
                       :dtrsm, :dtrmv, :dpotrf, :dpotrs, :dpotri, :dtrtri]
                 let ext=string(BLAS.@blasfunc "")
