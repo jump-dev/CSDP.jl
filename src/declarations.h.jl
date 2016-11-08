@@ -244,7 +244,14 @@ function write_sol(fname::String,
                    k::BlasInt,
                    X::blockmatrix,
                    y::Ptr{Cdouble},
-                   Z::blockmatrix)
+                   Z::blockmatrix; debug=false)
+    if debug
+        println(@sprintf("X.nblocks = %ld", X.nblocks))
+        println(@sprintf("X. blocks = %p", X.blocks))
+        println(@sprintf("Z.nblocks = %ld", Z.nblocks))
+        println(@sprintf("Z. blocks = %p", Z.blocks))
+        println("y = $y")
+    end
     ccall((:write_sol,CSDP.csdp),
           BlasInt,
           (Cstring,
