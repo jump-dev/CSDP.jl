@@ -18,7 +18,7 @@ function patch_int()
         cfiles = [glob("*.c", srcdir); [joinpath(srcdir, "..", "include", "$d.h")
                                         for d in ["declarations", "blockmat", "parameters"]]]
         for cfile in cfiles
-            # println(cfile)
+            println(cfile)
             content = readstring(cfile)
             for (re,subst) in
                 [(r"int ([^(]+);", s"integer \1;"),
@@ -27,7 +27,8 @@ function patch_int()
                  (r"integer mycompare", s"int mycompare"),
                  (r"\(int\)", s"(integer)"),
                  (r"%d", s"%ld"),
-                 (r"%2d", s"%2ld")]
+                 (r"%2d", s"%2ld"),
+                 (r" int ", s" integer ")]
                 content = replace(content, re, subst)
             end
         end
