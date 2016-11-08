@@ -9,7 +9,7 @@ function find_obj(makefile_path=Makefile)
     objs = String[splitext(o)[1] for o in [objs; basename(patchf)]]
 end
 
-function patch_int()
+function patch_int(; verbose::Bool = false)
     let patchsrc = "$srcdir/$(basename(patchf))"
         isfile(patchsrc) || cp(patchf, patchsrc)
     end
@@ -20,7 +20,7 @@ function patch_int()
                                                   "blockmat",
                                                   "parameters"]]]
         for cfile in cfiles
-            println(cfile)
+            if verbose; println(cfile); end
             content = readstring(cfile)
             for (re,subst) in
                 [(r"int ([^(]+);", s"integer \1;"),
