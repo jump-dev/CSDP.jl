@@ -29,7 +29,7 @@ build_script:
   - IF EXIST .git\shallow (git fetch --unshallow)
   - "SET PATH=C:\\MinGW\\bin;%PATH%"
   - C:\projects\julia\bin\julia -e "versioninfo();
-      Pkg.clone(pwd(), \"CSDP\"); Pkg.build(\"CSDP\")"
+      Pkg.clone(\"https://github.com/blegat/SemidefiniteModel.jl\"); Pkg.clone(pwd(), \"CSDP\"); Pkg.build(\"CSDP\")"
 
 test_script:
   - C:\projects\julia\bin\julia --check-bounds=yes -e "Pkg.test(\"CSDP\")"
