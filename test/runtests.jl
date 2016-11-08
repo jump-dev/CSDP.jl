@@ -46,6 +46,7 @@ n1 = ccall( (:norm1, CSDP.csdp), Float64, (Cint, Ptr{Cdouble}), length(vec), vec
 end
 
 include(joinpath(Pkg.dir("MathProgBase"),"test","conicinterface.jl"))
-coniclineartest(CSDP.CSDPSolver(), duals=true, tol=1e-2)
-conicSOCtest(CSDP.CSDPSolver(), duals=true, tol=1e-2)
-conicSDPtest(CSDP.CSDPSolver(), duals=false, tol=1e-2)
+coniclineartest(CSDP.CSDPSolver(), duals=true, tol=1e-6)
+conicSOCtest(CSDP.CSDPSolver(), duals=true, tol=1e-6)
+conicSOCRotatedtest(CSDP.CSDPSolver(), duals=true, tol=1e-6)
+conicSDPtest(CSDP.CSDPSolver(), duals=false, tol=1e-6)
