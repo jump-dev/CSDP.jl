@@ -8,7 +8,6 @@ include("compile.jl")
 # info("libname = $libname")
 blas = library_dependency("libblas", alias=["libblas.dll"])
 lapack = library_dependency("liblapack", alias=["liblapack.dll"])
-depends = JULIA_LAPACK ? [] : [blas, lapack]
 
 # LaPack/BLAS dependencies
 if !JULIA_LAPACK
@@ -21,7 +20,7 @@ if !JULIA_LAPACK
     end
 end
 
-csdp = library_dependency("csdp", aliases=["csdp", "libcsdp", libname], depends=depends)
+csdp = library_dependency("csdp", aliases=["csdp", "libcsdp", libname], depends=[])
 
 provides(Sources,
          URI("http://www.coin-or.org/download/source/Csdp/Csdp-$version.tgz"),
