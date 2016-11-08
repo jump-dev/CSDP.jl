@@ -1,22 +1,31 @@
 using CSDP
 using Base.Test
+using Base.LinAlg.BlasInt
 
-vec = Cdouble[1.0, 2.0, 0.0, -1.0]
-l = length(vec)
-inc = 1
-const llapack = Libdl.dlpath(LinAlg.LAPACK.liblapack)
-const dasum = endswith(splitext(llapack)[1], "64_") ? :dasum_64_ : :dasum_
-try
-    n1 = ccall((dasum, llapack), Float64, (Ptr{Int}, Ptr{Cdouble}, Ptr{Int}), &l, vec, &inc)
-    @assert abs(n1 - 4) < 1e-15 "n1 = $n1"
-catch
-    println(dasum)
-    println(llapack)
-    rethrow()
+@testset "Interact with BLAS" begin
+    vec = Cdouble[1.0, 2.0, 0.0, -1.0]
+    l = length(vec)
+    inc = 1
+    n1 = ccall((BLAS.@blasfunc(dasum_), LinAlg.BLAS.libblas),
+               Cdouble,
+               (Ptr{BlasInt}, Ptr{Cdouble}, Ptr{BlasInt}),
+               &l, vec, &inc)
+    @test abs(n1 - 4) < 1e-15
 end
 
-n1 = ccall( (:norm1, CSDP.csdp), Float64, (Cint, Ptr{Cdouble}), length(vec), vec)
-@assert abs(n1 - 4) < 1e-15 "n1 = $n1"
+@testset "Call libcsdp.norm1" begin
+    vec = Cdouble[1.0, 2.0, 0.0, -1.0]
+    try
+        n1 = ccall((:norm1, CSDP.csdp),
+                   Cdouble,
+                   (BlasInt, Ptr{Cdouble}),
+                   length(vec), vec)
+        @test abs(n1 - 4) < 1e-15
+    catch
+        println("n1 = $n1, vec=$vec, length(vec)=$(length(vec))")
+        rethrow()
+    end
+end
 
 @testset "Example" begin
     cd("../examples/") do
