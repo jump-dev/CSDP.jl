@@ -1,11 +1,16 @@
 export initsoln, easy_sdp
 
-function initsoln(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{constraintmatrix})
+function initsoln(C::BlockMatrix, b::Vector{Cdouble},
+                  As::Vector{constraintmatrix})
     m = length(As)
-    X, y, Z = initsoln(BlasInt(size(C, 1)), BlasInt(m), C.csdp, fptr(b), fptr(As))
+    X, y, Z = initsoln(BlasInt(size(C, 1)),
+                       BlasInt(m),
+                       C.csdp,
+                       fptr(b), fptr(As))
     mywrap(X), mywrap(y, m), mywrap(Z)
 end
-function initsoln(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{ConstraintMatrix})
+function initsoln(C::BlockMatrix, b::Vector{Cdouble},
+                  As::Vector{ConstraintMatrix})
     initsoln(C, b, [A.csdp for A in As])
 end
 
@@ -16,8 +21,9 @@ function easy_sdp(C::BlockMatrix,
                   y::Vector{Cdouble},
                   Z::BlockMatrix,
                   verbose=false)
-    # I pass pointers pX, py and pZ to X, y and Z but only *pX, *py and *pZ are use in the code
-    # so no need to worry, they won't change :)
+    # I pass pointers pX, py and pZ to X, y and Z but only *pX, *py
+    # and *pZ are used in the code so no need to worry, they won't
+    # change :)
     Xcsdp = X.csdp
     ycsdp = fptr(y)
     Zcsdp = Z.csdp
@@ -45,10 +51,22 @@ function easy_sdp(C::BlockMatrix,
     status, pobj, dobj
 end
 
-function write_prob(fname::String, C::BlockMatrix, b::Vector{Cdouble}, As::Vector{constraintmatrix})
-    write_prob(fname, BlasInt(size(C, 1)), BlasInt(length(As)), C.csdp, fptr(b), fptr(As))
+function write_prob(fname::String, C::BlockMatrix,
+                    b::Vector{Cdouble}, As::Vector{constraintmatrix})
+    write_prob(fname,
+               BlasInt(size(C, 1)),
+               BlasInt(length(As)),
+               C.csdp,
+               fptr(b),
+               fptr(As))
 end
 
-function write_sol(fname::String, X::BlockMatrix, y::Vector{Cdouble}, Z::BlockMatrix)
-    write_sol(fname, BlasInt(size(X, 1)), BlasInt(length(y)), X.csdp, fptr(y), Z.csdp)
+function write_sol(fname::String, X::BlockMatrix,
+                   y::Vector{Cdouble}, Z::BlockMatrix)
+    write_sol(fname,
+              BlasInt(size(X, 1)),
+              BlasInt(length(y)),
+              X.csdp,
+              fptr(y),
+              Z.csdp)
 end

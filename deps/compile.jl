@@ -48,9 +48,7 @@ function compile_objs(JULIA_LAPACK=JULIA_LAPACK)
         libs = ["-L$(dirname(lapack))", "-l$lflag"]
         info(libs)
         if endswith(LinAlg.LAPACK.liblapack, "64_")
-            push!(cflags, "-march=x86-64", "-m64",
-                  @static is_windows() ?
-                    "-Dinteger=long long" : "-Dinteger=long")
+            push!(cflags, "-march=x86-64", "-m64", "-Dinteger=long")
             for f in [:dnrm2, :dasum, :ddot, :idamax, :dgemm, :dgemv, :dger,
                       :dtrsm, :dtrmv, :dpotrf, :dpotrs, :dpotri, :dtrtri]
                 let ext=string(BLAS.@blasfunc "")
@@ -58,13 +56,11 @@ function compile_objs(JULIA_LAPACK=JULIA_LAPACK)
                 end
             end
             info(cflags)
-        else
-            # push!(cflags, "-Dinteger=int")
         end
     else
         libs = ["-l$l" for l in ["blas", "lapack"]]
         @static if is_windows() unshift!(libs, "-L$libdir") end
-        # libs = @static is_windows() ? ["-L$libdir", "-latlas"] : ["-l$l" for l in ["blas", "lapack"]]
+        # libs = @static is_windows() ? ["-L$libdir", "-latlas"] : ["-l$l" for l in ["blas", "lapack"]] 
         # @static if is_windows()
         #     unshift!(libs, "-march=x86-64")
         #     push!(cflags, "-march=x86-64")

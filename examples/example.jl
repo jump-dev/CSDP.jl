@@ -82,4 +82,3 @@ pobj, dobj = easy_sdp(C, b, constraints, X, y, Z)
 @static if !is_windows()
     CSDP.write_sol("prob.sol", X, y, Z)
 end
-
