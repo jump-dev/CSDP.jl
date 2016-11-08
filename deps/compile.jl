@@ -45,7 +45,9 @@ function compile_objs(JULIA_LAPACK=JULIA_LAPACK)
             push!(cflags, "-march=x86-64", "-m64", "-Dinteger=long")
             for f in [:dnrm2, :dasum, :ddot, :idamax, :dgemm, :dgemv, :dger,
                       :dtrsm, :dtrmv, :dpotrf, :dpotrs, :dpotri, :dtrtri]
-                push!(cflags, "-D$(f)_=$(f)_64_")
+                let ext=string(BLAS.@blasfunc "")
+                    push!(cflags, "-D$(f)_=$(f)_$ext")
+                end
             end
             info(cflags)
         end
