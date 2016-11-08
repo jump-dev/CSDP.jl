@@ -17,11 +17,11 @@ end
 immutable blockrec
     data::blockdatarec
     blockcategory::blockcat
-    blocksize::Cint
+    blocksize::BlasInt
 end
 
 type blockmatrix
-    nblocks::Cint
+    nblocks::BlasInt
     blocks::Ptr{blockrec}
 end
 
@@ -29,13 +29,13 @@ type sparseblock
     next::Ptr{sparseblock}
     nextbyblock::Ptr{sparseblock}
     entries::Ptr{Cdouble}
-    iindices::Ptr{Cint}
-    jindices::Ptr{Cint}
-    numentries::Cint
-    blocknum::Cint
-    blocksize::Cint
-    constraintnum::Cint
-    issparse::Cint
+    iindices::Ptr{BlasInt}
+    jindices::Ptr{BlasInt}
+    numentries::BlasInt
+    blocknum::BlasInt
+    blocksize::BlasInt
+    constraintnum::BlasInt
+    issparse::BlasInt
 end
 
 immutable constraintmatrix
@@ -53,14 +53,14 @@ type paramstruc
     objtol::Cdouble
     pinftol::Cdouble
     dinftol::Cdouble
-    maxiter::Cint
+    maxiter::BlasInt
     minstepfrac::Cdouble
     maxstepfrac::Cdouble
     minstepp::Cdouble
     minstepd::Cdouble
-    usexzgap::Cint
-    tweakgap::Cint
-    affine::Cint
+    usexzgap::BlasInt
+    tweakgap::BlasInt
+    affine::BlasInt
     perturbobj::Cdouble
-    fastmode::Cint
+    fastmode::BlasInt
 end

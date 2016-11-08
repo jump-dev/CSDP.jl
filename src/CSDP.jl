@@ -1,5 +1,8 @@
 module CSDP
 
+import Base.LinAlg.BlasInt
+export BlasInt
+
 # Try to load the binary dependency
 if isfile(joinpath(dirname(@__FILE__),"..","deps","deps.jl"))
     include("../deps/deps.jl")

@@ -53,14 +53,14 @@ type BlockRec <: AbstractMatrix{Cdouble}
 end
 function BlockRec(a::Vector{Cdouble}, cat::blockcat, l::Int)
     # /!\ the matrix is not 1-indexed
-    BlockRec(a, blockrec(blockdatarec(pointer(a)), cat, Cint(isqrt(l))))
+    BlockRec(a, blockrec(blockdatarec(pointer(a)), cat, BlasInt(isqrt(l))))
 end
 function BlockRec(A::Matrix)
     BlockRec(Vector{Cdouble}(reshape(A, length(A))), MATRIX, length(A))
 end
 function BlockRec(A::Diagonal)
     a = Vector{Cdouble}(diag(A))
-    BlockRec(a, blockrec(blockdatarec(fptr(a)), DIAG, Cint(isqrt(length(A)))))
+    BlockRec(a, blockrec(blockdatarec(fptr(a)), DIAG, BlasInt(isqrt(length(A)))))
 end
 function blockreczeros(n)
     BlockRec(zeros(Cdouble, n^2), MATRIX, n^2)
@@ -164,25 +164,25 @@ end
 # * constraintmatrix contains a linked list of the blocks
 
 type SparseBlock <: AbstractMatrix{Cdouble}
-    i::Vector{Cint}
-    j::Vector{Cint}
+    i::Vector{BlasInt}
+    j::Vector{BlasInt}
     v::Vector{Cdouble}
-    n::Cint
+    n::BlasInt
     csdp::Nullable{sparseblock}
-    function SparseBlock(i::Vector{Cint}, j::Vector{Cint}, v::Vector{Cdouble}, n::Integer, csdp)
+    function SparseBlock(i::Vector{BlasInt}, j::Vector{BlasInt}, v::Vector{Cdouble}, n::Integer, csdp)
         new(i, j, v, n, csdp)
     end
 end
 
-function SparseBlock(i::Vector{Cint}, j::Vector{Cint}, v::Vector{Cdouble}, n::Integer)
+function SparseBlock(i::Vector{BlasInt}, j::Vector{BlasInt}, v::Vector{Cdouble}, n::Integer)
     SparseBlock(i, j, v, n, nothing)
 end
 
 function convert(::Type{SparseBlock}, A::SparseMatrixCSC{Cdouble})
     n = Base.LinAlg.checksquare(A)
     nn = nnz(A)
-    I = Cint[]
-    J = Cint[]
+    I = BlasInt[]
+    J = BlasInt[]
     V = Cdouble[]
     vals = nonzeros(A)
     rows = rowvals(A)
@@ -198,10 +198,10 @@ function convert(::Type{SparseBlock}, A::SparseMatrixCSC{Cdouble})
     end
     SparseBlock(I, J, V, n)
 end
-convert(::Type{SparseBlock}, A::AbstractMatrix{Cdouble}) = SparseBlock(SparseMatrixCSC{Cdouble, Cint}(A))
+convert(::Type{SparseBlock}, A::AbstractMatrix{Cdouble}) = SparseBlock(SparseMatrixCSC{Cdouble, BlasInt}(A))
 convert(::Type{SparseBlock}, A::AbstractMatrix) = SparseBlock(map(Cdouble, A))
 function sparseblockzeros(n)
-    SparseBlock(Cint[], Cint[], Cdouble[], n)
+    SparseBlock(BlasInt[], BlasInt[], Cdouble[], n)
 end
 
 function size(A::SparseBlock)
@@ -330,8 +330,8 @@ export BlockMatrix, ConstraintMatrix
 
 """Solver status"""
 type Csdp
-    n::Cint
-    k::Cint
+    n::BlasInt
+    k::BlasInt
     X::BlockMatrix
     y::Vector{Cdouble}
     constant_offset::Cdouble

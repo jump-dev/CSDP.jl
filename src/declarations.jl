@@ -2,7 +2,7 @@ export initsoln, easy_sdp
 
 function initsoln(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{constraintmatrix})
     m = length(As)
-    X, y, Z = initsoln(Cint(size(C, 1)), Cint(m), C.csdp, fptr(b), fptr(As))
+    X, y, Z = initsoln(BlasInt(size(C, 1)), BlasInt(m), C.csdp, fptr(b), fptr(As))
     mywrap(X), mywrap(y, m), mywrap(Z)
 end
 function initsoln(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{ConstraintMatrix})
@@ -20,7 +20,7 @@ function easy_sdp(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{constraintmatri
         oldstdout = STDOUT
         rd, wr = redirect_stdout()
     end
-    status, pobj, dobj = easy_sdp(Cint(size(C, 1)), Cint(length(As)), C.csdp, fptr(b), fptr(As), 0.0, ptr(Xcsdp), ptr(ycsdp), ptr(Zcsdp))
+    status, pobj, dobj = easy_sdp(BlasInt(size(C, 1)), BlasInt(length(As)), C.csdp, fptr(b), fptr(As), 0.0, ptr(Xcsdp), ptr(ycsdp), ptr(Zcsdp))
     if !verbose
         redirect_stdout(oldstdout)
     end
@@ -32,9 +32,9 @@ function easy_sdp(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{constraintmatri
 end
 
 function write_prob(fname::String, C::BlockMatrix, b::Vector{Cdouble}, As::Vector{constraintmatrix})
-    write_prob(fname, Cint(size(C, 1)), Cint(length(As)), C.csdp, fptr(b), fptr(As))
+    write_prob(fname, BlasInt(size(C, 1)), BlasInt(length(As)), C.csdp, fptr(b), fptr(As))
 end
 
 function write_sol(fname::String, X::BlockMatrix, y::Vector{Cdouble}, Z::BlockMatrix)
-    write_sol(fname, Cint(size(X, 1)), Cint(length(y)), X.csdp, fptr(y), Z.csdp)
+    write_sol(fname, BlasInt(size(X, 1)), BlasInt(length(y)), X.csdp, fptr(y), Z.csdp)
 end
