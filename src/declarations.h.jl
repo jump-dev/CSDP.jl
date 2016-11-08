@@ -1,8 +1,6 @@
 # Julia wrapper for header: include/declarations.h
 # Automatically generated using Clang.jl wrap_c, version 0.0.0 and then modified as some places
 
-export read_prob
-
 function triu(A::blockmatrix)
     ccall((:triu,CSDP.csdp),Void,(blockmatrix,),A)
 end

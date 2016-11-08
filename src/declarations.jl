@@ -1,5 +1,17 @@
 export initsoln, easy_sdp
 
+doc"""
+    alloc_mat(A, pB)
+
+Allocate a matrix of pattern `A` and store it to pointer `pB`.
+""" alloc_mat
+
+
+"""
+    initsoln(...)
+
+Build an initial solution for an SDP problem.
+"""
 function initsoln(C::BlockMatrix, b::Vector{Cdouble},
                   As::Vector{constraintmatrix})
     m = length(As)
@@ -14,6 +26,13 @@ function initsoln(C::BlockMatrix, b::Vector{Cdouble},
     initsoln(C, b, [A.csdp for A in As])
 end
 
+""""
+    easy_sdp(C, b, As, X, y, Z)
+
+This is an “easz to call” version of the `sdp` routine.
+Together with the SDP problem given by `C`, `b`, and `As`, it takes an
+initial solution `X`, `y`, `Z`.
+"""
 function easy_sdp(C::BlockMatrix,
                   b::Vector{Cdouble},
                   As::Vector{constraintmatrix},
@@ -27,6 +46,7 @@ function easy_sdp(C::BlockMatrix,
     Xcsdp = X.csdp
     ycsdp = fptr(y)
     Zcsdp = Z.csdp
+
     # https://thenewphalls.wordpress.com/2014/03/21/capturing-output-in-julia/
     if !verbose
         oldstdout = STDOUT
