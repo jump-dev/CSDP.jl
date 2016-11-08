@@ -14,8 +14,6 @@ before_install:
 
 notifications:
   email: false
-before_script:
-  - julia -e 'Pkg.clone("git://github.com/blegat/SemidefiniteModel.jl.git")'
 # uncomment the following lines to override the default test script
 #script:
 #  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
