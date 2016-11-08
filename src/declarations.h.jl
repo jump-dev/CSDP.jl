@@ -247,7 +247,7 @@ function write_sol(fname::String,
                    Z::blockmatrix)
     ccall((:write_sol,CSDP.csdp),
           BlasInt,
-          (Ptr{UInt8},
+          (Cstring,
            BlasInt,
            BlasInt,
            blockmatrix,
