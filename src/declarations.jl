@@ -9,7 +9,13 @@ function initsoln(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{ConstraintMatri
     initsoln(C, b, [A.csdp for A in As])
 end
 
-function easy_sdp(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{constraintmatrix}, X::BlockMatrix, y::Vector{Cdouble}, Z::BlockMatrix, verbose=false)
+function easy_sdp(C::BlockMatrix,
+                  b::Vector{Cdouble},
+                  As::Vector{constraintmatrix},
+                  X::BlockMatrix,
+                  y::Vector{Cdouble},
+                  Z::BlockMatrix,
+                  verbose=false)
     # I pass pointers pX, py and pZ to X, y and Z but only *pX, *py and *pZ are use in the code
     # so no need to worry, they won't change :)
     Xcsdp = X.csdp
@@ -20,7 +26,15 @@ function easy_sdp(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{constraintmatri
         oldstdout = STDOUT
         rd, wr = redirect_stdout()
     end
-    status, pobj, dobj = easy_sdp(BlasInt(size(C, 1)), BlasInt(length(As)), C.csdp, fptr(b), fptr(As), 0.0, ptr(Xcsdp), ptr(ycsdp), ptr(Zcsdp))
+    status, pobj, dobj = easy_sdp(BlasInt(size(C, 1)),
+                                  BlasInt(length(As)),
+                                  C.csdp,
+                                  fptr(b),
+                                  fptr(As),
+                                  0.0,
+                                  ptr(Xcsdp),
+                                  ptr(ycsdp),
+                                  ptr(Zcsdp))
     if !verbose
         redirect_stdout(oldstdout)
     end
