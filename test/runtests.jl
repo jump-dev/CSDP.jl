@@ -53,3 +53,9 @@ end
         @test norm(Array(Z) - Z✓) < 1e-6
     end
 end
+
+include(joinpath(Pkg.dir("MathProgBase"),"test","conicinterface.jl"))
+coniclineartest(CSDP.CSDPSolver(), duals=true, tol=1e-6)
+conicSOCtest(CSDP.CSDPSolver(), duals=true, tol=1e-6)
+conicSOCRotatedtest(CSDP.CSDPSolver(), duals=true, tol=1e-6)
+conicSDPtest(CSDP.CSDPSolver(), duals=false, tol=1e-6)

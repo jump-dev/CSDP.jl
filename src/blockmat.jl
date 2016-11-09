@@ -178,6 +178,7 @@ function SparseBlock(i::Vector{BlasInt}, j::Vector{BlasInt}, v::Vector{Cdouble},
     SparseBlock(i, j, v, n, nothing)
 end
 
+convert(::Type{SparseBlock}, A::SparseBlock) = A
 function convert(::Type{SparseBlock}, A::SparseMatrixCSC{Cdouble})
     n = Base.LinAlg.checksquare(A)
     nn = nnz(A)
@@ -291,7 +292,7 @@ function ConstraintMatrix(csdp::constraintmatrix, k::Integer)
         v = mywrap(csdp.entries, ne)
         SparseBlock(i, j, v, csdp.blocksize, csdp)
     end
-    ConstraintMatrix(jblocks, blocks, csdp)
+    ConstraintMatrix(jblocks, csdp)
 end
 
 function size(A::ConstraintMatrix)
