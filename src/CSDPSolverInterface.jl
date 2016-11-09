@@ -15,7 +15,7 @@ type CSDPMathProgModel <: AbstractSDModel
     X
     y
     Z
-    status::Cint
+    status::BlasInt
     pobj::Cdouble
     dobj::Cdouble
     function CSDPMathProgModel()
