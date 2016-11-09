@@ -54,8 +54,23 @@ end
     end
 end
 
-include(joinpath(Pkg.dir("MathProgBase"),"test","conicinterface.jl"))
-coniclineartest(CSDP.CSDPSolver(), duals=true, tol=1e-6)
-conicSOCtest(CSDP.CSDPSolver(), duals=true, tol=1e-6)
-conicSOCRotatedtest(CSDP.CSDPSolver(), duals=true, tol=1e-6)
-conicSDPtest(CSDP.CSDPSolver(), duals=false, tol=1e-6)
+@testset "Linear tests" begin
+    include(joinpath(Pkg.dir("MathProgBase"),"test","conicinterface.jl"))
+end
+
+@testset "Conic linear tests" begin
+    coniclineartest(CSDP.CSDPSolver(), duals=true, tol=1e-6)
+end
+
+@testset "Conic SOC tests" begin
+    conicSOCtest(CSDP.CSDPSolver(), duals=true, tol=1e-6)
+end
+
+@testset "Conic SOC rotated tests" begin
+    conicSOCRotatedtest(CSDP.CSDPSolver(), duals=true, tol=1e-6)
+end
+
+@testset "Conic SDP tests" begin
+    conicSDPtest(CSDP.CSDPSolver(), duals=false, tol=1e-6)
+end
+
