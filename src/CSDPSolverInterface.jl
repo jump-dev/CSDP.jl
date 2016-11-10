@@ -19,7 +19,7 @@ type CSDPMathProgModel <: AbstractSDModel
     pobj::Cdouble
     dobj::Cdouble
     function CSDPMathProgModel()
-        new(nothing, nothing, nothing, nothing, nothing, -1, 0, 0)
+        new(nothing, nothing, nothing, nothing, nothing, -1, 0.0, 0.0)
     end
 end
 SDModel(s::CSDPSolver) = CSDPMathProgModel()
