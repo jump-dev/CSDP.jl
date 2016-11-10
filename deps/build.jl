@@ -21,13 +21,10 @@ if !JULIA_LAPACK
     end
 end
 
-csdp = library_dependency("csdp", aliases=["csdp", "libcsdp", libname], depends=depends)
+csdp = library_dependency("csdp", aliases=["csdp", "libcsdp", libname],
+                          depends=depends)
 
-provides(Sources,
-         URI("http://www.coin-or.org/download/source/Csdp/Csdp-$version.tgz"),
-         csdp,
-         unpacked_dir="Csdp-$version")
-
+provides(Sources, URI(donwload_url), csdp, unpacked_dir="Csdp-$version")
 
 provides(BuildProcess,
          (@build_steps begin
