@@ -19,7 +19,7 @@ type CSDPMathProgModel <: AbstractSDModel
     pobj::Cdouble
     dobj::Cdouble
     function CSDPMathProgModel()
-        new(nothing, nothing, nothing, nothing, nothing, nothing, 0, 0)
+        new(nothing, nothing, nothing, nothing, nothing, -1, 0, 0)
     end
 end
 SDModel(s::CSDPSolver) = CSDPMathProgModel()
@@ -76,8 +76,10 @@ function status(m::CSDPMathProgModel)
         return :Unknown
     elseif 8 <= status <= 9
         return :Error
+    elseif status == -1
+        return :Uninitialized
     else
-        error("Internal library error")
+        error("Internal library error: status=$status")
     end
 end
 
