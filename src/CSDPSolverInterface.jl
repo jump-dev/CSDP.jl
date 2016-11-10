@@ -62,6 +62,12 @@ end
 function optimize!(m::CSDPMathProgModel)
     As = map(A->A.csdp, m.As)
 
+    let wrt = get(m.options, :write_prob, "")
+        if length(wrt) > 0
+            write_prob(wrt, m.C, m.b, As)
+        end
+    end
+
     m.X, m.y, m.Z = initsoln(m.C, m.b, As)
     m.status, m.pobj, m.dobj = easy_sdp(m.C, m.b, As, m.X, m.y, m.Z)
 end
