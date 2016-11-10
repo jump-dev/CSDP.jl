@@ -64,6 +64,7 @@ function optimize!(m::CSDPMathProgModel)
 
     let wrt = get(m.options, :write_prob, "")
         if length(wrt) > 0
+            info("Writing problem to $(pwd())/$(wrt)")
             write_prob(wrt, m.C, m.b, As)
         end
     end
