@@ -17,3 +17,5 @@ dlpath      = joinpath(libdir, libname)
 Makefile    = joinpath(srcdir, "Makefile")
 CC          = get(ENV, "CCOMPILER", "gcc")
 
+"""Name of the current Git branch"""
+git_branch() = chomp(readstring(`git rev-parse --abbrev-ref HEAD`))
