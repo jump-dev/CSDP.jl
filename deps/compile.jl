@@ -3,7 +3,15 @@ using Glob.glob
 const FORTRAN_FUNCTIONS =
     [:dnrm2, :dasum, :ddot, :idamax, :dgemm, :dgemv, :dger,
      :dtrsm, :dtrmv, :dpotrf, :dpotrs, :dpotri, :dtrtri]
- 
+
+"""
+    find_obj([Makefile])
+
+Parse the original Csdp `Makefile` and return all the object names
+(without extension `.o`) for `libsdp`.
+Remark: You cannot use the Makefile directly as it produces only a
+static library.
+"""
 function find_obj(makefile_path=Makefile)
      makefile = readstring(makefile_path)
     m = match(r"libsdp\.a\:(.+)", makefile)
@@ -12,6 +20,14 @@ function find_obj(makefile_path=Makefile)
     objs = String[splitext(o)[1] for o in [objs; basename(patchf)]]
 end
 
+
+"""
+    patch_int()
+
+Modify the files `lib/*.c` and the headers in `include/` to use `integer`
+instead of `int`; the `printf` format `%d` is adapted, accordingly.
+Notify that this happens *inplace*, i.e. without backup.
+"""
 function patch_int(; verbose::Bool = false)
     let patchsrc = "$srcdir/$(basename(patchf))"
         isfile(patchsrc) || cp(patchf, patchsrc)

@@ -13,9 +13,11 @@ depends = JULIA_LAPACK ? [] : [blas, lapack]
 # LaPack/BLAS dependencies
 if !JULIA_LAPACK
     @static if is_windows()
-        # atlas = "https://github.com/numpy/windows-wheel-builder/raw/master/atlas-builds"
-        # download("https://raw.githubusercontent.com/numpy/windows-wheel-builder/master/atlas-builds/atlas-3.11.38-sse2-64/lib/numpy-atlas.dll",
-        #          "$libdir/libatlas.dll")
+        # wheel = "numpy/windows-wheel-builder/raw/master/atlas-builds"
+        # atlas = "https://github.com/$wheel"
+        # atlasdll = "/atlas-3.11.38-sse2-64/lib/numpy-atlas.dll"
+        # download("https://raw.githubusercontent.com/$wheel/$atlasdll"),
+        #           "$libdir/libatlas.dll")
         ## at the end ...
         # push!(BinDeps.defaults, BuildProcess)
     end
@@ -27,7 +29,7 @@ csdp = library_dependency("csdp", aliases=["csdp", "libcsdp", libname],
 provides(Sources, URI(donwload_url), csdp, unpacked_dir="Csdp-$version")
 
 provides(BuildProcess,
-         (@build_steps begin
+         @build_steps begin
              GetSources(csdp)
              CreateDirectory(libdir)
              CreateDirectory(builddir)
@@ -36,7 +38,7 @@ provides(BuildProcess,
                   patch_int
                   compile_objs
              end
-         end),
+         end,
          [csdp])
 
 # Prebuilt DLLs for Windows
