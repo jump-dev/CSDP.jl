@@ -48,7 +48,8 @@ function patch_int(; verbose::Bool = false)
         int_headers = [joinpath(srcdir, "..", "include", "$d.h")
                        for d in int_headers]
         example_c = joinpath(srcdir, "..", "example", "example.c")
-        for cfile in [glob("*.c", srcdir); int_headers; example_c]
+        solver    = joinpath(srcdir, "..", "solver", "csdp.c")
+        for cfile in [glob("*.c", srcdir); int_headers; example_c; solver]
             if verbose; println(cfile); end
             content = readstring(cfile)
             for (re,subst) in
