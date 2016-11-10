@@ -4,9 +4,9 @@ importall SemidefiniteModel
 export CSDPMathProgModel, CSDPSolver
 
 immutable CSDPSolver <: AbstractMathProgSolver
-    options
+    options::Dict{Symbol,Any}
 end
-CSDPSolver(;kwargs...) = CSDPSolver(kwargs)
+CSDPSolver(;kwargs...) = CSDPSolver(Dict{Symbol,Any}(kwargs))
 
 type CSDPMathProgModel <: AbstractSDModel
     C
