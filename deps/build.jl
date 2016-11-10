@@ -23,8 +23,7 @@ if !JULIA_LAPACK
     end
 end
 
-csdp = library_dependency("csdp", aliases=["csdp", "libcsdp", libname],
-                          depends=depends)
+csdp = library_dependency("csdp", aliases=[libname], depends=depends)
 
 provides(Sources, URI(download_url), csdp, unpacked_dir=csdpversion)
 
