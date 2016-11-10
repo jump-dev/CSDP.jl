@@ -29,7 +29,7 @@ csdp = library_dependency("csdp", aliases=["csdp", "libcsdp", libname],
 provides(Sources, URI(donwload_url), csdp, unpacked_dir="Csdp-$version")
 
 provides(BuildProcess,
-         (@build_steps begin
+         @build_steps begin
              GetSources(csdp)
              CreateDirectory(libdir)
              CreateDirectory(builddir)
@@ -38,7 +38,7 @@ provides(BuildProcess,
                   patch_int
                   compile_objs
              end
-         end),
+         end,
          [csdp])
 
 # Prebuilt DLLs for Windows
