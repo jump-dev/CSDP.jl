@@ -26,7 +26,7 @@ end
 csdp = library_dependency("csdp", aliases=["csdp", "libcsdp", libname],
                           depends=depends)
 
-provides(Sources, URI(donwload_url), csdp, unpacked_dir="Csdp-$version")
+provides(Sources, URI(donwload_url), csdp, unpacked_dir=csdpversion)
 
 provides(BuildProcess,
          @build_steps begin
