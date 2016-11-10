@@ -18,11 +18,13 @@ type CSDPMathProgModel <: AbstractSDModel
     status::Cint
     pobj::Cdouble
     dobj::Cdouble
-    function CSDPMathProgModel()
-        new(nothing, nothing, nothing, nothing, nothing, -1, 0.0, 0.0)
+    options::Dict{Symbol,Any}
+    function CSDPMathProgModel(; kwargs...)
+        new(nothing, nothing, nothing, nothing, nothing, nothing,
+            -1, 0.0, 0.0, Dict{Symbol, Any}(kwargs))
     end
 end
-SDModel(s::CSDPSolver) = CSDPMathProgModel()
+SDModel(s::CSDPSolver) = CSDPMathProgModel(; s.options...)
 ConicModel(s::CSDPSolver) = SDtoConicBridge(SDModel(s))
 
 supportedcones(s::CSDPSolver) = [:Free,:Zero,:NonNeg,:NonPos,:SDP]
