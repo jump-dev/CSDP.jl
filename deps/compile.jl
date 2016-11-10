@@ -44,11 +44,11 @@ function patch_int(; verbose::Bool = false)
     end
     if JULIA_LAPACK
         info("Patching int --> integer")
-        cfiles = [glob("*.c", srcdir); [joinpath(srcdir, "..", "include", "$d.h")
-                                        for d in ["declarations",
-                                                  "blockmat",
-                                                  "parameters"]]]
-        for cfile in cfiles
+        int_headers = ["declarations", "blockmat", "parameters"]
+        int_headers = [joinpath(srcdir, "..", "include", "$d.h")
+                       for d in int_headers]
+        example_c = joinpath(srcdir, "..", "example", "example.c")
+        for cfile in [glob("*.c", srcdir); int_headers; example_c]
             if verbose; println(cfile); end
             content = readstring(cfile)
             for (re,subst) in
@@ -59,7 +59,8 @@ function patch_int(; verbose::Bool = false)
                  (r"\(int\)", s"(integer)"),
                  (r"%d", s"%ld"),
                  (r"%2d", s"%2ld"),
-                 (r" int ", s" integer ")]
+                 (r" int ", s" integer "),
+                 (r"integer main", s"int main")]
                 content = replace(content, re, subst)
             end
             open(cfile, "w") do io
