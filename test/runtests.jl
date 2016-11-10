@@ -63,7 +63,7 @@ end
 end
 
 @testset "Conic SOC tests" begin
-    conicSOCtest(CSDP.CSDPSolver(), duals=true, tol=1e-6)
+    conicSOCtest(CSDP.CSDPSolver(write_prob="soc.prob"), duals=true, tol=1e-6)
 end
 
 @testset "Conic SOC rotated tests" begin
