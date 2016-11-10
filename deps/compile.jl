@@ -4,6 +4,16 @@ const FORTRAN_FUNCTIONS =
     [:dnrm2, :dasum, :ddot, :idamax, :dgemm, :dgemv, :dger,
      :dtrsm, :dtrmv, :dpotrf, :dpotrs, :dpotri, :dtrtri]
 
+function copy_srcdir()
+    if !isdir(srcdir)
+        src = Pkg.dir("CSDP", "deps", "src")
+        src64 = replace(src, r"src", "src$suffix")
+        info("Copy from $src to $src64")
+        run(`cp -R $src $src64`)
+        @assert isdir(srcdir) "Failed to create $srcdir"
+    end
+end
+
 """
     find_obj([Makefile])
 
@@ -13,7 +23,7 @@ Remark: You cannot use the Makefile directly as it produces only a
 static library.
 """
 function find_obj(makefile_path=Makefile)
-     makefile = readstring(makefile_path)
+    makefile = readstring(makefile_path)
     m = match(r"libsdp\.a\:(.+)", makefile)
     m != nothing || error("Could not find `libsdp.a` target in '$makefile_path'")
     objs = matchall(r"\w+\.o", m.captures[1])

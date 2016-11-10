@@ -1,6 +1,6 @@
 # use Julia's libopenblas instead of system's liblapack and libblas?
 const JULIA_LAPACK = true
-const suffix       = JULIA_LAPACK ? ".64" : ""
+const suffix       = JULIA_LAPACK && is_linux() ? ".64" : ""
 const version      = "6.1.1"
 const libname      = "libcsdp$suffix.$(Libdl.dlext)"
 const csdpversion  = "Csdp-$version"

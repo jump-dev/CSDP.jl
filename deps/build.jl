@@ -32,6 +32,7 @@ provides(BuildProcess,
              GetSources(csdp)
              CreateDirectory(libdir)
              CreateDirectory(builddir)
+             copy_srcdir
              @build_steps begin
                   ChangeDirectory(srcdir)
                   patch_int
