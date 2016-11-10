@@ -62,16 +62,16 @@ end
 function optimize!(m::CSDPMathProgModel)
     As = map(A->A.csdp, m.As)
 
-    let wrt = get(m.options, :write_prob, "")
+    let wrt = string(get(m.options, :write_prob, ""))
         if length(wrt) > 0
-            wrtf = copy(wrt)
             k = 1
+            wrtf = "$wrt.$k"
             while isfile(wrtf)
-                writf = "$wrt.$k"
+                wrtf = "$wrt.$k"
                 k += 1
             end
-            info("Writing problem to $(pwd())/$(wrt)")
-            write_prob(wrt, m.C, m.b, As)
+            info("Writing problem to $(pwd())/$(wrtf)")
+            write_prob(wrtf, m.C, m.b, As)
         end
     end
 
