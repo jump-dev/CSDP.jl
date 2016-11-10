@@ -3,14 +3,14 @@ const JULIA_LAPACK = false
 const suffix       = JULIA_LAPACK ? ".64" : ""
 const version      = "6.1.1"
 const libname      = "libcsdp$suffix.$(Libdl.dlext)"
-const csdpversion  = "Csdp-$version$suffix"
+const csdpversion  = "Csdp-$version"
 const download_url =
     "http://www.coin-or.org/download/source/Csdp/Csdp-$version.tgz"
 
-patchf      = Pkg.dir("CSDP", "deps", "src", "debug-mat.c")
-srcdir      = Pkg.dir("CSDP", "deps", "src", csdpversion, "lib")
+patchf      = Pkg.dir("CSDP", "deps", "src$suffix", "debug-mat.c")
+srcdir      = Pkg.dir("CSDP", "deps", "src$suffix", csdpversion, "lib")
 prefix      = Pkg.dir("CSDP", "deps", "usr")
-builddir    = Pkg.dir("CSDP", "deps", "build")
+builddir    = Pkg.dir("CSDP", "deps", "build$suffix")
 cflags      = ["-I$srcdir/../include",  "-DNOSHORTS", "-g"]
 libdir      = joinpath(prefix, @static is_windows() ? "bin" : "lib/")
 dlpath      = joinpath(libdir, libname)
