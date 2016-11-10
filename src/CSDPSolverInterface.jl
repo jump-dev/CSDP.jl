@@ -4,9 +4,9 @@ importall SemidefiniteModel
 export CSDPMathProgModel, CSDPSolver
 
 immutable CSDPSolver <: AbstractMathProgSolver
-    options
+    options::Dict{Symbol,Any}
 end
-CSDPSolver(;kwargs...) = CSDPSolver(kwargs)
+CSDPSolver(;kwargs...) = CSDPSolver(Dict{Symbol,Any}(kwargs))
 
 type CSDPMathProgModel <: AbstractSDModel
     C
@@ -18,11 +18,13 @@ type CSDPMathProgModel <: AbstractSDModel
     status::BlasInt
     pobj::Cdouble
     dobj::Cdouble
-    function CSDPMathProgModel()
-        new(nothing, nothing, nothing, nothing, nothing, nothing, 0, 0)
+    options::Dict{Symbol,Any}
+    function CSDPMathProgModel(; kwargs...)
+        new(nothing, nothing, nothing, nothing, nothing, nothing,
+            -1, 0.0, 0.0, Dict{Symbol, Any}(kwargs))
     end
 end
-SDModel(s::CSDPSolver) = CSDPMathProgModel()
+SDModel(s::CSDPSolver) = CSDPMathProgModel(; s.options...)
 ConicModel(s::CSDPSolver) = SDtoConicBridge(SDModel(s))
 
 supportedcones(s::CSDPSolver) = [:Free,:Zero,:NonNeg,:NonPos,:SDP]
@@ -60,6 +62,13 @@ end
 function optimize!(m::CSDPMathProgModel)
     As = map(A->A.csdp, m.As)
 
+    let wrt = get(m.options, :write_prob, "")
+        if length(wrt) > 0
+            info("Writing problem to $(pwd())/$(wrt)")
+            write_prob(wrt, m.C, m.b, As)
+        end
+    end
+
     m.X, m.y, m.Z = initsoln(m.C, m.b, As)
     m.status, m.pobj, m.dobj = easy_sdp(m.C, m.b, As, m.X, m.y, m.Z)
 end
@@ -76,8 +85,10 @@ function status(m::CSDPMathProgModel)
         return :Unknown
     elseif 8 <= status <= 9
         return :Error
+    elseif status == -1
+        return :Uninitialized
     else
-        error("Internal library error")
+        error("Internal library error: status=$status")
     end
 end
 
