@@ -20,6 +20,14 @@ function find_obj(makefile_path=Makefile)
     objs = String[splitext(o)[1] for o in [objs; basename(patchf)]]
 end
 
+
+"""
+    patch_int()
+
+Modify the files `lib/*.c` and the headers in `include/` to use `integer`
+instead of `int`; the `printf` format `%d` is adapted, accordingly.
+Notify that this happens *inplace*, i.e. without backup.
+"""
 function patch_int(; verbose::Bool = false)
     let patchsrc = "$srcdir/$(basename(patchf))"
         isfile(patchsrc) || cp(patchf, patchsrc)
