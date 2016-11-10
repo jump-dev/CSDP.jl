@@ -3,3 +3,5 @@ build
 downloads/
 src
 usr
+build.64/
+src.64/
