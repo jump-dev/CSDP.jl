@@ -37,3 +37,13 @@ To reduce dependency on a further library, we would like to link against the `li
 However, on 64 bit machines, the Fortran integer types is defined to be 64 bit.
 That is why, all `int` types in the Csdp code have to be substituted, too.
 The `printf` and `scanf` statements have to be adapted accordingly.
+
+### Problem
+Unfortunately, there seems to be a problem with this as the unit tests fail in this 64 bit conversion stuff.
+So, how to find the bug?
+Some ideas
+
+ * Compile `example.c` and link against this 64 bit `libcsdp.so` version
+ * Do trace memory for that using `ltrace`
+ * Check whether the verbose output is different for 64 bit mode
+
