@@ -1,8 +1,11 @@
 using Glob.glob
 
+const FORTRAN_FUNCTIONS =
+    [:dnrm2, :dasum, :ddot, :idamax, :dgemm, :dgemv, :dger,
+     :dtrsm, :dtrmv, :dpotrf, :dpotrs, :dpotri, :dtrtri]
+ 
 function find_obj(makefile_path=Makefile)
-    # patch: symlink debugging source
-    makefile = readstring(makefile_path)
+     makefile = readstring(makefile_path)
     m = match(r"libsdp\.a\:(.+)", makefile)
     m != nothing || error("Could not find `libsdp.a` target in '$makefile_path'")
     objs = matchall(r"\w+\.o", m.captures[1])
@@ -49,8 +52,7 @@ function compile_objs(JULIA_LAPACK=JULIA_LAPACK)
         info(libs)
         if endswith(LinAlg.LAPACK.liblapack, "64_")
             push!(cflags, "-march=x86-64", "-m64", "-Dinteger=long")
-            for f in [:dnrm2, :dasum, :ddot, :idamax, :dgemm, :dgemv, :dger,
-                      :dtrsm, :dtrmv, :dpotrf, :dpotrs, :dpotri, :dtrtri]
+            for f in FORTRAN_FUNCTIONS
                 let ext=string(BLAS.@blasfunc "")
                     push!(cflags, "-D$(f)_=$(f)_$ext")
                 end
@@ -60,11 +62,6 @@ function compile_objs(JULIA_LAPACK=JULIA_LAPACK)
     else
         libs = ["-l$l" for l in ["blas", "lapack"]]
         @static if is_windows() unshift!(libs, "-L$libdir") end
-        # libs = @static is_windows() ? ["-L$libdir", "-latlas"] : ["-l$l" for l in ["blas", "lapack"]] 
-        # @static if is_windows()
-        #     unshift!(libs, "-march=x86-64")
-        #     push!(cflags, "-march=x86-64")
-        # end
     end
 
 
