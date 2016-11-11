@@ -1,5 +1,5 @@
 importall MathProgBase.SolverInterface
-importall SemidefiniteModel
+importall SemidefiniteModels
 
 export CSDPMathProgModel, CSDPSolver
 
