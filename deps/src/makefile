@@ -3,6 +3,9 @@ libs   = -lblas -llapack
 build  = ../build
 CFLAGS = -DNOSHORTS -I$(csdp)/include -g
 
+CFLAGS64=-O3 -ansi -Wall -DNOSHORTS -DUSEGETTIME -I../include -Dinteger=long -fopenmp -g -m64
+
+
 srcs = $(shell ls $(csdp)/lib/*.c)
 objs = $(patsubst $(csdp)/lib/%.c,$(build)/%.o,$(srcs))
 
