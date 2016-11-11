@@ -2,4 +2,4 @@ julia 0.5
 BinDeps
 Glob
 MathProgBase
-SemidefiniteModel
+SemidefiniteModels
