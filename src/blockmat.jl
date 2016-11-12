@@ -16,7 +16,7 @@ end
 export fptr, ptr
 
 function mywrap(X::blockmatrix)
-    #finalizer(X, free_blockmatrix)
+    finalizer(X, free_blockmatrix)
     BlockMatrix(X)
 end
 
@@ -25,7 +25,7 @@ function mywrap{T}(x::Ptr{T}, len)
     # because the pointer it has has an offset
     y = unsafe_wrap(Array, x + sizeof(T), len, false)
     # fptr takes care of this offset
-    #finalizer(y, s -> Libc.free(fptr(s)))
+    finalizer(y, s -> Libc.free(fptr(s)))
     y
 end
 

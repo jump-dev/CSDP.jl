@@ -1,8 +1,13 @@
 # Julia wrapper for header: include/blockmat.h
 # Automatically generated using Clang.jl wrap_c, version 0.0.0
 
-typealias csdpshort Cushort
-#typealias csdpshort Cint
+# TODO detect size and use bitstype because if the DLL changes and gets
+#      compiled with NOSHORTS we are screwed with the following code...
+@static if is_windows()
+    typealias csdpshort Cushort
+  else
+    typealias csdpshort Cint
+end
 
 # begin enum blockcat
 typealias blockcat Cuint
