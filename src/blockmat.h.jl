@@ -21,12 +21,12 @@ immutable blockrec
     blocksize::csdpshort
 end
 
-immutable blockmatrix
+type blockmatrix
     nblocks::Cint
     blocks::Ptr{blockrec}
 end
 
-immutable sparseblock
+type sparseblock
     next::Ptr{sparseblock}
     nextbyblock::Ptr{sparseblock}
     entries::Ptr{Cdouble}
@@ -48,7 +48,7 @@ end
 # Skipping MacroDefinition: ktoi ( k , lda ) ( ( k % lda ) + 1 )
 # Skipping MacroDefinition: ktoj ( k , lda ) ( ( k / lda ) + 1 )
 
-immutable paramstruc
+type paramstruc
     axtol::Cdouble
     atytol::Cdouble
     objtol::Cdouble

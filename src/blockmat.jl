@@ -16,9 +16,8 @@ end
 export fptr, ptr
 
 function mywrap(X::blockmatrix)
-    Y = BlockMatrix(X)
-    #finalizer(Y, Y -> free_blockmatrix(Y.csdp))
-    Y
+    #finalizer(X, free_blockmatrix)
+    BlockMatrix(X)
 end
 
 function mywrap{T}(x::Ptr{T}, len)
@@ -273,7 +272,8 @@ function ConstraintMatrix(constr, jblocks::AbstractVector{SparseBlock})
                             1                 # issparse
                             )
         jblock.csdp = block
-        next = Base.unsafe_convert(Ptr{sparseblock}, Ref(block))
+        next = pointer_from_objref(block)
+        #next = Base.unsafe_convert(Ptr{sparseblock}, Ref(block))
     end
     csdp = constraintmatrix(Ptr{sparseblock}(next))
     ConstraintMatrix(jblocks, csdp)
