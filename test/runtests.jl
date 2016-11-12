@@ -60,12 +60,14 @@ end
 
 # FIXME fails on Windows 32 bits... Maybe I should put linear vars/cons
 # in a diagonal matrix in SemidefiniteModels.jl instead of many 1x1 blocks
-#@testset "Conic linear tests" begin
-#    coniclineartest(CSDP.CSDPSolver(), duals=true, tol=1e-6)
-#end
+@static if !is_windows() || WORD_SIZE != 32
+    @testset "Conic linear tests" begin
+        coniclineartest(CSDP.CSDPSolver(), duals=true, tol=1e-6)
+    end
 
-@testset "Conic SOC tests" begin
-    conicSOCtest(CSDP.CSDPSolver(write_prob="soc.prob"), duals=true, tol=1e-6)
+    @testset "Conic SOC tests" begin
+        conicSOCtest(CSDP.CSDPSolver(write_prob="soc.prob"), duals=true, tol=1e-6)
+    end
 end
 
 @testset "Conic SOC rotated tests" begin
