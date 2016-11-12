@@ -16,8 +16,9 @@ end
 export fptr, ptr
 
 function mywrap(X::blockmatrix)
-    finalizer(X, free_blockmatrix)
-    BlockMatrix(X)
+    Y = BlockMatrix(X)
+    #finalizer(Y, Y -> free_blockmatrix(Y.csdp))
+    Y
 end
 
 function mywrap{T}(x::Ptr{T}, len)
@@ -25,7 +26,7 @@ function mywrap{T}(x::Ptr{T}, len)
     # because the pointer it has has an offset
     y = unsafe_wrap(Array, x + sizeof(T), len, false)
     # fptr takes care of this offset
-    finalizer(y, s -> Libc.free(fptr(s)))
+    #finalizer(y, s -> Libc.free(fptr(s)))
     y
 end
 
@@ -53,14 +54,14 @@ type BlockRec <: AbstractMatrix{Cdouble}
 end
 function BlockRec(a::Vector{Cdouble}, cat::blockcat, l::Int)
     # /!\ the matrix is not 1-indexed
-    BlockRec(a, blockrec(blockdatarec(pointer(a)), cat, Cint(isqrt(l))))
+    BlockRec(a, blockrec(blockdatarec(pointer(a)), cat, csdpshort(isqrt(l))))
 end
 function BlockRec(A::Matrix)
     BlockRec(Vector{Cdouble}(reshape(A, length(A))), MATRIX, length(A))
 end
 function BlockRec(A::Diagonal)
     a = Vector{Cdouble}(diag(A))
-    BlockRec(a, blockrec(blockdatarec(fptr(a)), DIAG, Cint(isqrt(length(A)))))
+    BlockRec(a, blockrec(blockdatarec(fptr(a)), DIAG, csdpshort(isqrt(length(A)))))
 end
 function blockreczeros(n)
     BlockRec(zeros(Cdouble, n^2), MATRIX, n^2)
@@ -164,17 +165,17 @@ end
 # * constraintmatrix contains a linked list of the blocks
 
 type SparseBlock <: AbstractMatrix{Cdouble}
-    i::Vector{Cint}
-    j::Vector{Cint}
+    i::Vector{csdpshort}
+    j::Vector{csdpshort}
     v::Vector{Cdouble}
     n::Cint
     csdp::Nullable{sparseblock}
-    function SparseBlock(i::Vector{Cint}, j::Vector{Cint}, v::Vector{Cdouble}, n::Integer, csdp)
+    function SparseBlock(i::Vector{csdpshort}, j::Vector{csdpshort}, v::Vector{Cdouble}, n::Integer, csdp)
         new(i, j, v, n, csdp)
     end
 end
 
-function SparseBlock(i::Vector{Cint}, j::Vector{Cint}, v::Vector{Cdouble}, n::Integer)
+function SparseBlock(i::Vector{csdpshort}, j::Vector{csdpshort}, v::Vector{Cdouble}, n::Integer)
     SparseBlock(i, j, v, n, nothing)
 end
 
@@ -182,8 +183,8 @@ convert(::Type{SparseBlock}, A::SparseBlock) = A
 function convert(::Type{SparseBlock}, A::SparseMatrixCSC{Cdouble})
     n = Base.LinAlg.checksquare(A)
     nn = nnz(A)
-    I = Cint[]
-    J = Cint[]
+    I = csdpshort[]
+    J = csdpshort[]
     V = Cdouble[]
     vals = nonzeros(A)
     rows = rowvals(A)
@@ -202,7 +203,7 @@ end
 convert(::Type{SparseBlock}, A::AbstractMatrix{Cdouble}) = SparseBlock(SparseMatrixCSC{Cdouble, Cint}(A))
 convert(::Type{SparseBlock}, A::AbstractMatrix) = SparseBlock(map(Cdouble, A))
 function sparseblockzeros(n)
-    SparseBlock(Cint[], Cint[], Cdouble[], n)
+    SparseBlock(csdpshort[], csdpshort[], Cdouble[], n)
 end
 
 function size(A::SparseBlock)
@@ -272,7 +273,7 @@ function ConstraintMatrix(constr, jblocks::AbstractVector{SparseBlock})
                             1                 # issparse
                             )
         jblock.csdp = block
-        next = pointer_from_objref(block)
+        next = Base.unsafe_convert(Ptr{sparseblock}, Ref(block))
     end
     csdp = constraintmatrix(Ptr{sparseblock}(next))
     ConstraintMatrix(jblocks, csdp)

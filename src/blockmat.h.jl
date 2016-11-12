@@ -1,13 +1,14 @@
 # Julia wrapper for header: include/blockmat.h
 # Automatically generated using Clang.jl wrap_c, version 0.0.0
 
-const NOSHORTS = 1
+typealias csdpshort Cushort
+#typealias csdpshort Cint
 
 # begin enum blockcat
-typealias blockcat UInt32
-const DIAG = (UInt32)(0)
-const MATRIX = (UInt32)(1)
-const PACKEDMATRIX = (UInt32)(2)
+typealias blockcat Cuint
+const DIAG = (blockcat)(0)
+const MATRIX = (blockcat)(1)
+const PACKEDMATRIX = (blockcat)(2)
 # end enum blockcat
 
 immutable blockdatarec
@@ -17,25 +18,25 @@ end
 immutable blockrec
     data::blockdatarec
     blockcategory::blockcat
-    blocksize::Cint
+    blocksize::csdpshort
 end
 
-type blockmatrix
+immutable blockmatrix
     nblocks::Cint
     blocks::Ptr{blockrec}
 end
 
-type sparseblock
+immutable sparseblock
     next::Ptr{sparseblock}
     nextbyblock::Ptr{sparseblock}
     entries::Ptr{Cdouble}
-    iindices::Ptr{Cint}
-    jindices::Ptr{Cint}
+    iindices::Ptr{csdpshort}
+    jindices::Ptr{csdpshort}
     numentries::Cint
-    blocknum::Cint
-    blocksize::Cint
-    constraintnum::Cint
-    issparse::Cint
+    blocknum::csdpshort
+    blocksize::csdpshort
+    constraintnum::csdpshort
+    issparse::csdpshort
 end
 
 immutable constraintmatrix
@@ -47,7 +48,7 @@ end
 # Skipping MacroDefinition: ktoi ( k , lda ) ( ( k % lda ) + 1 )
 # Skipping MacroDefinition: ktoj ( k , lda ) ( ( k / lda ) + 1 )
 
-type paramstruc
+immutable paramstruc
     axtol::Cdouble
     atytol::Cdouble
     objtol::Cdouble
