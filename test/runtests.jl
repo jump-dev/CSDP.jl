@@ -40,9 +40,9 @@ end
               0 0  0 0 0 0 0;
               0 0  0 0 0 0 0;
               0 0  0 0 0 0 0] / 24
-        #@test norm(Array(X) - X✓) < 1e-6
+        @test norm(AbstractArray(X) - X✓) < 1e-6
         y✓ = [3, 4] / 4
-        #@test norm(Array(y) - y✓) < 1e-6
+        @test norm(AbstractArray(y) - y✓) < 1e-6
         Z✓ = [1 -1 0 0 0 0 0;
              -1  1 0 0 0 0 0;
               0  0 0 0 0 0 0;
@@ -50,7 +50,7 @@ end
               0  0 0 0 8 0 0;
               0  0 0 0 0 3 0;
               0  0 0 0 0 0 4] / 4
-        #@test norm(Array(Z) - Z✓) < 1e-6
+        @test norm(AbstractArray(Z) - Z✓) < 1e-6
     end
 end
 
