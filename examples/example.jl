@@ -77,10 +77,6 @@ CSDP.write_prob("prob.dat-s", C, b, constraints)
 
 X, y, Z = initsoln(C, b, constraints)
 
-#@show Array(X)
-#@show Array(y)
-#@show Array(Z)
-
 pobj, dobj = easy_sdp(C, b, constraints, X, y, Z)
 
 # Fails on Windows
