@@ -1,14 +1,23 @@
 #!/usr/bin/env python
 # Starting point https://github.com/llvm-mirror/clang/blob/master/bindings/python/examples/cindex/cindex-dump.py
+#
+# Needs clang module to be installed.
+#
 
 from __future__ import print_function
-from clang.cindex import Index
-from  clang.cindex import CursorKind as C
 import os
 import re
 import requests
 import sys
 import shutil
+
+try:
+    from clang.cindex import Index
+    from clang.cindex import CursorKind as C
+except ImportError:
+    print("You need to install `clang`. In Python e.g.\n$ pip install 'libclang-py3'",
+          file=sys.stderr)
+    exit(1)
 
 
 HEADER    = "Csdp-6.1.1/include/declarations.h"
