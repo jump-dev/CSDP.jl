@@ -37,7 +37,7 @@ def cblas_header(cblas_h = "cblas.h"):
     if not os.path.exists(cblas_h):
         r = requests.get(cblas_url)
         assert r.status_code == 200
-        with open(cblas_h, "w") as io:
+        with open(cblas_h, "wb") as io:
             io.write(r.content)
         return r.content
     else:
@@ -49,7 +49,7 @@ def clapack_header(clapack_h = "clapack.h"):
     if not os.path.exists(clapack_h):
         r = requests.get(clapack_url)
         assert r.status_code == 200
-        with open(clapack_h, "w") as io:
+        with open(clapack_h, "wb") as io:
             io.write(r.content)
         return r.content
     else:
