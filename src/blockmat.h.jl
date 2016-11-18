@@ -1,13 +1,19 @@
 # Julia wrapper for header: include/blockmat.h
 # Automatically generated using Clang.jl wrap_c, version 0.0.0
 
-const NOSHORTS = 1
+# TODO detect size and use bitstype because if the DLL changes and gets
+#      compiled with NOSHORTS we are screwed with the following code...
+@static if is_windows()
+    typealias csdpshort Cushort
+  else
+    typealias csdpshort BlasInt
+end
 
 # begin enum blockcat
-typealias blockcat UInt32
-const DIAG = (UInt32)(0)
-const MATRIX = (UInt32)(1)
-const PACKEDMATRIX = (UInt32)(2)
+typealias blockcat Cuint
+const DIAG = (blockcat)(0)
+const MATRIX = (blockcat)(1)
+const PACKEDMATRIX = (blockcat)(2)
 # end enum blockcat
 
 immutable blockdatarec
@@ -17,11 +23,11 @@ end
 immutable blockrec
     data::blockdatarec
     blockcategory::blockcat
-    blocksize::BlasInt
+    blocksize::csdpshort
 end
 
-immutable blockmatrix
-    nblocks::BlasInt
+type blockmatrix
+    nblocks::Cint
     blocks::Ptr{blockrec}
 end
 
@@ -29,13 +35,13 @@ type sparseblock
     next::Ptr{sparseblock}
     nextbyblock::Ptr{sparseblock}
     entries::Ptr{Cdouble}
-    iindices::Ptr{BlasInt}
-    jindices::Ptr{BlasInt}
-    numentries::BlasInt
-    blocknum::BlasInt
-    blocksize::BlasInt
-    constraintnum::BlasInt
-    issparse::BlasInt
+    iindices::Ptr{csdpshort}
+    jindices::Ptr{csdpshort}
+    numentries::Cint
+    blocknum::csdpshort
+    blocksize::csdpshort
+    constraintnum::csdpshort
+    issparse::csdpshort
 end
 
 immutable constraintmatrix
@@ -53,14 +59,14 @@ type paramstruc
     objtol::Cdouble
     pinftol::Cdouble
     dinftol::Cdouble
-    maxiter::BlasInt
+    maxiter::Cint
     minstepfrac::Cdouble
     maxstepfrac::Cdouble
     minstepp::Cdouble
     minstepd::Cdouble
-    usexzgap::BlasInt
-    tweakgap::BlasInt
-    affine::BlasInt
+    usexzgap::Cint
+    tweakgap::Cint
+    affine::Cint
     perturbobj::Cdouble
-    fastmode::BlasInt
+    fastmode::Cint
 end
