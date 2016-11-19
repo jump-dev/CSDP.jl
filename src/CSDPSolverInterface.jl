@@ -75,8 +75,10 @@ function optimize!(m::CSDPMathProgModel)
         end
     end
 
+    verbose = get(m.options, :verbose, true)
+
     m.X, m.y, m.Z = initsoln(m.C, m.b, As)
-    m.status, m.pobj, m.dobj = easy_sdp(m.C, m.b, As, m.X, m.y, m.Z)
+    m.status, m.pobj, m.dobj = easy_sdp(m.C, m.b, As, m.X, m.y, m.Z, verbose)
 end
 
 function status(m::CSDPMathProgModel)
