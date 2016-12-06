@@ -1,6 +1,6 @@
 # CSDP
 
-[![Build Status](https://travis-ci.org/EQt/CSDP.jl.svg?branch=master)](https://travis-ci.org/EQt/CSDP.jl)
+[![Build Status](https://travis-ci.org/JuliaOpt/CSDP.jl.svg?branch=master)](https://travis-ci.org/JuliaOpt/CSDP.jl)
 [![Build status](https://ci.appveyor.com/api/projects/status/23qb5jkbbhx4ritw/branch/master?svg=true)](https://ci.appveyor.com/project/EQt/csdp-jl)
 
 
