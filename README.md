@@ -39,7 +39,7 @@ CSDP will terminate successfully (or partially) in the following cases:
 * If CSDP finds `X, Z ⪰ 0` such that the following 3 tolerances are satisfied:
   * primal feasibility tolerance: `||A(x) - a||_2 / (1 + ||a||_2) < axtol`
   * dual feasibility tolerance: `||A'(y) - C - Z||_F / (1 + ||C||_F) < atytol`
-  * relative duality gap tolerance: `gap / (1 + ⟨a, y⟩) < objtol`
+  * relative duality gap tolerance: `gap / (1 + |⟨a, y⟩| + |⟨C, X⟩|) < objtol`
     * objective duality gap: If `usexygap` is `0`, `gap = ⟨a, y⟩ - ⟨C, X⟩`
     * XY duality gap: If `usexygap` is `1`, `gap = ⟨Z, X⟩`
   then it returns `0`.
