@@ -60,7 +60,7 @@ CSDP code | State           | Description                                       
 `1`       | Success         | The problem is primal infeasible, and we have a certificate   | Infeasible          |
 `2`       | Success         | The problem is dual infeasible, and we have a certificate     | Unbounded           |
 `3`       | Partial Success | A solution has been found, but full accuracy was not achieved | Unknown             |
-`4`       | Failure         | Maximum iterations reached                                    | Unknown             |
+`4`       | Failure         | Maximum iterations reached                                    | UserLimit           |
 `5`       | Failure         | Stuck at edge of primal feasibility                           | Unknown             |
 `6`       | Failure         | Stuck at edge of dual infeasibility                           | Unknown             |
 `7`       | Failure         | Lack of progress                                              | Unknown             |
