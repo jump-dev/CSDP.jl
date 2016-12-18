@@ -89,11 +89,11 @@ function status(m::CSDPMathProgModel)
         return :Infeasible
     elseif status == 2
         return :Unbounded
+    elseif status == 3
+        return :Suboptimal
     elseif status == 4
         return :UserLimit
-    elseif 3 <= status <= 7
-        return :Unknown
-    elseif 8 <= status <= 9
+    elseif 5 <= status <= 9
         return :Error
     elseif status == -1
         return :Uninitialized

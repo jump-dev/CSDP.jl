@@ -59,11 +59,11 @@ CSDP code | State           | Description                                       
 `0`       | Success         | SDP solved                                                    | Optimal             |
 `1`       | Success         | The problem is primal infeasible, and we have a certificate   | Infeasible          |
 `2`       | Success         | The problem is dual infeasible, and we have a certificate     | Unbounded           |
-`3`       | Partial Success | A solution has been found, but full accuracy was not achieved | Unknown             |
+`3`       | Partial Success | A solution has been found, but full accuracy was not achieved | Suboptimal          |
 `4`       | Failure         | Maximum iterations reached                                    | UserLimit           |
-`5`       | Failure         | Stuck at edge of primal feasibility                           | Unknown             |
-`6`       | Failure         | Stuck at edge of dual infeasibility                           | Unknown             |
-`7`       | Failure         | Lack of progress                                              | Unknown             |
+`5`       | Failure         | Stuck at edge of primal feasibility                           | Error               |
+`6`       | Failure         | Stuck at edge of dual infeasibility                           | Error               |
+`7`       | Failure         | Lack of progress                                              | Error               |
 `8`       | Failure         | `X`, `Z`, or `O` was singular                                 | Error               |
 `9`       | Failure         | Detected `NaN` or `Inf` values                                | Error               |
 
