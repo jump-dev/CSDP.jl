@@ -115,16 +115,9 @@ For Windows, a pre-compiled DLL is downloaded (unless you configure the `build.j
 
 
 ## Next Steps (TODOs)
-- [ ] Return solution matrix X (as Julia::Matrix)
-- [ ] Show a Blockmatrix accordingly
-- [ ] Integrate in SemidefinitePorgramming.jl
-- [ ] Make more user friendly interface
-- [ ] Maybe port `libcsdp` to use 64bit Lapack, aka replace “some `int`s” by `long int` (the variables used in a Lapack call).
-      When this was done, one could set `JULIA_LAPACK` to `true` in the `deps/constants.jl` file.
-      The [`pycparser`](https://github.com/eliben/pycparser) or `Clang.cindex` might be useful for that.
-- [ ] Add a C header for the Lapack routines in order to check the types and reduce the possibility to crash.
-      Use http://www.netlib.org/clapack/clapack.h as starting point.
+- [ ] Maybe port `libcsdp` to use 64bit Lapack, aka replace “some `int`s” by `long int` (the variables used in a Lapack call).  Started in brach `julias_openblas64`
 - [ ] Maybe think about an own array type to circumvent the 1-index problems in `libcsdp`.
 - [ ] Map Julia's sparse arrays to `sparsematrixblock`.
 - [ ] Upload `libcsdp.dll` for Windows via Appveyor deployment as described at
-      [JuliaCon](https://www.youtube.com/watch?v=XKdKdfHB2KM&index=12&list=PLP8iPy9hna6SQPwZUDtAM59-wPzCPyD_S)
+      [JuliaCon](https://www.youtube.com/watch?v=XKdKdfHB2KM&index=12&list=PLP8iPy9hna6SQPwZUDtAM59-wPzCPyD_S).
+      Currently we use a [separate repository](https://github.com/EQt/winlapack).
