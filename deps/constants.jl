@@ -7,10 +7,10 @@ const csdpversion  = "Csdp-$version"
 const download_url =
     "http://www.coin-or.org/download/source/Csdp/Csdp-$version.tgz"
 
-patchf      = Pkg.dir("CSDP", "deps", "src$suffix", "debug-mat.c")
-srcdir      = Pkg.dir("CSDP", "deps", "src$suffix", csdpversion, "lib")
-prefix      = Pkg.dir("CSDP", "deps", "usr")
-builddir    = Pkg.dir("CSDP", "deps", "build$suffix")
+patchf      = joinpath(dirname(@__FILE__), "src$suffix", "debug-mat.c")
+srcdir      = joinpath(dirname(@__FILE__), "src$suffix", csdpversion, "lib")
+prefix      = joinpath(dirname(@__FILE__), "usr")
+builddir    = joinpath(dirname(@__FILE__), "build$suffix")
 cflags      = ["-I$srcdir/../include",  "-DNOSHORTS", "-g"]
 libdir      = joinpath(prefix, @static is_windows() ? "bin" : "lib/")
 dlpath      = joinpath(libdir, libname)

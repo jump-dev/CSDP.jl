@@ -17,14 +17,14 @@ end
 push!(Libdl.DL_LOAD_PATH, readchomp(`$(ENV["LLVM_CONFIG"]) --libdir`))
 
 include(joinpath(dirname(@__FILE__), "constants.jl"))
-cd(Pkg.dir("CSDP", "deps", "src", csdpversion))
+cd(joinpath(dirname(@__FILE__), "src", csdpversion))
 
 wrap_c.cl_to_jl[Clang.cindex.Pointer] = :Ptr
-header_naming = n -> Pkg.dir("CSDP", "src", "$(basename(n)).jl")
+header_naming = n -> joinpath(dirname(@__FILE__), "..", "src", "$(basename(n)).jl")
 context = wrap_c.init(header_outputfile = header_naming,
                       header_library = "CSDP.csdp",
                       clang_diagnostics=true,
-                      common_file = Pkg.dir("CSDP", "src", "blockmat.h.jl"),
+                      common_file = joinpath(dirname(@__FILE__), "..", "src", "blockmat.h.jl"),
                       clang_args = ["-DNOSHORTS"])
                       # rewriter = s -> (println(s); s))
 context.options.wrap_structs = true

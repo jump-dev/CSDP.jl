@@ -75,8 +75,10 @@ function optimize!(m::CSDPMathProgModel)
         end
     end
 
+    verbose = get(m.options, :verbose, true)
+
     m.X, m.y, m.Z = initsoln(m.C, m.b, As)
-    m.status, m.pobj, m.dobj = easy_sdp(m.C, m.b, As, m.X, m.y, m.Z)
+    m.status, m.pobj, m.dobj = easy_sdp(m.C, m.b, As, m.X, m.y, m.Z, verbose)
 end
 
 function status(m::CSDPMathProgModel)
@@ -87,9 +89,11 @@ function status(m::CSDPMathProgModel)
         return :Infeasible
     elseif status == 2
         return :Unbounded
-    elseif 3 <= status <= 7
-        return :Unknown
-    elseif 8 <= status <= 9
+    elseif status == 3
+        return :Suboptimal
+    elseif status == 4
+        return :UserLimit
+    elseif 5 <= status <= 9
         return :Error
     elseif status == -1
         return :Uninitialized
