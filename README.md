@@ -1,8 +1,9 @@
 # CSDP
 
-[![Build Status](https://travis-ci.org/JuliaOpt/CSDP.jl.svg?branch=master)](https://travis-ci.org/JuliaOpt/CSDP.jl)
-[![Build status](https://ci.appveyor.com/api/projects/status/23qb5jkbbhx4ritw/branch/master?svg=true)](https://ci.appveyor.com/project/EQt/csdp-jl)
-
+| **PackageEvaluator** | **Build Status** |
+|:--------------------:|:----------------:|
+| [![][pkg-0.5-img]][pkg-0.5-url] | [![Build Status][build-img]][build-url] [![Build Status][winbuild-img]][winbuild-url] |
+| [![][pkg-0.6-img]][pkg-0.6-url] | [![Coveralls branch][coveralls-img]][coveralls-url] [![Codecov branch][codecov-img]][codecov-url] |
 
 Julia wrapper to [CSDP](https://projects.coin-or.org/Csdp) semidefinite programming solver.
 
@@ -121,3 +122,17 @@ For Windows, a pre-compiled DLL is downloaded (unless you configure the `build.j
 - [ ] Upload `libcsdp.dll` for Windows via Appveyor deployment as described at
       [JuliaCon](https://www.youtube.com/watch?v=XKdKdfHB2KM&index=12&list=PLP8iPy9hna6SQPwZUDtAM59-wPzCPyD_S).
       Currently we use a [separate repository](https://github.com/EQt/winlapack).
+
+[pkg-0.5-img]: http://pkg.julialang.org/badges/CSDP_0.5.svg
+[pkg-0.5-url]: http://pkg.julialang.org/?pkg=CSDP
+[pkg-0.6-img]: http://pkg.julialang.org/badges/CSDP_0.6.svg
+[pkg-0.6-url]: http://pkg.julialang.org/?pkg=CSDP
+
+[build-img]: https://travis-ci.org/JuliaOpt/CSDP.jl.svg?branch=master
+[build-url]: https://travis-ci.org/JuliaOpt/CSDP.jl
+[winbuild-img]: https://ci.appveyor.com/api/projects/status/a8lea4ajq0pt1r48?svg=true
+[winbuild-url]: https://ci.appveyor.com/project/blegat/csdp-jl-lq6ys
+[coveralls-img]: https://coveralls.io/repos/github/JuliaOpt/CSDP.jl/badge.svg?branch=master
+[coveralls-url]: https://coveralls.io/github/JuliaOpt/CSDP.jl?branch=master
+[codecov-img]: http://codecov.io/github/JuliaOpt/CSDP.jl/coverage.svg?branch=master
+[codecov-url]: http://codecov.io/github/JuliaOpt/CSDP.jl?branch=master
