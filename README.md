@@ -130,8 +130,8 @@ For Windows, a pre-compiled DLL is downloaded (unless you configure the `build.j
 
 [build-img]: https://travis-ci.org/JuliaOpt/CSDP.jl.svg?branch=master
 [build-url]: https://travis-ci.org/JuliaOpt/CSDP.jl
-[winbuild-img]: https://ci.appveyor.com/api/projects/status/a8lea4ajq0pt1r48?svg=true
-[winbuild-url]: https://ci.appveyor.com/project/blegat/csdp-jl-lq6ys
+[winbuild-img]: https://ci.appveyor.com/api/projects/status/v8nb0yb7ahn9n7ol?svg=true
+[winbuild-url]: https://ci.appveyor.com/project/JuliaOpt/csdp-jl
 [coveralls-img]: https://coveralls.io/repos/github/JuliaOpt/CSDP.jl/badge.svg?branch=master
 [coveralls-url]: https://coveralls.io/github/JuliaOpt/CSDP.jl?branch=master
 [codecov-img]: http://codecov.io/github/JuliaOpt/CSDP.jl/coverage.svg?branch=master
