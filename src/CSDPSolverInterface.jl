@@ -28,7 +28,7 @@ SDModel(s::CSDPSolver) = CSDPMathProgModel(; s.options...)
 ConicModel(s::CSDPSolver) = SDtoConicBridge(SDModel(s))
 LinearQuadraticModel(s::CSDPSolver) = ConicToLPQPBridge(ConicModel(s))
 
-supportedcones(s::CSDPSolver) = [:Free,:Zero,:NonNeg,:NonPos,:SDP]
+supportedcones(s::CSDPSolver) = [:Free,:Zero,:NonNeg,:NonPos,:SOC,:RSOC,:SDP]
 function setvartype!(m::CSDPMathProgModel, vtype, blk, i, j)
     if vtype != :Cont
         error("Unsupported variable type $vtype by CSDP")
