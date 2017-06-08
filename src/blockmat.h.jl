@@ -4,13 +4,13 @@
 # TODO detect size and use bitstype because if the DLL changes and gets
 #      compiled with NOSHORTS we are screwed with the following code...
 @static if is_windows()
-    typealias csdpshort Cushort
+    const csdpshort = Cushort
   else
-    typealias csdpshort Cint
+    const csdpshort = Cint
 end
 
 # begin enum blockcat
-typealias blockcat Cuint
+const blockcat = Cuint
 const DIAG = (blockcat)(0)
 const MATRIX = (blockcat)(1)
 const PACKEDMATRIX = (blockcat)(2)
