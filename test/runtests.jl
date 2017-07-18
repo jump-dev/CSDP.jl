@@ -54,30 +54,38 @@ end
     end
 end
 
-@testset "Linear tests" begin
-    include(joinpath(Pkg.dir("MathProgBase"),"test","linproginterface.jl"))
-    linprogsolvertest(CSDP.CSDPSolver(), 1e-7)
-end
-
+#@testset "Linear tests" begin
+#    include(joinpath(Pkg.dir("MathOptInterface"), "test", "contlinear.jl"))
+#    contlineartest(CSDP.CSDPSolver(), 1e-7)
+#end
 @testset "Conic tests" begin
-    include(joinpath(Pkg.dir("MathProgBase"),"test","conicinterface.jl"))
-    # FIXME fails on Windows 32 bits... Maybe I should put linear vars/cons
-    # in a diagonal matrix in SemidefiniteModels.jl instead of many 1x1 blocks
-    @static if !is_windows() || Sys.WORD_SIZE != 32
-        @testset "Conic linear tests" begin
-            coniclineartest(CSDP.CSDPSolver(), duals=true, tol=1e-6)
-        end
-
-        @testset "Conic SOC tests" begin
-            conicSOCtest(CSDP.CSDPSolver(write_prob="soc.prob"), duals=true, tol=1e-6)
-        end
-
-        @testset "Conic SOC rotated tests" begin
-            conicSOCRotatedtest(CSDP.CSDPSolver(), duals=true, tol=1e-6)
-        end
-    end
-
-    @testset "Conic SDP tests" begin
-        conicSDPtest(CSDP.CSDPSolver(), duals=false, tol=1e-6)
-    end
+    include(joinpath(Pkg.dir("MathOptInterface"), "test", "contconic.jl"))
+    contconictest(CSDP.CSDPSolver(), 1e-7)
 end
+#   @testset "Linear tests" begin
+#       include(joinpath(Pkg.dir("MathProgBase"),"test","linproginterface.jl"))
+#       linprogsolvertest(CSDP.CSDPSolver(), 1e-7)
+#   end
+#
+#   @testset "Conic tests" begin
+#       include(joinpath(Pkg.dir("MathProgBase"),"test","conicinterface.jl"))
+#       # FIXME fails on Windows 32 bits... Maybe I should put linear vars/cons
+#       # in a diagonal matrix in SemidefiniteModels.jl instead of many 1x1 blocks
+#       @static if !is_windows() || Sys.WORD_SIZE != 32
+#           @testset "Conic linear tests" begin
+#               coniclineartest(CSDP.CSDPSolver(), duals=true, tol=1e-6)
+#           end
+#
+#           @testset "Conic SOC tests" begin
+#               conicSOCtest(CSDP.CSDPSolver(write_prob="soc.prob"), duals=true, tol=1e-6)
+#           end
+#
+#           @testset "Conic SOC rotated tests" begin
+#               conicSOCRotatedtest(CSDP.CSDPSolver(), duals=true, tol=1e-6)
+#           end
+#       end
+#
+#       @testset "Conic SDP tests" begin
+#           conicSDPtest(CSDP.CSDPSolver(), duals=false, tol=1e-6)
+#       end
+#   end

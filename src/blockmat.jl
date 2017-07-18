@@ -51,19 +51,27 @@ type BlockRec <: AbstractMatrix{Cdouble}
     _blockdatarec::Vector{Cdouble}
     csdp::blockrec
 end
-function BlockRec(a::Vector{Cdouble}, cat::blockcat, l::Int)
-    # /!\ the matrix is not 1-indexed
-    BlockRec(a, blockrec(blockdatarec(pointer(a)), cat, csdpshort(isqrt(l))))
+function BlockRec(a::Vector{Cdouble}, n::Int)
+    if n > 0
+        # /!\ the matrix is 0-indexed -> pointer
+        BlockRec(a, blockrec(blockdatarec(pointer(a)), MATRIX, csdpshort(n)))
+    else
+        # /!\ the diagonal matrix is 1-indexed -> fptr
+        BlockRec(a, blockrec(blockdatarec(fptr(a)), DIAG, csdpshort(-n)))
+    end
 end
-function BlockRec(A::Matrix)
-    BlockRec(Vector{Cdouble}(reshape(A, length(A))), MATRIX, length(A))
-end
+BlockRec(a::Vector, n::Int) = BlockRec(Vector{Cdouble}(a), n)
+BlockRec(A::Matrix) = BlockRec(reshape(A, length(A)), Base.LinAlg.checksquare(A))
 function BlockRec(A::Diagonal)
     a = Vector{Cdouble}(diag(A))
-    BlockRec(a, blockrec(blockdatarec(fptr(a)), DIAG, csdpshort(isqrt(length(A)))))
+    BlockRec(a, -length(a))
 end
 function blockreczeros(n)
-    BlockRec(zeros(Cdouble, n^2), MATRIX, n^2)
+    if n > 0
+        BlockRec(zeros(Cdouble, n^2), n)
+    else
+        BlockRec(zeros(Cdouble, -n), n)
+    end
 end
 
 function size(A::BlockRec)
@@ -202,7 +210,7 @@ end
 convert(::Type{SparseBlock}, A::AbstractMatrix{Cdouble}) = SparseBlock(SparseMatrixCSC{Cdouble, Cint}(A))
 convert(::Type{SparseBlock}, A::AbstractMatrix) = SparseBlock(map(Cdouble, A))
 function sparseblockzeros(n)
-    SparseBlock(csdpshort[], csdpshort[], Cdouble[], n)
+    SparseBlock(csdpshort[], csdpshort[], Cdouble[], abs(n))
 end
 
 function size(A::SparseBlock)
