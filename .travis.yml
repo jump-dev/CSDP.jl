@@ -7,10 +7,11 @@ julia:
   - 0.6
   - nightly
 
-before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-        sudo apt-get install liblapack-dev libblas-dev;
-    fi
+addons:
+  apt: # apt-get for linux
+    packages:
+    - liblapack-dev
+    - libblas-dev
 
 notifications:
   email: false
