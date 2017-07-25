@@ -54,10 +54,10 @@ end
     end
 end
 
-#@testset "Linear tests" begin
-#    include(joinpath(Pkg.dir("MathOptInterface"), "test", "contlinear.jl"))
-#    contlineartest(CSDP.CSDPSolver(), 1e-7)
-#end
+@testset "Linear tests" begin
+    include(joinpath(Pkg.dir("MathOptInterface"), "test", "contlinear.jl"))
+    contlineartest(CSDP.CSDPSolver(), 1e-7)
+end
 @testset "Conic tests" begin
     include(joinpath(Pkg.dir("MathOptInterface"), "test", "contconic.jl"))
     contconictest(CSDP.CSDPSolver(), 1e-7)
