@@ -29,21 +29,34 @@ type CSDPSolverInstance <: SOI.AbstractSDSolverInstance
 end
 SOI.SDSolverInstance(s::CSDPSolver) = CSDPSolverInstance(; s.options...)
 
-function SOI.initinstance!(m::CSDPSolverInstance, blkdims::Vector{Int}, constr::Int)
+function SOI.initinstance!(m::CSDPSolverInstance, blkdims::Vector{Int}, nconstrs::Int)
+    @assert nconstrs >= 0
+    dummy = nconstrs == 0
+    if dummy
+        # See https://github.com/coin-or/Csdp/issues/2
+        nconstrs = 1
+        blkdims = [blkdims; -1]
+    end
     m.C = blockmatzeros(blkdims)
-    m.b = zeros(Cdouble, constr)
-    m.As = [constrmatzeros(i, blkdims) for i in 1:constr]
+    m.b = zeros(Cdouble, nconstrs)
+    m.As = [constrmatzeros(i, blkdims) for i in 1:nconstrs]
+    if dummy
+        # See https://github.com/coin-or/Csdp/issues/2
+        m.b[1] = 1
+        m.As[1][length(blkdims)][1,1] = 1
+    end
 end
 
 function SOI.setconstraintconstant!(m::CSDPSolverInstance, val, constr::Integer)
-    println("b[$constr] = $val")
+    #println("b[$constr] = $val")
     m.b[constr] = val
 end
 function SOI.setconstraintcoefficient!(m::CSDPSolverInstance, coef, constr::Integer, blk::Integer, i::Integer, j::Integer)
-    println("A[$constr][$blk][$i, $j] = $coef")
+    #println("A[$constr][$blk][$i, $j] = $coef")
     m.As[constr][blk][i,j] = coef
 end
 function SOI.setobjectivecoefficient!(m::CSDPSolverInstance, coef, blk::Integer, i::Integer, j::Integer)
+    #println("C[$blk][$i, $j] = $coef")
     m.C[blk][i,j] = coef
 end
 
