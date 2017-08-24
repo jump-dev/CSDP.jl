@@ -16,22 +16,23 @@ const MATRIX = (blockcat)(1)
 const PACKEDMATRIX = (blockcat)(2)
 # end enum blockcat
 
-immutable blockdatarec
+struct blockdatarec
     _blockdatarec::Ptr{Cdouble}
 end
 
-immutable blockrec
+struct blockrec
     data::blockdatarec
     blockcategory::blockcat
     blocksize::csdpshort
 end
 
-type blockmatrix
+mutable struct blockmatrix
     nblocks::Cint
     blocks::Ptr{blockrec}
 end
+blockmatrix() = blockmatrix(Cint(0), C_NULL)
 
-type sparseblock
+mutable struct sparseblock
     next::Ptr{sparseblock}
     nextbyblock::Ptr{sparseblock}
     entries::Ptr{Cdouble}
@@ -43,8 +44,19 @@ type sparseblock
     constraintnum::csdpshort
     issparse::csdpshort
 end
+function sparseblock(next, jblock, blocknum, constr)
+    # See easysdp.c
+    blocksize = jblock.n
+    numentries = length(jblock.i)
+    issparse = numentries <= blocksize / 4 || numentries <= 15 # FIXME also if category (which is in C...) is DIAG
+end
 
-immutable constraintmatrix
+mutable struct Mconstraintmatrix
+    blocks::Ptr{sparseblock}
+end
+
+# If I add mutable here I get : ReadOnlyMemoryError() in initsoln (I know it is counter-intuitive)
+struct constraintmatrix
     blocks::Ptr{sparseblock}
 end
 
@@ -53,7 +65,7 @@ end
 # Skipping MacroDefinition: ktoi ( k , lda ) ( ( k % lda ) + 1 )
 # Skipping MacroDefinition: ktoj ( k , lda ) ( ( k / lda ) + 1 )
 
-type paramstruc
+mutable struct paramstruc
     axtol::Cdouble
     atytol::Cdouble
     objtol::Cdouble
@@ -69,4 +81,22 @@ type paramstruc
     affine::Cint
     perturbobj::Cdouble
     fastmode::Cint
+end
+
+function paramstruc(options::Dict)
+    paramstruc(get(options, :axtol      , 1.0e-8),
+                get(options, :atytol     , 1.0e-8),
+                get(options, :objtol     , 1.0e-8),
+                get(options, :pinftol    , 1.0e8),
+                get(options, :dinftol    , 1.0e8),
+                get(options, :maxiter    , 100),
+                get(options, :minstepfrac, 0.90),
+                get(options, :maxstepfrac, 0.97),
+                get(options, :minstepp   , 1.0e-8),
+                get(options, :minstepd   , 1.0e-8),
+                get(options, :usexzgap   , 1),
+                get(options, :tweakgap   , 0),
+                get(options, :affine     , 0),
+                get(options, :perturbobj , 1),
+                get(options, :fastmode   , 0))
 end

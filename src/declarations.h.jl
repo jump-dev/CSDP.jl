@@ -15,8 +15,8 @@ function store_unpacked(A::blockmatrix,B::blockmatrix)
     ccall((:store_unpacked,CSDP.csdp),Void,(blockmatrix,blockmatrix),A,B)
 end
 
-function alloc_mat_packed(A::blockmatrix,pB::Ptr{blockmatrix})
-    ccall((:alloc_mat_packed,CSDP.csdp),Void,(blockmatrix,Ptr{blockmatrix}),A,pB)
+function alloc_mat_packed(A::blockmatrix,pB::Ref{blockmatrix})
+    ccall((:alloc_mat_packed,CSDP.csdp),Void,(blockmatrix,Ref{blockmatrix}),A,pB)
 end
 
 function free_mat_packed(A::blockmatrix)
@@ -107,8 +107,8 @@ function op_at(k::Cint,y::Ptr{Cdouble},constraints::Ptr{constraintmatrix},result
     ccall((:op_at,CSDP.csdp),Void,(Cint,Ptr{Cdouble},Ptr{constraintmatrix},blockmatrix),k,y,constraints,result)
 end
 
-function makefill(k::Cint,C::blockmatrix,constraints::Ptr{constraintmatrix},pfill::Ptr{constraintmatrix},work1::blockmatrix,printlevel::Cint)
-    ccall((:makefill,CSDP.csdp),Void,(Cint,blockmatrix,Ptr{constraintmatrix},Ptr{constraintmatrix},blockmatrix,Cint),k,C,constraints,pfill,work1,printlevel)
+function makefill(k::Cint,C::blockmatrix,constraints::Ptr{constraintmatrix},pfill::Ref{Mconstraintmatrix},work1::blockmatrix,printlevel::Cint)
+    ccall((:makefill,CSDP.csdp),Void,(Cint,blockmatrix,Ptr{constraintmatrix},Ref{Mconstraintmatrix},blockmatrix,Cint),k,C,constraints,pfill,work1,printlevel)
 end
 
 function op_o(k::Cint,constraints::Ptr{constraintmatrix},byblocks::Ptr{Ptr{sparseblock}},Zi::blockmatrix,X::blockmatrix,O::Ptr{Cdouble},work1::blockmatrix,work2::blockmatrix)
@@ -167,8 +167,8 @@ function matvec(A::blockmatrix,x::Ptr{Cdouble},y::Ptr{Cdouble})
     ccall((:matvec,CSDP.csdp),Void,(blockmatrix,Ptr{Cdouble},Ptr{Cdouble}),A,x,y)
 end
 
-function alloc_mat(A::blockmatrix,pB::Ptr{blockmatrix})
-    ccall((:alloc_mat,CSDP.csdp),Void,(blockmatrix,Ptr{blockmatrix}),A,pB)
+function alloc_mat(A::blockmatrix,pB::Ref{blockmatrix})
+    ccall((:alloc_mat,CSDP.csdp),Void,(blockmatrix,Ref{blockmatrix}),A,pB)
 end
 
 function free_mat(A::blockmatrix)
@@ -260,8 +260,80 @@ function free_prob(n::Cint,k::Cint,C::blockmatrix,a::Ptr{Cdouble},constraints::P
     ccall((:free_prob,CSDP.csdp),Void,(Cint,Cint,blockmatrix,Ptr{Cdouble},Ptr{constraintmatrix},blockmatrix,Ptr{Cdouble},blockmatrix),n,k,C,a,constraints,X,y,Z)
 end
 
-function sdp(n::Cint,k::Cint,C::blockmatrix,a::Ptr{Cdouble},constant_offset::Cdouble,constraints::Ptr{constraintmatrix},byblocks::Ptr{Ptr{sparseblock}},fill::constraintmatrix,X::blockmatrix,y::Ptr{Cdouble},Z::blockmatrix,cholxinv::blockmatrix,cholzinv::blockmatrix,pobj::Ptr{Cdouble},dobj::Ptr{Cdouble},work1::blockmatrix,work2::blockmatrix,work3::blockmatrix,workvec1::Ptr{Cdouble},workvec2::Ptr{Cdouble},workvec3::Ptr{Cdouble},workvec4::Ptr{Cdouble},workvec5::Ptr{Cdouble},workvec6::Ptr{Cdouble},workvec7::Ptr{Cdouble},workvec8::Ptr{Cdouble},diagO::Ptr{Cdouble},bestx::blockmatrix,besty::Ptr{Cdouble},bestz::blockmatrix,Zi::blockmatrix,O::Ptr{Cdouble},rhs::Ptr{Cdouble},dZ::blockmatrix,dX::blockmatrix,dy::Ptr{Cdouble},dy1::Ptr{Cdouble},Fp::Ptr{Cdouble},printlevel::Cint,parameters::paramstruc)
-    ccall((:sdp,CSDP.csdp),Cint,(Cint,Cint,blockmatrix,Ptr{Cdouble},Cdouble,Ptr{constraintmatrix},Ptr{Ptr{sparseblock}},constraintmatrix,blockmatrix,Ptr{Cdouble},blockmatrix,blockmatrix,blockmatrix,Ptr{Cdouble},Ptr{Cdouble},blockmatrix,blockmatrix,blockmatrix,Ptr{Cdouble},Ptr{Cdouble},Ptr{Cdouble},Ptr{Cdouble},Ptr{Cdouble},Ptr{Cdouble},Ptr{Cdouble},Ptr{Cdouble},Ptr{Cdouble},blockmatrix,Ptr{Cdouble},blockmatrix,blockmatrix,Ptr{Cdouble},Ptr{Cdouble},blockmatrix,blockmatrix,Ptr{Cdouble},Ptr{Cdouble},Ptr{Cdouble},Cint,paramstruc),n,k,C,a,constant_offset,constraints,byblocks,fill,X,y,Z,cholxinv,cholzinv,pobj,dobj,work1,work2,work3,workvec1,workvec2,workvec3,workvec4,workvec5,workvec6,workvec7,workvec8,diagO,bestx,besty,bestz,Zi,O,rhs,dZ,dX,dy,dy1,Fp,printlevel,parameters)
+function sdp(n::Cint, k::Cint,
+             C::blockmatrix, a::Ptr{Cdouble}, constant_offset::Cdouble, constraints::Ptr{constraintmatrix},
+             byblocks::Ptr{Ptr{sparseblock}},
+             X::blockmatrix, y::Ptr{Cdouble}, Z::blockmatrix,
+             workvec1::Ptr{Cdouble},workvec2::Ptr{Cdouble},workvec3::Ptr{Cdouble},workvec4::Ptr{Cdouble},workvec5::Ptr{Cdouble},workvec6::Ptr{Cdouble},workvec7::Ptr{Cdouble},workvec8::Ptr{Cdouble},
+             diagO::Ptr{Cdouble},
+             besty::Ptr{Cdouble},
+             O::Ptr{Cdouble}, rhs::Ptr{Cdouble}, dy::Ptr{Cdouble}, dy1::Ptr{Cdouble}, Fp::Ptr{Cdouble},
+             printlevel::Cint, parameters::paramstruc)
+
+    pobj = Ref{Cdouble}(.0)
+    dobj = Ref{Cdouble}(.0)
+
+    work1    = blockmatrix(); alloc_mat(C,        Ref{blockmatrix}(work1));
+    work2    = blockmatrix(); alloc_mat(C,        Ref{blockmatrix}(work2));
+    work3    = blockmatrix(); alloc_mat(C,        Ref{blockmatrix}(work3));
+    bestx    = blockmatrix(); alloc_mat_packed(C, Ref{blockmatrix}(bestx));
+    bestz    = blockmatrix(); alloc_mat_packed(C, Ref{blockmatrix}(bestz));
+    cholxinv = blockmatrix(); alloc_mat_packed(C, Ref{blockmatrix}(cholxinv));
+    cholzinv = blockmatrix(); alloc_mat_packed(C, Ref{blockmatrix}(cholzinv));
+    Zi       = blockmatrix(); alloc_mat(C,        Ref{blockmatrix}(Zi));
+    dZ       = blockmatrix(); alloc_mat(C,        Ref{blockmatrix}(dZ));
+    dX       = blockmatrix(); alloc_mat(C,        Ref{blockmatrix}(dX));
+
+    fill = Mconstraintmatrix(C_NULL)
+    makefill(k, C, constraints, Ref{Mconstraintmatrix}(fill), work1, printlevel)
+
+    structnnz(n, k, C, constraints)
+
+    sort_entries(k, C, constraints)
+
+    status = ccall((:sdp, CSDP.csdp), Cint,
+                   (Cint, Cint, # n, k
+                    blockmatrix, Ptr{Cdouble}, Cdouble, Ptr{constraintmatrix},
+                    Ptr{Ptr{sparseblock}}, Mconstraintmatrix, # byblocks, fill
+                    blockmatrix, Ptr{Cdouble}, blockmatrix,
+                    blockmatrix, blockmatrix,            # cholxinv, cholzinv
+                    Ref{Cdouble}, Ref{Cdouble},          # pobj, dobj
+                    blockmatrix,blockmatrix,blockmatrix, # work1, work2, work3
+                    Ptr{Cdouble},Ptr{Cdouble},Ptr{Cdouble},Ptr{Cdouble},Ptr{Cdouble},Ptr{Cdouble},Ptr{Cdouble},Ptr{Cdouble},
+                    Ptr{Cdouble},            # diagO
+                    blockmatrix,             # bestx
+                    Ptr{Cdouble},            # besty
+                    blockmatrix,blockmatrix, # bestz, Zi
+                    Ptr{Cdouble},Ptr{Cdouble},blockmatrix,blockmatrix,Ptr{Cdouble},Ptr{Cdouble},Ptr{Cdouble},
+                    Cint,paramstruc),
+                   n, k,
+                   C, a, constant_offset, constraints,
+                   byblocks, fill,
+                   X, y, Z,
+                   cholxinv,cholzinv,
+                   pobj, dobj,
+                   work1, work2, work3,
+                   workvec1, workvec2, workvec3, workvec4, workvec5, workvec6, workvec7, workvec8,
+                   diagO,
+                   bestx,
+                   besty,
+                   bestz, Zi,
+                   O, rhs, dZ, dX, dy, dy1, Fp,
+                   printlevel, parameters)
+
+    free_mat(work1);
+    free_mat(work2);
+    free_mat(work3);
+    free_mat_packed(bestx);
+    free_mat_packed(bestz);
+    free_mat_packed(cholxinv);
+    free_mat_packed(cholzinv);
+
+    free_mat(Zi);
+    free_mat(dZ);
+    free_mat(dX);
+
+    status, pobj[], dobj[]
 end
 
 function easy_sdp(n::Cint,k::Cint,C::blockmatrix,a::Ptr{Cdouble},constraints::Ptr{constraintmatrix},constant_offset::Cdouble,pX::Ptr{blockmatrix},py::Ptr{Ptr{Cdouble}},pZ::Ptr{blockmatrix})

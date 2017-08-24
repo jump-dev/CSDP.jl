@@ -176,14 +176,25 @@ type SparseBlock <: AbstractMatrix{Cdouble}
     j::Vector{csdpshort}
     v::Vector{Cdouble}
     n::Cint
-    csdp::Nullable{sparseblock}
+    csdp::sparseblock
     function SparseBlock(i::Vector{csdpshort}, j::Vector{csdpshort}, v::Vector{Cdouble}, n::Integer, csdp)
         new(i, j, v, n, csdp)
     end
 end
 
 function SparseBlock(i::Vector{csdpshort}, j::Vector{csdpshort}, v::Vector{Cdouble}, n::Integer)
-    SparseBlock(i, j, v, n, nothing)
+    @assert length(i) == length(j) == length(v)
+    block = sparseblock(C_NULL,    # next
+                        C_NULL,    # nextbyblock
+                        fptr(v),   # entries
+                        fptr(i),   # iindices
+                        fptr(j),   # jindices
+                        length(i), # numentries
+                        0,         # blocknum
+                        n,         # blocksize
+                        0,         # constraintnum
+                        1)         # issparse
+    SparseBlock(i, j, v, n, block)
 end
 
 convert(::Type{SparseBlock}, A::SparseBlock) = A
@@ -241,14 +252,12 @@ function setindex!(A::SparseBlock, v, i, j)
         push!(A.i, i)
         push!(A.j, j)
         push!(A.v, v)
-        if !isnull(A.csdp)
-            @assert get(A.csdp).numentries + 1 == length(A.i)
-            get(A.csdp).numentries = length(A.i)
-            # If push! has reallocated it, we need to change the pointer
-            get(A.csdp).entries = fptr(A.v)
-            get(A.csdp).iindices = fptr(A.i)
-            get(A.csdp).jindices = fptr(A.j)
-        end
+        @assert A.csdp.numentries + 1 == length(A.i)
+        A.csdp.numentries = length(A.i)
+        # If push! has reallocated it, we need to change the pointer
+        A.csdp.entries = fptr(A.v)
+        A.csdp.iindices = fptr(A.i)
+        A.csdp.jindices = fptr(A.j)
     else
         A.v[k] = v
     end
@@ -267,20 +276,10 @@ function ConstraintMatrix(constr, jblocks::AbstractVector{SparseBlock})
     next = C_NULL
     for blocknum in length(jblocks):-1:1
         jblock = jblocks[blocknum]
-        @assert length(jblock.i) == length(jblock.j) == length(jblock.v)
-        block = sparseblock(next,             # next
-                            C_NULL,           # nextbyblock
-                            fptr(jblock.v),   # entries
-                            fptr(jblock.i),   # iindices
-                            fptr(jblock.j),   # jindices
-                            length(jblock.i), # numentries
-                            blocknum,         # blocknum
-                            jblock.n,         # blocksize
-                            constr,           # constraintnum
-                            1                 # issparse
-                            )
-        jblock.csdp = block
-        next = pointer_from_objref(block)
+        jblock.csdp.next = next
+        jblock.csdp.blocknum = blocknum
+        jblock.csdp.constraintnum = constr
+        next = pointer_from_objref(jblock.csdp)
         #next = Base.unsafe_convert(Ptr{sparseblock}, Ref(block))
     end
     csdp = constraintmatrix(Ptr{sparseblock}(next))

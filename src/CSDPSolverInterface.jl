@@ -79,7 +79,9 @@ function MOI.optimize!(m::CSDPSolverInstance)
     verbose = get(m.options, :verbose, true)
 
     m.X, m.y, m.Z = initsoln(m.C, m.b, As)
-    m.status, m.pobj, m.dobj = easy_sdp(m.C, m.b, As, m.X, m.y, m.Z, verbose)
+    #m.status, m.pobj, m.dobj = easy_sdp(m.C, m.b, As, m.X, m.y, m.Z, verbose)
+    printlevel = get(m.options, :printlevel, 1)
+    m.status, m.pobj, m.dobj = sdp(m.C, m.b, m.As, m.X, m.y, m.Z, printlevel, paramstruc(m.options))
 end
 
 function MOI.getattribute(m::CSDPSolverInstance, ::MOI.TerminationStatus)
