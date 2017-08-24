@@ -6,10 +6,21 @@ MOI = MathOptInterface
 
 export CSDPSolver
 
+const allowed_options = [:printlevel, :axtol, :atytol, :objtol, :pinftol, :dinftol, :maxiter, :minstepfrac, :maxstepfrac, :minstepp, :minstepd, :usexzgap, :tweakgap, :affine, :perturbobj, :fastmode]
+
+function checkoptions(d::Dict{Symbol, Any})
+    for key in keys(d)
+        if !(key in allowed_options)
+            error("Option $key is not not a valid CSDP option. The valid options are $allowed_options.")
+        end
+    end
+    d
+end
+
 struct CSDPSolver <: SOI.AbstractSDSolver
     options::Dict{Symbol,Any}
 end
-CSDPSolver(;kwargs...) = CSDPSolver(Dict{Symbol,Any}(kwargs))
+CSDPSolver(;kwargs...) = CSDPSolver(checkoptions(Dict{Symbol,Any}(kwargs)))
 
 type CSDPSolverInstance <: SOI.AbstractSDSolverInstance
     C

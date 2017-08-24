@@ -54,14 +54,18 @@ end
     end
 end
 
+@testset "Options" begin
+    @test_throws ErrorException CSDPSolver(bad_option = 1)
+    @test CSDP.paramstruc(Dict(:axtol => 1e-7)).axtol == 1e-7
+end
+
 @testset "Linear tests" begin
     include(joinpath(Pkg.dir("MathOptInterface"), "test", "contlinear.jl"))
-    contlineartest(CSDP.CSDPSolver(), atol=1e-7, rtol=1e-7)
+    contlineartest(CSDP.CSDPSolver(printlevel=0), atol=1e-7, rtol=1e-7)
 end
 @testset "Conic tests" begin
     include(joinpath(Pkg.dir("MathOptInterface"), "test", "contconic.jl"))
-    contconictest(CSDP.CSDPSolver(), atol=1e-7, rtol=1e-7)
-
+    contconictest(CSDP.CSDPSolver(printlevel=0), atol=1e-7, rtol=1e-7)
 end
 #   @testset "Linear tests" begin
 #       include(joinpath(Pkg.dir("MathProgBase"),"test","linproginterface.jl"))

@@ -85,18 +85,18 @@ end
 
 function paramstruc(options::Dict)
     paramstruc(get(options, :axtol      , 1.0e-8),
-                get(options, :atytol     , 1.0e-8),
-                get(options, :objtol     , 1.0e-8),
-                get(options, :pinftol    , 1.0e8),
-                get(options, :dinftol    , 1.0e8),
-                get(options, :maxiter    , 100),
-                get(options, :minstepfrac, 0.90),
-                get(options, :maxstepfrac, 0.97),
-                get(options, :minstepp   , 1.0e-8),
-                get(options, :minstepd   , 1.0e-8),
-                get(options, :usexzgap   , 1),
-                get(options, :tweakgap   , 0),
-                get(options, :affine     , 0),
-                get(options, :perturbobj , 1),
-                get(options, :fastmode   , 0))
+               get(options, :atytol     , 1.0e-8),
+               get(options, :objtol     , 1.0e-8),
+               get(options, :pinftol    , 1.0e8),
+               get(options, :dinftol    , 1.0e8),
+               get(options, :maxiter    , 100),
+               get(options, :minstepfrac, 0.90),
+               get(options, :maxstepfrac, 0.97),
+               get(options, :minstepp   , 1.0e-8),
+               get(options, :minstepd   , 1.0e-8),
+               get(options, :usexzgap   , 1),
+               get(options, :tweakgap   , 0),
+               get(options, :affine     , 0),
+               get(options, :perturbobj , 1),
+               get(options, :fastmode   , 0))
 end
