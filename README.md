@@ -81,7 +81,7 @@ If the `printlevel` option is at least `1`, the following will be printed:
 
 ## Options
 
-The CSDP options are listed in the table below. Their value can be specified by writing a `param.csdp` file in the current working directory (see https://github.com/JuliaOpt/CSDP.jl/issues/15).
+The CSDP options are listed in the table below. Their value can be specified in the constructor of the CSDP solver, e.g. `CSDPSolver(axtol=1e-7, printlevel=0)`.
 
 Name          |                                                                                                                      | Default Value  |
  ------------ | -----------------------------------                                                                                  | -------------- |
