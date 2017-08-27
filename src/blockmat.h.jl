@@ -51,10 +51,6 @@ function sparseblock(next, jblock, blocknum, constr)
     issparse = numentries <= blocksize / 4 || numentries <= 15 # FIXME also if category (which is in C...) is DIAG
 end
 
-mutable struct Mconstraintmatrix
-    blocks::Ptr{sparseblock}
-end
-
 # If I add mutable here I get : ReadOnlyMemoryError() in initsoln (I know it is counter-intuitive)
 struct constraintmatrix
     blocks::Ptr{sparseblock}

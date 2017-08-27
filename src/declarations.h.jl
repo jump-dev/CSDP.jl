@@ -107,8 +107,8 @@ function op_at(k::Cint,y::Ptr{Cdouble},constraints::Ptr{constraintmatrix},result
     ccall((:op_at,CSDP.csdp),Void,(Cint,Ptr{Cdouble},Ptr{constraintmatrix},blockmatrix),k,y,constraints,result)
 end
 
-function makefill(k::Cint,C::blockmatrix,constraints::Ptr{constraintmatrix},pfill::Ref{Mconstraintmatrix},work1::blockmatrix,printlevel::Cint)
-    ccall((:makefill,CSDP.csdp),Void,(Cint,blockmatrix,Ptr{constraintmatrix},Ref{Mconstraintmatrix},blockmatrix,Cint),k,C,constraints,pfill,work1,printlevel)
+function makefill(k::Cint,C::blockmatrix,constraints::Ptr{constraintmatrix},pfill::Ref{constraintmatrix},work1::blockmatrix,printlevel::Cint)
+    ccall((:makefill,CSDP.csdp),Void,(Cint,blockmatrix,Ptr{constraintmatrix},Ref{constraintmatrix},blockmatrix,Cint),k,C,constraints,pfill,work1,printlevel)
 end
 
 function op_o(k::Cint,constraints::Ptr{constraintmatrix},byblocks::Ptr{Ptr{sparseblock}},Zi::blockmatrix,X::blockmatrix,O::Ptr{Cdouble},work1::blockmatrix,work2::blockmatrix)
@@ -284,8 +284,8 @@ function sdp(n::Cint, k::Cint,
     dZ       = blockmatrix(); alloc_mat(C,        Ref{blockmatrix}(dZ));
     dX       = blockmatrix(); alloc_mat(C,        Ref{blockmatrix}(dX));
 
-    fill = Mconstraintmatrix(C_NULL)
-    makefill(k, C, constraints, Ref{Mconstraintmatrix}(fill), work1, printlevel)
+    fill = Ref{constraintmatrix}(constraintmatrix(C_NULL))
+    makefill(k, C, constraints, fill, work1, printlevel)
 
     structnnz(n, k, C, constraints)
 
@@ -294,7 +294,7 @@ function sdp(n::Cint, k::Cint,
     status = ccall((:sdp, CSDP.csdp), Cint,
                    (Cint, Cint, # n, k
                     blockmatrix, Ptr{Cdouble}, Cdouble, Ptr{constraintmatrix},
-                    Ptr{Ptr{sparseblock}}, Mconstraintmatrix, # byblocks, fill
+                    Ptr{Ptr{sparseblock}}, constraintmatrix, # byblocks, fill
                     blockmatrix, Ptr{Cdouble}, blockmatrix,
                     blockmatrix, blockmatrix,            # cholxinv, cholzinv
                     Ref{Cdouble}, Ref{Cdouble},          # pobj, dobj
@@ -308,7 +308,7 @@ function sdp(n::Cint, k::Cint,
                     Cint,paramstruc),
                    n, k,
                    C, a, constant_offset, constraints,
-                   byblocks, fill,
+                   byblocks, fill[],
                    X, y, Z,
                    cholxinv,cholzinv,
                    pobj, dobj,
