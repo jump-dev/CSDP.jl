@@ -95,7 +95,7 @@ function MOI.optimize!(m::CSDPSolverInstance)
     m.status, m.pobj, m.dobj = sdp(m.C, m.b, m.As, m.X, m.y, m.Z, printlevel, paramstruc(m.options))
 end
 
-function MOI.getattribute(m::CSDPSolverInstance, ::MOI.TerminationStatus)
+function MOI.get(m::CSDPSolverInstance, ::MOI.TerminationStatus)
     status = m.status
     if 0 <= status <= 2
         return MOI.Success
@@ -112,8 +112,8 @@ function MOI.getattribute(m::CSDPSolverInstance, ::MOI.TerminationStatus)
     end
 end
 
-MOI.cangetattribute(m::CSDPSolverInstance, ::MOI.PrimalStatus) = m.status == 0 || m.status >= 2
-function MOI.getattribute(m::CSDPSolverInstance, ::MOI.PrimalStatus)
+MOI.canget(m::CSDPSolverInstance, ::MOI.PrimalStatus) = m.status == 0 || m.status >= 2
+function MOI.get(m::CSDPSolverInstance, ::MOI.PrimalStatus)
     status = m.status
     if status == 0
         return MOI.FeasiblePoint
@@ -130,8 +130,8 @@ function MOI.getattribute(m::CSDPSolverInstance, ::MOI.PrimalStatus)
     end
 end
 
-MOI.cangetattribute(m::CSDPSolverInstance, ::MOI.DualStatus) = 0 <= m.status <= 1 || m.status >= 3
-function MOI.getattribute(m::CSDPSolverInstance, ::MOI.DualStatus)
+MOI.canget(m::CSDPSolverInstance, ::MOI.DualStatus) = 0 <= m.status <= 1 || m.status >= 3
+function MOI.get(m::CSDPSolverInstance, ::MOI.DualStatus)
     status = m.status
     if status == 0
         return MOI.FeasiblePoint
