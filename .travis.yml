@@ -13,12 +13,14 @@ addons:
     - liblapack-dev
     - libblas-dev
 
+before_script:
+  - julia -e 'Pkg.clone("https://github.com/JuliaOpt/MathOptInterface.jl.git")'
+  - julia -e 'Pkg.clone("https://github.com/JuliaOpt/MathOptInterfaceUtilities.jl.git")'
+  - julia -e 'Pkg.clone("https://github.com/JuliaOpt/MathOptInterfaceTests.jl.git")'
+  - julia -e 'Pkg.clone("https://github.com/JuliaOpt/SemidefiniteOptInterface.jl.git")'
+
 notifications:
   email: false
-# uncomment the following lines to override the default test script
-script:
-  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-  - julia -e 'Pkg.init(); Pkg.clone("https://github.com/JuliaOpt/MathOptInterface.jl.git");; Pkg.clone("https://github.com/JuliaOpt/MathOptInterfaceUtilities.jl.git"); Pkg.clone("https://github.com/JuliaOpt/SemidefiniteOptInterface.jl.git"); Pkg.clone(pwd()); Pkg.build("CSDP"); Pkg.test("CSDP"; coverage=true)'
 after_success:
   # push coverage results to Coveralls
   - julia -e 'cd(Pkg.dir("CSDP")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(process_folder())'
