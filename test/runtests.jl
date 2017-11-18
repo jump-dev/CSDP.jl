@@ -59,13 +59,21 @@ end
     @test CSDP.paramstruc(Dict(:axtol => 1e-7)).axtol == 1e-7
 end
 
+using MathOptInterfaceTests
+MOIT = MathOptInterfaceTests
+
+const solver = CSDP.CSDPSolver(printlevel=0)
+const config = MOIT.TestConfig(1e-7, 1e-7, true, true, true)
+
 @testset "Linear tests" begin
-    include(joinpath(Pkg.dir("MathOptInterface"), "test", "contlinear.jl"))
-    contlineartest(CSDP.CSDPSolver(printlevel=0), atol=1e-7, rtol=1e-7)
+    MOIT.contlineartest(solver, config)
 end
 @testset "Conic tests" begin
-    include(joinpath(Pkg.dir("MathOptInterface"), "test", "contconic.jl"))
-    contconictest(CSDP.CSDPSolver(printlevel=0), atol=1e-7, rtol=1e-7)
+    MOIT.contconictest(solver, config)
+    MOIT.sdp0tvtest(solver, config)
+    MOIT.sdp0tftest(solver, config)
+    MOIT.sdp0svtest(solver, config)
+    MOIT.sdp0sftest(solver, config)
 end
 #   @testset "Linear tests" begin
 #       include(joinpath(Pkg.dir("MathProgBase"),"test","linproginterface.jl"))
