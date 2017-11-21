@@ -1,10 +1,10 @@
 using SemidefiniteOptInterface
-SOI = SemidefiniteOptInterface
+SDOI = SemidefiniteOptInterface
 
 using MathOptInterface
 MOI = MathOptInterface
 
-export CSDPSolver
+export CSDPInstance
 
 const allowed_options = [:printlevel, :axtol, :atytol, :objtol, :pinftol, :dinftol, :maxiter, :minstepfrac, :maxstepfrac, :minstepp, :minstepd, :usexzgap, :tweakgap, :affine, :perturbobj, :fastmode]
 
@@ -17,12 +17,7 @@ function checkoptions(d::Dict{Symbol, Any})
     d
 end
 
-struct CSDPSolver <: SOI.AbstractSDSolver
-    options::Dict{Symbol,Any}
-end
-CSDPSolver(;kwargs...) = CSDPSolver(checkoptions(Dict{Symbol,Any}(kwargs)))
-
-type CSDPSolverInstance <: SOI.AbstractSDSolverInstance
+type CSDPSolverInstance <: SDOI.AbstractSDSolverInstance
     C
     b
     As
@@ -35,12 +30,12 @@ type CSDPSolverInstance <: SOI.AbstractSDSolverInstance
     options::Dict{Symbol,Any}
     function CSDPSolverInstance(; kwargs...)
         new(nothing, nothing, nothing, nothing, nothing, nothing,
-            -1, 0.0, 0.0, Dict{Symbol, Any}(kwargs))
+            -1, 0.0, 0.0, checkoptions(Dict{Symbol, Any}(kwargs)))
     end
 end
-SOI.SDSolverInstance(s::CSDPSolver) = CSDPSolverInstance(; s.options...)
+CSDPInstance(; kws...) = SDOI.SDOIInstance(CSDPSolverInstance(; kws...))
 
-function SOI.initinstance!(m::CSDPSolverInstance, blkdims::Vector{Int}, nconstrs::Int)
+function SDOI.initinstance!(m::CSDPSolverInstance, blkdims::Vector{Int}, nconstrs::Int)
     @assert nconstrs >= 0
     dummy = nconstrs == 0
     if dummy
@@ -58,15 +53,15 @@ function SOI.initinstance!(m::CSDPSolverInstance, blkdims::Vector{Int}, nconstrs
     end
 end
 
-function SOI.setconstraintconstant!(m::CSDPSolverInstance, val, constr::Integer)
+function SDOI.setconstraintconstant!(m::CSDPSolverInstance, val, constr::Integer)
     #println("b[$constr] = $val")
     m.b[constr] = val
 end
-function SOI.setconstraintcoefficient!(m::CSDPSolverInstance, coef, constr::Integer, blk::Integer, i::Integer, j::Integer)
+function SDOI.setconstraintcoefficient!(m::CSDPSolverInstance, coef, constr::Integer, blk::Integer, i::Integer, j::Integer)
     #println("A[$constr][$blk][$i, $j] = $coef")
     m.As[constr][blk][i,j] = coef
 end
-function SOI.setobjectivecoefficient!(m::CSDPSolverInstance, coef, blk::Integer, i::Integer, j::Integer)
+function SDOI.setobjectivecoefficient!(m::CSDPSolverInstance, coef, blk::Integer, i::Integer, j::Integer)
     #println("C[$blk][$i, $j] = $coef")
     m.C[blk][i,j] = coef
 end
@@ -148,18 +143,18 @@ function MOI.get(m::CSDPSolverInstance, ::MOI.DualStatus)
     end
 end
 
-function SOI.getprimalobjectivevalue(m::CSDPSolverInstance)
+function SDOI.getprimalobjectivevalue(m::CSDPSolverInstance)
     m.pobj
 end
-function SOI.getdualobjectivevalue(m::CSDPSolverInstance)
+function SDOI.getdualobjectivevalue(m::CSDPSolverInstance)
     m.dobj
 end
-function SOI.getX(m::CSDPSolverInstance)
+function SDOI.getX(m::CSDPSolverInstance)
     m.X
 end
-function SOI.gety(m::CSDPSolverInstance)
+function SDOI.gety(m::CSDPSolverInstance)
     m.y
 end
-function SOI.getZ(m::CSDPSolverInstance)
+function SDOI.getZ(m::CSDPSolverInstance)
     m.Z
 end

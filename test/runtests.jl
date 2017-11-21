@@ -55,14 +55,14 @@ end
 end
 
 @testset "Options" begin
-    @test_throws ErrorException CSDPSolver(bad_option = 1)
+    @test_throws ErrorException CSDPInstance(bad_option = 1)
     @test CSDP.paramstruc(Dict(:axtol => 1e-7)).axtol == 1e-7
 end
 
 using MathOptInterfaceTests
 MOIT = MathOptInterfaceTests
 
-const solver = CSDP.CSDPSolver(printlevel=0)
+const solver = () -> CSDP.CSDPInstance(printlevel=0)
 const config = MOIT.TestConfig(1e-7, 1e-7, true, true, true)
 
 @testset "Linear tests" begin
