@@ -63,7 +63,7 @@ using MathOptInterfaceTests
 MOIT = MathOptInterfaceTests
 
 const solver = () -> CSDP.CSDPInstance(printlevel=0)
-const config = MOIT.TestConfig(1e-7, 1e-7, true, true, true)
+const config = MOIT.TestConfig(1e-7, 1e-7, true, true, true, true)
 
 @testset "Linear tests" begin
     MOIT.contlineartest(solver, config)
