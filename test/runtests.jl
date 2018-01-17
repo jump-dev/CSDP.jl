@@ -63,18 +63,15 @@ using MathOptInterfaceTests
 MOIT = MathOptInterfaceTests
 
 const solver = () -> CSDP.CSDPInstance(printlevel=0)
-const config = MOIT.TestConfig(1e-7, 1e-7, true, true, true, true)
+const config = MOIT.TestConfig(atol=1e-5, rtol=1e-5)
 
 @testset "Linear tests" begin
     MOIT.contlineartest(solver, config)
 end
 @testset "Conic tests" begin
-    MOIT.contconictest(solver, config)
-    MOIT.sdp0tvtest(solver, config)
-    MOIT.sdp0tftest(solver, config)
-    MOIT.sdp0svtest(solver, config)
-    MOIT.sdp0sftest(solver, config)
+    MOIT.contconictest(solver, config, ["logdet", "exp"])
 end
+
 #   @testset "Linear tests" begin
 #       include(joinpath(Pkg.dir("MathProgBase"),"test","linproginterface.jl"))
 #       linprogsolvertest(CSDP.CSDPSolver(), 1e-7)
