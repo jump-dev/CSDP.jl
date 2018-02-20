@@ -14,6 +14,23 @@ Optimization Methods and Software 11(1):613-623, 1999.
 DOI [10.1080/10556789908805765](http://dx.doi.org/10.1080/10556789908805765).
 [Preprint](http://euler.nmt.edu/~brian/csdppaper.pdf).
 
+## Installing CSDP
+First, make sure that you have a compiler available and that LAPACK and BLAS are installed. On Ubuntu, simply do
+```
+$ sudo apt-get install build-essential liblapack-dev libopenblas-dev
+```
+
+Then, install CSDP using
+```julia
+julia> Pkg.add("CSDP")
+```
+
+To use CSDP with JuMP, do
+```julia
+using JuMP
+m = Model(solver=CSDPSolver())
+```
+
 ## CSDP problem representation
 
 The primal is represented internally by CSDP as follows:
