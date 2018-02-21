@@ -4,7 +4,7 @@ SDOI = SemidefiniteOptInterface
 using MathOptInterface
 MOI = MathOptInterface
 
-export CSDPInstance
+export CSDPOptimizer
 
 const allowed_options = [:printlevel, :axtol, :atytol, :objtol, :pinftol, :dinftol, :maxiter, :minstepfrac, :maxstepfrac, :minstepp, :minstepd, :usexzgap, :tweakgap, :affine, :perturbobj, :fastmode]
 
@@ -17,7 +17,7 @@ function checkoptions(d::Dict{Symbol, Any})
     d
 end
 
-type CSDPSolverInstance <: SDOI.AbstractSDSolverInstance
+type CSDPSDOptimizer <: SDOI.AbstractSDOptimizer
     C
     b
     As
@@ -28,14 +28,14 @@ type CSDPSolverInstance <: SDOI.AbstractSDSolverInstance
     pobj::Cdouble
     dobj::Cdouble
     options::Dict{Symbol,Any}
-    function CSDPSolverInstance(; kwargs...)
+    function CSDPSDOptimizer(; kwargs...)
         new(nothing, nothing, nothing, nothing, nothing, nothing,
             -1, 0.0, 0.0, checkoptions(Dict{Symbol, Any}(kwargs)))
     end
 end
-CSDPInstance(; kws...) = SDOI.SDOIInstance(CSDPSolverInstance(; kws...))
+CSDPOptimizer(; kws...) = SDOI.SDOIOptimizer(CSDPSDOptimizer(; kws...))
 
-function SDOI.initinstance!(m::CSDPSolverInstance, blkdims::Vector{Int}, nconstrs::Int)
+function SDOI.init!(m::CSDPSDOptimizer, blkdims::Vector{Int}, nconstrs::Int)
     @assert nconstrs >= 0
     dummy = nconstrs == 0
     if dummy
@@ -53,20 +53,20 @@ function SDOI.initinstance!(m::CSDPSolverInstance, blkdims::Vector{Int}, nconstr
     end
 end
 
-function SDOI.setconstraintconstant!(m::CSDPSolverInstance, val, constr::Integer)
+function SDOI.setconstraintconstant!(m::CSDPSDOptimizer, val, constr::Integer)
     #println("b[$constr] = $val")
     m.b[constr] = val
 end
-function SDOI.setconstraintcoefficient!(m::CSDPSolverInstance, coef, constr::Integer, blk::Integer, i::Integer, j::Integer)
+function SDOI.setconstraintcoefficient!(m::CSDPSDOptimizer, coef, constr::Integer, blk::Integer, i::Integer, j::Integer)
     #println("A[$constr][$blk][$i, $j] = $coef")
     m.As[constr][blk][i,j] = coef
 end
-function SDOI.setobjectivecoefficient!(m::CSDPSolverInstance, coef, blk::Integer, i::Integer, j::Integer)
+function SDOI.setobjectivecoefficient!(m::CSDPSDOptimizer, coef, blk::Integer, i::Integer, j::Integer)
     #println("C[$blk][$i, $j] = $coef")
     m.C[blk][i,j] = coef
 end
 
-function MOI.optimize!(m::CSDPSolverInstance)
+function MOI.optimize!(m::CSDPSDOptimizer)
     As = map(A->A.csdp, m.As)
 
     let wrt = string(get(m.options, :write_prob, ""))
@@ -90,7 +90,7 @@ function MOI.optimize!(m::CSDPSolverInstance)
     m.status, m.pobj, m.dobj = sdp(m.C, m.b, m.As, m.X, m.y, m.Z, printlevel, paramstruc(m.options))
 end
 
-function MOI.get(m::CSDPSolverInstance, ::MOI.TerminationStatus)
+function MOI.get(m::CSDPSDOptimizer, ::MOI.TerminationStatus)
     status = m.status
     if 0 <= status <= 2
         return MOI.Success
@@ -107,8 +107,8 @@ function MOI.get(m::CSDPSolverInstance, ::MOI.TerminationStatus)
     end
 end
 
-MOI.canget(m::CSDPSolverInstance, ::MOI.PrimalStatus) = m.status == 0 || m.status >= 2
-function MOI.get(m::CSDPSolverInstance, ::MOI.PrimalStatus)
+MOI.canget(m::CSDPSDOptimizer, ::MOI.PrimalStatus) = m.status == 0 || m.status >= 2
+function MOI.get(m::CSDPSDOptimizer, ::MOI.PrimalStatus)
     status = m.status
     if status == 0
         return MOI.FeasiblePoint
@@ -125,8 +125,8 @@ function MOI.get(m::CSDPSolverInstance, ::MOI.PrimalStatus)
     end
 end
 
-MOI.canget(m::CSDPSolverInstance, ::MOI.DualStatus) = 0 <= m.status <= 1 || m.status >= 3
-function MOI.get(m::CSDPSolverInstance, ::MOI.DualStatus)
+MOI.canget(m::CSDPSDOptimizer, ::MOI.DualStatus) = 0 <= m.status <= 1 || m.status >= 3
+function MOI.get(m::CSDPSDOptimizer, ::MOI.DualStatus)
     status = m.status
     if status == 0
         return MOI.FeasiblePoint
@@ -143,18 +143,18 @@ function MOI.get(m::CSDPSolverInstance, ::MOI.DualStatus)
     end
 end
 
-function SDOI.getprimalobjectivevalue(m::CSDPSolverInstance)
+function SDOI.getprimalobjectivevalue(m::CSDPSDOptimizer)
     m.pobj
 end
-function SDOI.getdualobjectivevalue(m::CSDPSolverInstance)
+function SDOI.getdualobjectivevalue(m::CSDPSDOptimizer)
     m.dobj
 end
-function SDOI.getX(m::CSDPSolverInstance)
+function SDOI.getX(m::CSDPSDOptimizer)
     m.X
 end
-function SDOI.gety(m::CSDPSolverInstance)
+function SDOI.gety(m::CSDPSDOptimizer)
     m.y
 end
-function SDOI.getZ(m::CSDPSolverInstance)
+function SDOI.getZ(m::CSDPSDOptimizer)
     m.Z
 end
