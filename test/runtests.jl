@@ -55,21 +55,34 @@ end
 end
 
 @testset "Options" begin
-    @test_throws ErrorException CSDPInstance(bad_option = 1)
+    @test_throws ErrorException CSDPOptimizer(bad_option = 1)
     @test CSDP.paramstruc(Dict(:axtol => 1e-7)).axtol == 1e-7
 end
 
-using MathOptInterfaceTests
-MOIT = MathOptInterfaceTests
+using MathOptInterface
+const MOI = MathOptInterface
+const MOIT = MOI.Test
+const MOIU = MOI.Utilities
 
-const solver = () -> CSDP.CSDPInstance(printlevel=0)
-const config = MOIT.TestConfig(atol=1e-5, rtol=1e-5)
+MOIU.@model SDModelData () (EqualTo, GreaterThan, LessThan) (Zeros, Nonnegatives, Nonpositives, PositiveSemidefiniteConeTriangle) () (SingleVariable,) (ScalarAffineFunction,) (VectorOfVariables,) (VectorAffineFunction,)
+
+using MathOptInterfaceBridges
+const MOIB = MathOptInterfaceBridges
+
+MOIB.@bridge SplitInterval MOIB.SplitIntervalBridge () (Interval,) () () () (ScalarAffineFunction,) () ()
+MOIB.@bridge SOCtoPSDC MOIB.SOCtoPSDCBridge () () (SecondOrderCone,) () () () (VectorOfVariables,) (VectorAffineFunction,)
+MOIB.@bridge RSOCtoPSDC MOIB.RSOCtoPSDCBridge () () (RotatedSecondOrderCone,) () () () (VectorOfVariables,) (VectorAffineFunction,)
+MOIB.@bridge GeoMean MOIB.GeoMeanBridge () () (GeometricMeanCone,) () () () (VectorOfVariables,) (VectorAffineFunction,)
+MOIB.@bridge RootDet MOIB.RootDetBridge () () (RootDetConeTriangle,) () () () (VectorOfVariables,) (VectorAffineFunction,)
+
+const optimizer = CSDP.CSDPOptimizer(printlevel=0)
+const config = MOIT.TestConfig(atol=1e-4, rtol=1e-4)
 
 @testset "Linear tests" begin
-    MOIT.contlineartest(solver, config)
+    MOIT.contlineartest(SplitInterval{Float64}(MOIU.CachingOptimizer(SDModelData{Float64}(), optimizer)), config)
 end
 @testset "Conic tests" begin
-    MOIT.contconictest(solver, config, ["logdet", "exp"])
+    MOIT.contconictest(RootDet{Float64}(GeoMean{Float64}(RSOCtoPSDC{Float64}(SOCtoPSDC{Float64}(MOIU.CachingOptimizer(SDModelData{Float64}(), optimizer))))), config, ["logdet", "exp"])
 end
 
 #   @testset "Linear tests" begin
