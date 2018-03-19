@@ -6,17 +6,6 @@ MOI = MathOptInterface
 
 export CSDPOptimizer
 
-const allowed_options = [:printlevel, :axtol, :atytol, :objtol, :pinftol, :dinftol, :maxiter, :minstepfrac, :maxstepfrac, :minstepp, :minstepd, :usexzgap, :tweakgap, :affine, :perturbobj, :fastmode]
-
-function checkoptions(d::Dict{Symbol, Any})
-    for key in keys(d)
-        if !(key in allowed_options)
-            error("Option $key is not not a valid CSDP option. The valid options are $allowed_options.")
-        end
-    end
-    d
-end
-
 type CSDPSDOptimizer <: SDOI.AbstractSDOptimizer
     C
     b
@@ -69,25 +58,12 @@ end
 function MOI.optimize!(m::CSDPSDOptimizer)
     As = map(A->A.csdp, m.As)
 
-    let wrt = string(get(m.options, :write_prob, ""))
-        if length(wrt) > 0
-            k = 1
-            wrtf = "$wrt.$k"
-            while isfile(wrtf)
-                wrtf = "$wrt.$k"
-                k += 1
-            end
-            info("Writing problem to $(pwd())/$(wrtf)")
-            write_prob(wrtf, m.C, m.b, As)
-        end
-    end
-
-    verbose = get(m.options, :verbose, true)
+    write_prob(m)
 
     m.X, m.y, m.Z = initsoln(m.C, m.b, As)
+    #verbose = get(m.options, :verbose, true)
     #m.status, m.pobj, m.dobj = easy_sdp(m.C, m.b, As, m.X, m.y, m.Z, verbose)
-    printlevel = get(m.options, :printlevel, 1)
-    m.status, m.pobj, m.dobj = sdp(m.C, m.b, m.As, m.X, m.y, m.Z, printlevel, paramstruc(m.options))
+    m.status, m.pobj, m.dobj = sdp(m.C, m.b, m.As, m.X, m.y, m.Z, m.options)
 end
 
 function MOI.get(m::CSDPSDOptimizer, ::MOI.TerminationStatus)
