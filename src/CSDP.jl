@@ -14,6 +14,8 @@ include("blockmat.jl")
 include("declarations.h.jl")
 include("declarations.jl")
 include("debug-mat.jl")
-include("CSDPSolverInterface.jl")
+include("options.jl")
+include("MOIInterface.jl")
+include("MPBInterface.jl")
 
 end # module

@@ -3,3 +3,5 @@ BinDeps
 Glob
 MathOptInterface
 SemidefiniteOptInterface
+MathProgBase
+SemidefiniteModels

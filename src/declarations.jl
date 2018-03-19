@@ -41,6 +41,7 @@ function setupAs!(As::Vector{ConstraintMatrix}, C::BlockMatrix)
     byblocks
 end
 
+sdp(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{ConstraintMatrix}, X::BlockMatrix, y::Vector{Cdouble}, Z::BlockMatrix, params::Dict{Symbol}) = sdp(C, b, As, X, y, Z, options(params)...)
 function sdp(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{ConstraintMatrix}, X::BlockMatrix, y::Vector{Cdouble}, Z::BlockMatrix, printlevel, params)
     # I pass pointers pX, py and pZ to X, y and Z but only *pX, *py and *pZ are use in the code
     # so no need to worry, they won't change :)

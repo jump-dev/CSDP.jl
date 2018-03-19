@@ -59,56 +59,5 @@ end
     @test CSDP.paramstruc(Dict(:axtol => 1e-7)).axtol == 1e-7
 end
 
-using MathOptInterface
-const MOI = MathOptInterface
-const MOIT = MOI.Test
-const MOIU = MOI.Utilities
-
-MOIU.@model SDModelData () (EqualTo, GreaterThan, LessThan) (Zeros, Nonnegatives, Nonpositives, PositiveSemidefiniteConeTriangle) () (SingleVariable,) (ScalarAffineFunction,) (VectorOfVariables,) (VectorAffineFunction,)
-
-using MathOptInterfaceBridges
-const MOIB = MathOptInterfaceBridges
-
-MOIB.@bridge SplitInterval MOIB.SplitIntervalBridge () (Interval,) () () () (ScalarAffineFunction,) () ()
-MOIB.@bridge SOCtoPSDC MOIB.SOCtoPSDCBridge () () (SecondOrderCone,) () () () (VectorOfVariables,) (VectorAffineFunction,)
-MOIB.@bridge RSOCtoPSDC MOIB.RSOCtoPSDCBridge () () (RotatedSecondOrderCone,) () () () (VectorOfVariables,) (VectorAffineFunction,)
-MOIB.@bridge GeoMean MOIB.GeoMeanBridge () () (GeometricMeanCone,) () () () (VectorOfVariables,) (VectorAffineFunction,)
-MOIB.@bridge RootDet MOIB.RootDetBridge () () (RootDetConeTriangle,) () () () (VectorOfVariables,) (VectorAffineFunction,)
-
-const optimizer = CSDP.CSDPOptimizer(printlevel=0)
-const config = MOIT.TestConfig(atol=1e-4, rtol=1e-4)
-
-@testset "Linear tests" begin
-    MOIT.contlineartest(SplitInterval{Float64}(MOIU.CachingOptimizer(SDModelData{Float64}(), optimizer)), config)
-end
-@testset "Conic tests" begin
-    MOIT.contconictest(RootDet{Float64}(GeoMean{Float64}(RSOCtoPSDC{Float64}(SOCtoPSDC{Float64}(MOIU.CachingOptimizer(SDModelData{Float64}(), optimizer))))), config, ["logdet", "exp"])
-end
-
-#   @testset "Linear tests" begin
-#       include(joinpath(Pkg.dir("MathProgBase"),"test","linproginterface.jl"))
-#       linprogsolvertest(CSDP.CSDPSolver(), 1e-7)
-#   end
-#
-#   @testset "Conic tests" begin
-#       include(joinpath(Pkg.dir("MathProgBase"),"test","conicinterface.jl"))
-#       # FIXME fails on Windows 32 bits... Maybe I should put linear vars/cons
-#       # in a diagonal matrix in SemidefiniteModels.jl instead of many 1x1 blocks
-#       @static if !is_windows() || Sys.WORD_SIZE != 32
-#           @testset "Conic linear tests" begin
-#               coniclineartest(CSDP.CSDPSolver(), duals=true, tol=1e-6)
-#           end
-#
-#           @testset "Conic SOC tests" begin
-#               conicSOCtest(CSDP.CSDPSolver(write_prob="soc.prob"), duals=true, tol=1e-6)
-#           end
-#
-#           @testset "Conic SOC rotated tests" begin
-#               conicSOCRotatedtest(CSDP.CSDPSolver(), duals=true, tol=1e-6)
-#           end
-#       end
-#
-#       @testset "Conic SDP tests" begin
-#           conicSDPtest(CSDP.CSDPSolver(), duals=false, tol=1e-6)
-#       end
-#   end
+include("moi.jl")
+include("mpb.jl")
