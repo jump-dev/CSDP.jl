@@ -6,7 +6,7 @@ MOI = MathOptInterface
 
 export CSDPOptimizer
 
-type CSDPSDOptimizer <: SDOI.AbstractSDOptimizer
+mutable struct CSDPSDOptimizer <: SDOI.AbstractSDOptimizer
     C
     b
     As
