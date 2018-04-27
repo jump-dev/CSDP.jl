@@ -3,12 +3,12 @@ importall SemidefiniteModels
 
 export CSDPMathProgModel, CSDPSolver
 
-immutable CSDPSolver <: AbstractMathProgSolver
+struct CSDPSolver <: AbstractMathProgSolver
     options::Dict{Symbol,Any}
 end
 CSDPSolver(;kwargs...) = CSDPSolver(checkoptions(Dict{Symbol,Any}(kwargs)))
 
-type CSDPMathProgModel <: AbstractSDModel
+mutable struct CSDPMathProgModel <: AbstractSDModel
     C
     b
     As
