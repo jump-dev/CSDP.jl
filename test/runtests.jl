@@ -59,5 +59,5 @@ end
     @test CSDP.paramstruc(Dict(:axtol => 1e-7)).axtol == 1e-7
 end
 
-include("moi.jl")
-include("mpb.jl")
+include("MOIWrapper.jl")
+include("MPBWrapper.jl")

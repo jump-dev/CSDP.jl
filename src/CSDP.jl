@@ -15,7 +15,7 @@ include("declarations.h.jl")
 include("declarations.jl")
 include("debug-mat.jl")
 include("options.jl")
-include("MOIInterface.jl")
-include("MPBInterface.jl")
+include("MOIWrapper.jl")
+include("MPBWrapper.jl")
 
 end # module
