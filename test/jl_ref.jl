@@ -12,7 +12,7 @@ const OP1 = UInt32(0)
 const OP2 = UInt32(1)
 
 """Simple type containing an enum and Ptr"""
-type S
+mutable struct S
     c::UInt32
     n::Cint
     e::Ptr{Cdouble}
@@ -20,7 +20,7 @@ end
 
 
 """Use Ref instead of Ptr"""
-type R
+mutable struct R
     c::UInt32
     n::Cint
     e::Ref{Cdouble}

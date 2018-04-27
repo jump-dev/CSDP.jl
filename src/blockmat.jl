@@ -5,12 +5,12 @@ import Base.convert, Base.size, Base.getindex, Base.setindex!
 
 # Utils
 
-function fptr{T}(x::Vector{T})
+function fptr(x::Vector{T}) where T
     # CSDP starts indexing at 1 so we need to do "- sizeof(T)"
     pointer(x) - sizeof(T)
 end
 
-function ptr{X}(x::X)
+function ptr(x::X) where X
     Base.reinterpret(Base.Ptr{X}, Base.pointer_from_objref(x))
 end
 export fptr, ptr
@@ -20,7 +20,7 @@ function mywrap(X::blockmatrix)
     BlockMatrix(X)
 end
 
-function mywrap{T}(x::Ptr{T}, len)
+function mywrap(x::Ptr{T}, len) where T
     # I give false to unsafe_wrap to specify that Julia do not own the array so it should not free it
     # because the pointer it has has an offset
     y = unsafe_wrap(Array, x + sizeof(T), len, false)
@@ -47,7 +47,7 @@ end
 # * blockmatrix contains the number of blocks and a vector containing the blocks (blockrec) (1-indexed)
 
 # blockrec
-type BlockRec <: AbstractMatrix{Cdouble}
+mutable struct BlockRec <: AbstractMatrix{Cdouble}
     _blockdatarec::Vector{Cdouble}
     csdp::blockrec
 end
@@ -110,7 +110,7 @@ end
 
 
 # blockmatrix
-type BlockMatrix <: AbstractMatrix{Cdouble}
+mutable struct BlockMatrix <: AbstractMatrix{Cdouble}
     jblocks::Vector{BlockRec}
     blocks::Vector{blockrec}
     csdp::blockmatrix
@@ -171,7 +171,7 @@ end
 # * sparseblock contains a sparse description of the entries of a block
 # * constraintmatrix contains a linked list of the blocks
 
-type SparseBlock <: AbstractMatrix{Cdouble}
+mutable struct SparseBlock <: AbstractMatrix{Cdouble}
     i::Vector{csdpshort}
     j::Vector{csdpshort}
     v::Vector{Cdouble}
@@ -264,7 +264,7 @@ function setindex!(A::SparseBlock, v, i, j)
 end
 
 
-type ConstraintMatrix <: AbstractMatrix{Cdouble}
+mutable struct ConstraintMatrix <: AbstractMatrix{Cdouble}
     jblocks::Vector{SparseBlock}
     csdp::constraintmatrix
 end
@@ -338,7 +338,7 @@ export free_blockmatrix
 export BlockMatrix, ConstraintMatrix
 
 """Solver status"""
-type Csdp
+mutable struct Csdp
     n::Cint
     k::Cint
     X::BlockMatrix
