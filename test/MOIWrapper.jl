@@ -5,7 +5,7 @@ const MOIB = MOI.Bridges
 
 const MOIU = MOI.Utilities
 MOIU.@model SDModelData () (EqualTo, GreaterThan, LessThan) (Zeros, Nonnegatives, Nonpositives, PositiveSemidefiniteConeTriangle) () (SingleVariable,) (ScalarAffineFunction,) (VectorOfVariables,) (VectorAffineFunction,)
-const optimizer = MOIU.CachingOptimizer(SDModelData{Float64}(), CSDP.CSDPOptimizer(printlevel=0))
+const optimizer = MOIU.CachingOptimizer(SDModelData{Float64}(), CSDP.Optimizer(printlevel=0))
 const config = MOIT.TestConfig(atol=1e-4, rtol=1e-4)
 
 @testset "Linear tests" begin
