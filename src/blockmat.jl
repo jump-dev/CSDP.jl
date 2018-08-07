@@ -299,6 +299,11 @@ function ConstraintMatrix(csdp::constraintmatrix, k::Integer)
     ConstraintMatrix(jblocks, csdp)
 end
 
+# Needed by MPBWrapper
+function Base.getindex(A::Union{BlockMatrix, ConstraintMatrix}, i::Integer)
+    SDOI.block(A, i)
+end
+
 function SDOI.block(A::Union{BlockMatrix, ConstraintMatrix}, i::Integer)
     A.jblocks[i]
 end
