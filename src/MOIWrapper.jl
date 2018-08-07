@@ -4,9 +4,7 @@ SDOI = SemidefiniteOptInterface
 using MathOptInterface
 MOI = MathOptInterface
 
-export CSDPOptimizer
-
-mutable struct CSDPSDOptimizer <: SDOI.AbstractSDOptimizer
+mutable struct SDOptimizer <: SDOI.AbstractSDOptimizer
     C
     b
     As
@@ -17,14 +15,14 @@ mutable struct CSDPSDOptimizer <: SDOI.AbstractSDOptimizer
     pobj::Cdouble
     dobj::Cdouble
     options::Dict{Symbol,Any}
-    function CSDPSDOptimizer(; kwargs...)
+    function SDOptimizer(; kwargs...)
         new(nothing, nothing, nothing, nothing, nothing, nothing,
             -1, 0.0, 0.0, checkoptions(Dict{Symbol, Any}(kwargs)))
     end
 end
-CSDPOptimizer(; kws...) = SDOI.SDOIOptimizer(CSDPSDOptimizer(; kws...))
+Optimizer(; kws...) = SDOI.SDOIOptimizer(SDOptimizer(; kws...))
 
-function SDOI.init!(m::CSDPSDOptimizer, blkdims::Vector{Int}, nconstrs::Int)
+function SDOI.init!(m::SDOptimizer, blkdims::Vector{Int}, nconstrs::Int)
     @assert nconstrs >= 0
     dummy = nconstrs == 0
     if dummy
@@ -42,20 +40,20 @@ function SDOI.init!(m::CSDPSDOptimizer, blkdims::Vector{Int}, nconstrs::Int)
     end
 end
 
-function SDOI.setconstraintconstant!(m::CSDPSDOptimizer, val, constr::Integer)
+function SDOI.setconstraintconstant!(m::SDOptimizer, val, constr::Integer)
     #println("b[$constr] = $val")
     m.b[constr] = val
 end
-function SDOI.setconstraintcoefficient!(m::CSDPSDOptimizer, coef, constr::Integer, blk::Integer, i::Integer, j::Integer)
+function SDOI.setconstraintcoefficient!(m::SDOptimizer, coef, constr::Integer, blk::Integer, i::Integer, j::Integer)
     #println("A[$constr][$blk][$i, $j] = $coef")
     SDOI.block(m.As[constr], blk)[i, j] = coef
 end
-function SDOI.setobjectivecoefficient!(m::CSDPSDOptimizer, coef, blk::Integer, i::Integer, j::Integer)
+function SDOI.setobjectivecoefficient!(m::SDOptimizer, coef, blk::Integer, i::Integer, j::Integer)
     #println("C[$blk][$i, $j] = $coef")
     SDOI.block(m.C, blk)[i, j] = coef
 end
 
-function MOI.optimize!(m::CSDPSDOptimizer)
+function MOI.optimize!(m::SDOptimizer)
     As = map(A->A.csdp, m.As)
 
     write_prob(m)
@@ -66,7 +64,7 @@ function MOI.optimize!(m::CSDPSDOptimizer)
     m.status, m.pobj, m.dobj = sdp(m.C, m.b, m.As, m.X, m.y, m.Z, m.options)
 end
 
-function MOI.get(m::CSDPSDOptimizer, ::MOI.TerminationStatus)
+function MOI.get(m::SDOptimizer, ::MOI.TerminationStatus)
     status = m.status
     if 0 <= status <= 2
         return MOI.Success
@@ -83,8 +81,8 @@ function MOI.get(m::CSDPSDOptimizer, ::MOI.TerminationStatus)
     end
 end
 
-MOI.canget(m::CSDPSDOptimizer, ::MOI.PrimalStatus) = m.status == 0 || m.status >= 2
-function MOI.get(m::CSDPSDOptimizer, ::MOI.PrimalStatus)
+MOI.canget(m::SDOptimizer, ::MOI.PrimalStatus) = m.status == 0 || m.status >= 2
+function MOI.get(m::SDOptimizer, ::MOI.PrimalStatus)
     status = m.status
     if status == 0
         return MOI.FeasiblePoint
@@ -101,8 +99,8 @@ function MOI.get(m::CSDPSDOptimizer, ::MOI.PrimalStatus)
     end
 end
 
-MOI.canget(m::CSDPSDOptimizer, ::MOI.DualStatus) = 0 <= m.status <= 1 || m.status >= 3
-function MOI.get(m::CSDPSDOptimizer, ::MOI.DualStatus)
+MOI.canget(m::SDOptimizer, ::MOI.DualStatus) = 0 <= m.status <= 1 || m.status >= 3
+function MOI.get(m::SDOptimizer, ::MOI.DualStatus)
     status = m.status
     if status == 0
         return MOI.FeasiblePoint
@@ -119,18 +117,18 @@ function MOI.get(m::CSDPSDOptimizer, ::MOI.DualStatus)
     end
 end
 
-function SDOI.getprimalobjectivevalue(m::CSDPSDOptimizer)
+function SDOI.getprimalobjectivevalue(m::SDOptimizer)
     m.pobj
 end
-function SDOI.getdualobjectivevalue(m::CSDPSDOptimizer)
+function SDOI.getdualobjectivevalue(m::SDOptimizer)
     m.dobj
 end
-function SDOI.getX(m::CSDPSDOptimizer)
+function SDOI.getX(m::SDOptimizer)
     m.X
 end
-function SDOI.gety(m::CSDPSDOptimizer)
+function SDOI.gety(m::SDOptimizer)
     m.y
 end
-function SDOI.getZ(m::CSDPSDOptimizer)
+function SDOI.getZ(m::SDOptimizer)
     m.Z
 end

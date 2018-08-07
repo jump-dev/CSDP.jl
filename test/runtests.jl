@@ -55,7 +55,7 @@ end
 end
 
 @testset "Options" begin
-    @test_throws ErrorException CSDPOptimizer(bad_option = 1)
+    @test_throws ErrorException CSDP.Optimizer(bad_option = 1)
     @test CSDP.paramstruc(Dict(:axtol => 1e-7)).axtol == 1e-7
 end
 
