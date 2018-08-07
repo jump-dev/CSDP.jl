@@ -54,10 +54,10 @@ function setconstrB!(m::CSDPMathProgModel, val, constr::Integer)
     m.b[constr] = val
 end
 function setconstrentry!(m::CSDPMathProgModel, coef, constr::Integer, blk::Integer, i::Integer, j::Integer)
-    m.As[constr][blk][i,j] = coef
+    SDOI.block(m.As[constr], blk)[i, j] = coef
 end
 function setobjentry!(m::CSDPMathProgModel, coef, blk::Integer, i::Integer, j::Integer)
-    m.C[blk][i,j] = coef
+    SDOI.block(m.C, blk)[i, j] = coef
 end
 
 function optimize!(m::CSDPMathProgModel)
