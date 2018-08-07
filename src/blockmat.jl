@@ -1,7 +1,6 @@
 # Data types declared in `include/blockmat.h`
 # Small type names are the C types
 # Capitalized are the corresponding Julia types
-import Base.convert, Base.size, Base.getindex, Base.setindex!
 
 # Utils
 
@@ -46,6 +45,9 @@ end
 # * blockrec contains the blockdatarec, the category (dense or diagonal), and the block size
 # * blockmatrix contains the number of blocks and a vector containing the blocks (blockrec) (1-indexed)
 
+using SemidefiniteOptInterface
+const SDOI = SemidefiniteOptInterface
+
 # blockrec
 mutable struct BlockRec <: AbstractMatrix{Cdouble}
     _blockdatarec::Vector{Cdouble}
@@ -74,11 +76,11 @@ function blockreczeros(n)
     end
 end
 
-function size(A::BlockRec)
+function Base.size(A::BlockRec)
     n = A.csdp.blocksize
     (n, n)
 end
-function getindex(A::BlockRec, i, j)
+function Base.getindex(A::BlockRec, i, j)
     n = A.csdp.blocksize
     if A.csdp.blockcategory == MATRIX
         A._blockdatarec[i+(j-1)*n]
@@ -92,7 +94,7 @@ function getindex(A::BlockRec, i, j)
         error("Invalid category")
     end
 end
-function setindex!(A::BlockRec, v, i, j)
+function Base.setindex!(A::BlockRec, v, i, j)
     n = A.csdp.blocksize
     if A.csdp.blockcategory == MATRIX
         A._blockdatarec[i+(j-1)*n] = v
@@ -110,7 +112,7 @@ end
 
 
 # blockmatrix
-mutable struct BlockMatrix <: AbstractMatrix{Cdouble}
+mutable struct BlockMatrix <: SDOI.AbstractBlockMatrix{Cdouble}
     jblocks::Vector{BlockRec}
     blocks::Vector{blockrec}
     csdp::blockmatrix
@@ -160,12 +162,6 @@ end
 #       Blockmatrix(Bs, bs)
 #   end
 
-
-function size(A::BlockMatrix)
-    n = sum([block.csdp.blocksize for block in A.jblocks])
-    (n, n)
-end
-
 # In CSDP, the matrices A_i are represented as a constraintmatrix
 # which is a block diagonal matrix where each block is a symmetric sparse matrix of Cdouble
 # * sparseblock contains a sparse description of the entries of a block
@@ -197,8 +193,8 @@ function SparseBlock(i::Vector{csdpshort}, j::Vector{csdpshort}, v::Vector{Cdoub
     SparseBlock(i, j, v, n, block)
 end
 
-convert(::Type{SparseBlock}, A::SparseBlock) = A
-function convert(::Type{SparseBlock}, A::SparseMatrixCSC{Cdouble})
+Base.convert(::Type{SparseBlock}, A::SparseBlock) = A
+function Base.convert(::Type{SparseBlock}, A::SparseMatrixCSC{Cdouble})
     n = Base.LinAlg.checksquare(A)
     nn = nnz(A)
     I = csdpshort[]
@@ -218,13 +214,13 @@ function convert(::Type{SparseBlock}, A::SparseMatrixCSC{Cdouble})
     end
     SparseBlock(I, J, V, n)
 end
-convert(::Type{SparseBlock}, A::AbstractMatrix{Cdouble}) = SparseBlock(SparseMatrixCSC{Cdouble, Cint}(A))
-convert(::Type{SparseBlock}, A::AbstractMatrix) = SparseBlock(map(Cdouble, A))
+Base.convert(::Type{SparseBlock}, A::AbstractMatrix{Cdouble}) = SparseBlock(SparseMatrixCSC{Cdouble, Cint}(A))
+Base.convert(::Type{SparseBlock}, A::AbstractMatrix) = SparseBlock(map(Cdouble, A))
 function sparseblockzeros(n)
     SparseBlock(csdpshort[], csdpshort[], Cdouble[], abs(n))
 end
 
-function size(A::SparseBlock)
+function Base.size(A::SparseBlock)
     (A.n, A.n)
 end
 function findindices(A::SparseBlock, i, j)
@@ -238,7 +234,7 @@ function findindices(A::SparseBlock, i, j)
     end
     return 0
 end
-function getindex(A::SparseBlock, i, j)
+function Base.getindex(A::SparseBlock, i, j)
     k = findindices(A, i, j)
     if k == 0
         0
@@ -246,7 +242,7 @@ function getindex(A::SparseBlock, i, j)
         A.v[k]
     end
 end
-function setindex!(A::SparseBlock, v, i, j)
+function Base.setindex!(A::SparseBlock, v, i, j)
     k = findindices(A, i, j)
     if k == 0
         push!(A.i, i)
@@ -264,7 +260,7 @@ function setindex!(A::SparseBlock, v, i, j)
 end
 
 
-mutable struct ConstraintMatrix <: AbstractMatrix{Cdouble}
+mutable struct ConstraintMatrix <: SDOI.AbstractBlockMatrix{Cdouble}
     jblocks::Vector{SparseBlock}
     csdp::constraintmatrix
 end
@@ -303,32 +299,15 @@ function ConstraintMatrix(csdp::constraintmatrix, k::Integer)
     ConstraintMatrix(jblocks, csdp)
 end
 
-function size(A::ConstraintMatrix)
-    n = sum([block.n for block in A.jblocks])
-    (n, n)
+# Needed by MPBWrapper
+function Base.getindex(A::Union{BlockMatrix, ConstraintMatrix}, i::Integer)
+    SDOI.block(A, i)
 end
 
-
-function getindex(A::Union{BlockMatrix, ConstraintMatrix}, i::Integer, j::Integer)
-    (i < 0 || j < 0) && error("invalid indices")
-    for block in A.jblocks
-        n = size(block, 1)
-        if i <= n && j <= n
-            return block[i,j]
-        elseif i <= n || j <= n
-            return 0
-        else
-            i -= n
-            j -= n
-        end
-    end
-    error("invalid indices")
-end
-
-# Not really part of AbstractMatrix
-function getindex(A::Union{BlockMatrix, ConstraintMatrix}, i::Integer)
+function SDOI.block(A::Union{BlockMatrix, ConstraintMatrix}, i::Integer)
     A.jblocks[i]
 end
+SDOI.nblocks(A::Union{BlockMatrix, ConstraintMatrix}) = length(A.jblocks)
 
 function free_blockmatrix(m::blockmatrix)
     ccall((:free_mat, CSDP.csdp), Void, (blockmatrix,), m)

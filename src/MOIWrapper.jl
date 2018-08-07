@@ -38,7 +38,7 @@ function SDOI.init!(m::CSDPSDOptimizer, blkdims::Vector{Int}, nconstrs::Int)
     if dummy
         # See https://github.com/coin-or/Csdp/issues/2
         m.b[1] = 1
-        m.As[1][length(blkdims)][1,1] = 1
+        SDOI.block(m.As[1], length(blkdims))[1,1] = 1
     end
 end
 
@@ -48,11 +48,11 @@ function SDOI.setconstraintconstant!(m::CSDPSDOptimizer, val, constr::Integer)
 end
 function SDOI.setconstraintcoefficient!(m::CSDPSDOptimizer, coef, constr::Integer, blk::Integer, i::Integer, j::Integer)
     #println("A[$constr][$blk][$i, $j] = $coef")
-    m.As[constr][blk][i,j] = coef
+    SDOI.block(m.As[constr], blk)[i, j] = coef
 end
 function SDOI.setobjectivecoefficient!(m::CSDPSDOptimizer, coef, blk::Integer, i::Integer, j::Integer)
     #println("C[$blk][$i, $j] = $coef")
-    m.C[blk][i,j] = coef
+    SDOI.block(m.C, blk)[i, j] = coef
 end
 
 function MOI.optimize!(m::CSDPSDOptimizer)
