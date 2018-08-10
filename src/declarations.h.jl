@@ -4,23 +4,23 @@
 export read_prob
 
 function triu(A::blockmatrix)
-    ccall((:triu,CSDP.csdp),Void,(blockmatrix,),A)
+    ccall((:triu,CSDP.csdp),Nothing,(blockmatrix,),A)
 end
 
 function store_packed(A::blockmatrix,B::blockmatrix)
-    ccall((:store_packed,CSDP.csdp),Void,(blockmatrix,blockmatrix),A,B)
+    ccall((:store_packed,CSDP.csdp),Nothing,(blockmatrix,blockmatrix),A,B)
 end
 
 function store_unpacked(A::blockmatrix,B::blockmatrix)
-    ccall((:store_unpacked,CSDP.csdp),Void,(blockmatrix,blockmatrix),A,B)
+    ccall((:store_unpacked,CSDP.csdp),Nothing,(blockmatrix,blockmatrix),A,B)
 end
 
 function alloc_mat_packed(A::blockmatrix,pB::Ref{blockmatrix})
-    ccall((:alloc_mat_packed,CSDP.csdp),Void,(blockmatrix,Ref{blockmatrix}),A,pB)
+    ccall((:alloc_mat_packed,CSDP.csdp),Nothing,(blockmatrix,Ref{blockmatrix}),A,pB)
 end
 
 function free_mat_packed(A::blockmatrix)
-    ccall((:free_mat_packed,CSDP.csdp),Void,(blockmatrix,),A)
+    ccall((:free_mat_packed,CSDP.csdp),Nothing,(blockmatrix,),A)
 end
 
 function structnnz(n::Cint,k::Cint,C::blockmatrix,constraints::Ptr{constraintmatrix})
@@ -36,11 +36,11 @@ function bandwidth(n::Cint,lda::Cint,A::Ptr{Cdouble})
 end
 
 function qreig(n::Cint,maindiag::Ptr{Cdouble},offdiag::Ptr{Cdouble})
-    ccall((:qreig,CSDP.csdp),Void,(Cint,Ptr{Cdouble},Ptr{Cdouble}),n,maindiag,offdiag)
+    ccall((:qreig,CSDP.csdp),Nothing,(Cint,Ptr{Cdouble},Ptr{Cdouble}),n,maindiag,offdiag)
 end
 
 function sort_entries(k::Cint,C::blockmatrix,constraints::Ptr{constraintmatrix})
-    ccall((:sort_entries,CSDP.csdp),Void,(Cint,blockmatrix,Ptr{constraintmatrix}),k,C,constraints)
+    ccall((:sort_entries,CSDP.csdp),Nothing,(Cint,blockmatrix,Ptr{constraintmatrix}),k,C,constraints)
 end
 
 function norm2(n::Cint,x::Ptr{Cdouble})
@@ -100,99 +100,99 @@ function dimacserr3(k::Cint,C::blockmatrix,constraints::Ptr{constraintmatrix},y:
 end
 
 function op_a(k::Cint,constraints::Ptr{constraintmatrix},X::blockmatrix,result::Ptr{Cdouble})
-    ccall((:op_a,CSDP.csdp),Void,(Cint,Ptr{constraintmatrix},blockmatrix,Ptr{Cdouble}),k,constraints,X,result)
+    ccall((:op_a,CSDP.csdp),Nothing,(Cint,Ptr{constraintmatrix},blockmatrix,Ptr{Cdouble}),k,constraints,X,result)
 end
 
 function op_at(k::Cint,y::Ptr{Cdouble},constraints::Ptr{constraintmatrix},result::blockmatrix)
-    ccall((:op_at,CSDP.csdp),Void,(Cint,Ptr{Cdouble},Ptr{constraintmatrix},blockmatrix),k,y,constraints,result)
+    ccall((:op_at,CSDP.csdp),Nothing,(Cint,Ptr{Cdouble},Ptr{constraintmatrix},blockmatrix),k,y,constraints,result)
 end
 
 function makefill(k::Cint,C::blockmatrix,constraints::Ptr{constraintmatrix},pfill::Ref{constraintmatrix},work1::blockmatrix,printlevel::Cint)
-    ccall((:makefill,CSDP.csdp),Void,(Cint,blockmatrix,Ptr{constraintmatrix},Ref{constraintmatrix},blockmatrix,Cint),k,C,constraints,pfill,work1,printlevel)
+    ccall((:makefill,CSDP.csdp),Nothing,(Cint,blockmatrix,Ptr{constraintmatrix},Ref{constraintmatrix},blockmatrix,Cint),k,C,constraints,pfill,work1,printlevel)
 end
 
 function op_o(k::Cint,constraints::Ptr{constraintmatrix},byblocks::Ptr{Ptr{sparseblock}},Zi::blockmatrix,X::blockmatrix,O::Ptr{Cdouble},work1::blockmatrix,work2::blockmatrix)
-    ccall((:op_o,CSDP.csdp),Void,(Cint,Ptr{constraintmatrix},Ptr{Ptr{sparseblock}},blockmatrix,blockmatrix,Ptr{Cdouble},blockmatrix,blockmatrix),k,constraints,byblocks,Zi,X,O,work1,work2)
+    ccall((:op_o,CSDP.csdp),Nothing,(Cint,Ptr{constraintmatrix},Ptr{Ptr{sparseblock}},blockmatrix,blockmatrix,Ptr{Cdouble},blockmatrix,blockmatrix),k,constraints,byblocks,Zi,X,O,work1,work2)
 end
 
 function addscaledmat(A::blockmatrix,scale::Cdouble,B::blockmatrix,C::blockmatrix)
-    ccall((:addscaledmat,CSDP.csdp),Void,(blockmatrix,Cdouble,blockmatrix,blockmatrix),A,scale,B,C)
+    ccall((:addscaledmat,CSDP.csdp),Nothing,(blockmatrix,Cdouble,blockmatrix,blockmatrix),A,scale,B,C)
 end
 
 function zero_mat(A::blockmatrix)
-    ccall((:zero_mat,CSDP.csdp),Void,(blockmatrix,),A)
+    ccall((:zero_mat,CSDP.csdp),Nothing,(blockmatrix,),A)
 end
 
 function add_mat(A::blockmatrix,B::blockmatrix)
-    ccall((:add_mat,CSDP.csdp),Void,(blockmatrix,blockmatrix),A,B)
+    ccall((:add_mat,CSDP.csdp),Nothing,(blockmatrix,blockmatrix),A,B)
 end
 
 function sym_mat(A::blockmatrix)
-    ccall((:sym_mat,CSDP.csdp),Void,(blockmatrix,),A)
+    ccall((:sym_mat,CSDP.csdp),Nothing,(blockmatrix,),A)
 end
 
 function make_i(A::blockmatrix)
-    ccall((:make_i,CSDP.csdp),Void,(blockmatrix,),A)
+    ccall((:make_i,CSDP.csdp),Nothing,(blockmatrix,),A)
 end
 
 function copy_mat(A::blockmatrix,B::blockmatrix)
-    ccall((:copy_mat,CSDP.csdp),Void,(blockmatrix,blockmatrix),A,B)
+    ccall((:copy_mat,CSDP.csdp),Nothing,(blockmatrix,blockmatrix),A,B)
 end
 
 function mat_mult(scale1::Cdouble,scale2::Cdouble,A::blockmatrix,B::blockmatrix,C::blockmatrix)
-    ccall((:mat_mult,CSDP.csdp),Void,(Cdouble,Cdouble,blockmatrix,blockmatrix,blockmatrix),scale1,scale2,A,B,C)
+    ccall((:mat_mult,CSDP.csdp),Nothing,(Cdouble,Cdouble,blockmatrix,blockmatrix,blockmatrix),scale1,scale2,A,B,C)
 end
 
 function mat_multspa(scale1::Cdouble,scale2::Cdouble,A::blockmatrix,B::blockmatrix,C::blockmatrix,fill::constraintmatrix)
-    ccall((:mat_multspa,CSDP.csdp),Void,(Cdouble,Cdouble,blockmatrix,blockmatrix,blockmatrix,constraintmatrix),scale1,scale2,A,B,C,fill)
+    ccall((:mat_multspa,CSDP.csdp),Nothing,(Cdouble,Cdouble,blockmatrix,blockmatrix,blockmatrix,constraintmatrix),scale1,scale2,A,B,C,fill)
 end
 
 function mat_multspb(scale1::Cdouble,scale2::Cdouble,A::blockmatrix,B::blockmatrix,C::blockmatrix,fill::constraintmatrix)
-    ccall((:mat_multspb,CSDP.csdp),Void,(Cdouble,Cdouble,blockmatrix,blockmatrix,blockmatrix,constraintmatrix),scale1,scale2,A,B,C,fill)
+    ccall((:mat_multspb,CSDP.csdp),Nothing,(Cdouble,Cdouble,blockmatrix,blockmatrix,blockmatrix,constraintmatrix),scale1,scale2,A,B,C,fill)
 end
 
 function mat_multspc(scale1::Cdouble,scale2::Cdouble,A::blockmatrix,B::blockmatrix,C::blockmatrix,fill::constraintmatrix)
-    ccall((:mat_multspc,CSDP.csdp),Void,(Cdouble,Cdouble,blockmatrix,blockmatrix,blockmatrix,constraintmatrix),scale1,scale2,A,B,C,fill)
+    ccall((:mat_multspc,CSDP.csdp),Nothing,(Cdouble,Cdouble,blockmatrix,blockmatrix,blockmatrix,constraintmatrix),scale1,scale2,A,B,C,fill)
 end
 
 function mat_mult_raw(n::Cint,scale1::Cdouble,scale2::Cdouble,ap::Ptr{Cdouble},bp::Ptr{Cdouble},cp::Ptr{Cdouble})
-    ccall((:mat_mult_raw,CSDP.csdp),Void,(Cint,Cdouble,Cdouble,Ptr{Cdouble},Ptr{Cdouble},Ptr{Cdouble}),n,scale1,scale2,ap,bp,cp)
+    ccall((:mat_mult_raw,CSDP.csdp),Nothing,(Cint,Cdouble,Cdouble,Ptr{Cdouble},Ptr{Cdouble},Ptr{Cdouble}),n,scale1,scale2,ap,bp,cp)
 end
 
 function mat_mult_rawatlas(n::Cint,scale1::Cdouble,scale2::Cdouble,ap::Ptr{Cdouble},bp::Ptr{Cdouble},cp::Ptr{Cdouble})
-    ccall((:mat_mult_rawatlas,CSDP.csdp),Void,(Cint,Cdouble,Cdouble,Ptr{Cdouble},Ptr{Cdouble},Ptr{Cdouble}),n,scale1,scale2,ap,bp,cp)
+    ccall((:mat_mult_rawatlas,CSDP.csdp),Nothing,(Cint,Cdouble,Cdouble,Ptr{Cdouble},Ptr{Cdouble},Ptr{Cdouble}),n,scale1,scale2,ap,bp,cp)
 end
 
 function matvec(A::blockmatrix,x::Ptr{Cdouble},y::Ptr{Cdouble})
-    ccall((:matvec,CSDP.csdp),Void,(blockmatrix,Ptr{Cdouble},Ptr{Cdouble}),A,x,y)
+    ccall((:matvec,CSDP.csdp),Nothing,(blockmatrix,Ptr{Cdouble},Ptr{Cdouble}),A,x,y)
 end
 
 function alloc_mat(A::blockmatrix,pB::Ref{blockmatrix})
-    ccall((:alloc_mat,CSDP.csdp),Void,(blockmatrix,Ref{blockmatrix}),A,pB)
+    ccall((:alloc_mat,CSDP.csdp),Nothing,(blockmatrix,Ref{blockmatrix}),A,pB)
 end
 
 function free_mat(A::blockmatrix)
-    ccall((:free_mat,CSDP.csdp),Void,(blockmatrix,),A)
+    ccall((:free_mat,CSDP.csdp),Nothing,(blockmatrix,),A)
 end
 
 function initparams(params::Ptr{paramstruc},pprintlevel::Ptr{Cint})
-    ccall((:initparams,CSDP.csdp),Void,(Ptr{paramstruc},Ptr{Cint}),params,pprintlevel)
+    ccall((:initparams,CSDP.csdp),Nothing,(Ptr{paramstruc},Ptr{Cint}),params,pprintlevel)
 end
 
 function initsoln(n::Cint,k::Cint,C::blockmatrix,a::Ptr{Cdouble},constraints::Ptr{constraintmatrix})
     X = Ref{blockmatrix}(blockmatrix(0, C_NULL))
     y = Ref{Ptr{Cdouble}}(C_NULL)
     Z = Ref{blockmatrix}(blockmatrix(0, C_NULL))
-    ccall((:initsoln,CSDP.csdp),Void,(Cint,Cint,blockmatrix,Ptr{Cdouble},Ptr{constraintmatrix},Ref{blockmatrix},Ref{Ptr{Cdouble}},Ref{blockmatrix}),n,k,C,a,constraints,X,y,Z)
+    ccall((:initsoln,CSDP.csdp),Nothing,(Cint,Cint,blockmatrix,Ptr{Cdouble},Ptr{constraintmatrix},Ref{blockmatrix},Ref{Ptr{Cdouble}},Ref{blockmatrix}),n,k,C,a,constraints,X,y,Z)
     X[], y[], Z[]
 end
 
 function trans(A::blockmatrix)
-    ccall((:trans,CSDP.csdp),Void,(blockmatrix,),A)
+    ccall((:trans,CSDP.csdp),Nothing,(blockmatrix,),A)
 end
 
 function chol_inv(A::blockmatrix,B::blockmatrix)
-    ccall((:chol_inv,CSDP.csdp),Void,(blockmatrix,blockmatrix),A,B)
+    ccall((:chol_inv,CSDP.csdp),Nothing,(blockmatrix,blockmatrix),A,B)
 end
 
 function chol(A::blockmatrix)
@@ -257,7 +257,7 @@ function write_sol(fname::String,
 end
 
 function free_prob(n::Cint,k::Cint,C::blockmatrix,a::Ptr{Cdouble},constraints::Ptr{constraintmatrix},X::blockmatrix,y::Ptr{Cdouble},Z::blockmatrix)
-    ccall((:free_prob,CSDP.csdp),Void,(Cint,Cint,blockmatrix,Ptr{Cdouble},Ptr{constraintmatrix},blockmatrix,Ptr{Cdouble},blockmatrix),n,k,C,a,constraints,X,y,Z)
+    ccall((:free_prob,CSDP.csdp),Nothing,(Cint,Cint,blockmatrix,Ptr{Cdouble},Ptr{constraintmatrix},blockmatrix,Ptr{Cdouble},blockmatrix),n,k,C,a,constraints,X,y,Z)
 end
 
 function sdp(n::Cint, k::Cint,
@@ -336,15 +336,15 @@ function sdp(n::Cint, k::Cint,
     status, pobj[], dobj[]
 end
 
-function easy_sdp(n::Cint,k::Cint,C::blockmatrix,a::Ptr{Cdouble},constraints::Ptr{constraintmatrix},constant_offset::Cdouble,pX::Ptr{blockmatrix},py::Ptr{Ptr{Cdouble}},pZ::Ptr{blockmatrix})
+function easy_sdp(n::Cint,k::Cint,C::blockmatrix,a::Ptr{Cdouble},constraints::Ptr{constraintmatrix},constant_offset::Cdouble,pX::Ptr{blockmatrix},py::Ref{Ptr{Cdouble}},pZ::Ptr{blockmatrix})
     pobj = Ref{Cdouble}(.0)
     dobj = Ref{Cdouble}(.0)
-    status = ccall((:easy_sdp,CSDP.csdp),Cint,(Cint,Cint,blockmatrix,Ptr{Cdouble},Ptr{constraintmatrix},Cdouble,Ptr{blockmatrix},Ptr{Ptr{Cdouble}},Ptr{blockmatrix},Ref{Cdouble},Ref{Cdouble}),n,k,C,a,constraints,constant_offset,pX,py,pZ,pobj,dobj)
+    status = ccall((:easy_sdp,CSDP.csdp),Cint,(Cint,Cint,blockmatrix,Ptr{Cdouble},Ptr{constraintmatrix},Cdouble,Ptr{blockmatrix},Ref{Ptr{Cdouble}},Ptr{blockmatrix},Ref{Cdouble},Ref{Cdouble}),n,k,C,a,constraints,constant_offset,pX,py,pZ,pobj,dobj)
     status, pobj[], dobj[]
 end
 
 function tweakgap(n::Cint,k::Cint,a::Ptr{Cdouble},constraints::Ptr{constraintmatrix},gap::Cdouble,Z::blockmatrix,dZ::blockmatrix,y::Ptr{Cdouble},dy::Ptr{Cdouble},work1::blockmatrix,work2::blockmatrix,work3::blockmatrix,work4::blockmatrix,workvec1::Ptr{Cdouble},workvec2::Ptr{Cdouble},workvec3::Ptr{Cdouble},workvec4::Ptr{Cdouble},printlevel::Cint)
-    ccall((:tweakgap,CSDP.csdp),Void,(Cint,Cint,Ptr{Cdouble},Ptr{constraintmatrix},Cdouble,blockmatrix,blockmatrix,Ptr{Cdouble},Ptr{Cdouble},blockmatrix,blockmatrix,blockmatrix,blockmatrix,Ptr{Cdouble},Ptr{Cdouble},Ptr{Cdouble},Ptr{Cdouble},Cint),n,k,a,constraints,gap,Z,dZ,y,dy,work1,work2,work3,work4,workvec1,workvec2,workvec3,workvec4,printlevel)
+    ccall((:tweakgap,CSDP.csdp),Nothing,(Cint,Cint,Ptr{Cdouble},Ptr{constraintmatrix},Cdouble,blockmatrix,blockmatrix,Ptr{Cdouble},Ptr{Cdouble},blockmatrix,blockmatrix,blockmatrix,blockmatrix,Ptr{Cdouble},Ptr{Cdouble},Ptr{Cdouble},Ptr{Cdouble},Cint),n,k,a,constraints,gap,Z,dZ,y,dy,work1,work2,work3,work4,workvec1,workvec2,workvec3,workvec4,printlevel)
 end
 
 function bisect_(n::Ptr{Cint},eps1::Ptr{Cdouble},d::Ptr{Cdouble},e::Ptr{Cdouble},e2::Ptr{Cdouble},lb::Ptr{Cdouble},ub::Ptr{Cdouble},mm::Ptr{Cint},m::Ptr{Cint},w::Ptr{Cdouble},ind::Ptr{Cint},ierr::Ptr{Cint},rv4::Ptr{Cdouble},rv5::Ptr{Cdouble})

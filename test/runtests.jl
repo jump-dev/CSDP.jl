@@ -1,15 +1,18 @@
 using CSDP
-using Base.Test
-using Base.LinAlg.BlasInt
+
+using Compat
+using Compat.Test
+using Compat.LinearAlgebra # For Diagonal
 
 @testset "Interact with BLAS" begin
     vec = Cdouble[1.0, 2.0, 0.0, -1.0]
     l = length(vec)
     inc = 1
-    n1 = ccall((BLAS.@blasfunc(dasum_), LinAlg.BLAS.libblas),
+    n1 = ccall((BLAS.@blasfunc(dasum_), Compat.LinearAlgebra.BLAS.libblas),
                Cdouble,
-               (Ptr{BlasInt}, Ptr{Cdouble}, Ptr{BlasInt}),
-               &l, vec, &inc)
+               (Ref{Compat.LinearAlgebra.BlasInt}, Ptr{Cdouble},
+                Ref{Compat.LinearAlgebra.BlasInt}),
+               l, vec, inc)
     @test abs(n1 - 4) < 1e-15
 end
 
@@ -40,9 +43,9 @@ end
               0 0  0 0 0 0 0;
               0 0  0 0 0 0 0;
               0 0  0 0 0 0 0] / 24
-        @test norm(AbstractArray(X) - X✓) < 1e-6
+        @test norm(convert(AbstractArray, X) - X✓) < 1e-6
         y✓ = [3, 4] / 4
-        @test norm(AbstractArray(y) - y✓) < 1e-6
+        @test norm(convert(AbstractArray, y) - y✓) < 1e-6
         Z✓ = [1 -1 0 0 0 0 0;
              -1  1 0 0 0 0 0;
               0  0 0 0 0 0 0;
@@ -50,7 +53,7 @@ end
               0  0 0 0 8 0 0;
               0  0 0 0 0 3 0;
               0  0 0 0 0 0 4] / 4
-        @test norm(AbstractArray(Z) - Z✓) < 1e-6
+        @test norm(convert(AbstractArray, Z) - Z✓) < 1e-6
     end
 end
 

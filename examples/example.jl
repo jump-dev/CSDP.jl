@@ -1,4 +1,5 @@
 using CSDP
+using Compat
 
 #=
 # Example copied from `example/example.c`
@@ -79,6 +80,6 @@ X, y, Z = initsoln(C, b, constraints)
 
 pobj, dobj = easy_sdp(C, b, constraints, X, y, Z)
 
-@static if !is_windows()
+@static if !Compat.Sys.iswindows()
     CSDP.write_sol("prob.sol", X, y, Z)
 end

@@ -15,16 +15,16 @@ end
 export fptr, ptr
 
 function mywrap(X::blockmatrix)
-    finalizer(X, free_blockmatrix)
+    Compat.finalizer(free_blockmatrix, X)
     BlockMatrix(X)
 end
 
 function mywrap(x::Ptr{T}, len) where T
     # I give false to unsafe_wrap to specify that Julia do not own the array so it should not free it
     # because the pointer it has has an offset
-    y = unsafe_wrap(Array, x + sizeof(T), len, false)
+    y = Base.unsafe_wrap(Array, x + sizeof(T), len, own=false)
     # fptr takes care of this offset
-    finalizer(y, s -> Libc.free(fptr(s)))
+    Base.finalizer(s -> Libc.free(fptr(s)), y)
     y
 end
 
@@ -63,7 +63,9 @@ function BlockRec(a::Vector{Cdouble}, n::Int)
     end
 end
 BlockRec(a::Vector, n::Int) = BlockRec(Vector{Cdouble}(a), n)
-BlockRec(A::Matrix) = BlockRec(reshape(A, length(A)), Base.LinAlg.checksquare(A))
+function BlockRec(A::Matrix)
+    return BlockRec(reshape(A, length(A)), Compat.LinearAlgebra.checksquare(A))
+end
 function BlockRec(A::Diagonal)
     a = Vector{Cdouble}(diag(A))
     BlockRec(a, -length(a))
@@ -129,13 +131,13 @@ blockmatzeros(blkdims) = BlockMatrix(map(blockreczeros, blkdims))
 
 function BlockMatrix(csdp::blockmatrix)
     # I give false so that Julia does not try to free it
-    blocks = unsafe_wrap(Array, csdp.blocks + sizeof(blockrec), csdp.nblocks, false)
+    blocks = Base.unsafe_wrap(Array, csdp.blocks + sizeof(blockrec), csdp.nblocks, own=false)
     jblocks = map(blocks) do csdp
         let n = csdp.blocksize, c = csdp.blockcategory, d = csdp.data._blockdatarec
             if c == MATRIX
-                _blockdatarec = unsafe_wrap(Array, d, n^2, false)
+                _blockdatarec = Base.unsafe_wrap(Array, d, n^2, own=false)
             elseif c == DIAG
-                _blockdatarec = unsafe_wrap(Array, d + sizeof(Cdouble), n, false)
+                _blockdatarec = Base.unsafe_wrap(Array, d + sizeof(Cdouble), n, own=false)
             else
                 error("Unknown block category $(c)")
             end
@@ -193,9 +195,9 @@ function SparseBlock(i::Vector{csdpshort}, j::Vector{csdpshort}, v::Vector{Cdoub
     SparseBlock(i, j, v, n, block)
 end
 
-Base.convert(::Type{SparseBlock}, A::SparseBlock) = A
-function Base.convert(::Type{SparseBlock}, A::SparseMatrixCSC{Cdouble})
-    n = Base.LinAlg.checksquare(A)
+SparseBlock(A::SparseBlock) = A
+function SparseBlock(A::SparseMatrixCSC{Cdouble})
+    n = Compat.LinearAlgebra.checksquare(A)
     nn = nnz(A)
     I = csdpshort[]
     J = csdpshort[]
@@ -214,8 +216,10 @@ function Base.convert(::Type{SparseBlock}, A::SparseMatrixCSC{Cdouble})
     end
     SparseBlock(I, J, V, n)
 end
-Base.convert(::Type{SparseBlock}, A::AbstractMatrix{Cdouble}) = SparseBlock(SparseMatrixCSC{Cdouble, Cint}(A))
-Base.convert(::Type{SparseBlock}, A::AbstractMatrix) = SparseBlock(map(Cdouble, A))
+SparseBlock(A::AbstractMatrix{Cdouble}) = SparseBlock(SparseMatrixCSC{Cdouble, Cint}(A))
+SparseBlock(A::AbstractMatrix) = SparseBlock(map(Cdouble, A))
+Base.convert(::Type{SparseBlock}, A::AbstractMatrix) = SparseBlock(A)
+
 function sparseblockzeros(n)
     SparseBlock(csdpshort[], csdpshort[], Cdouble[], abs(n))
 end
@@ -288,7 +292,7 @@ constrmatzeros(i, blkdims) = ConstraintMatrix(i, map(sparseblockzeros, blkdims))
 # but this is kind of annoying since I want to modify its entries in setindex!(::SparseBlock, ...)
 function ConstraintMatrix(csdp::constraintmatrix, k::Integer)
     # I take care to free the blocks array when necessary in mywrap since CSDP won't take care of that (see the code of read_prob)
-    blocks = unsafe_wrap(Array, csdp.blocks, k, true) # FIXME this is a linked list, not an array...
+    blocks = Base.unsafe_wrap(Array, csdp.blocks, k, own=true) # FIXME this is a linked list, not an array...
     jblocks = map(blocks) do csdp
         ne = csdp.numentries
         i = mywrap(csdp.iindices, ne)
@@ -310,7 +314,7 @@ end
 SDOI.nblocks(A::Union{BlockMatrix, ConstraintMatrix}) = length(A.jblocks)
 
 function free_blockmatrix(m::blockmatrix)
-    ccall((:free_mat, CSDP.csdp), Void, (blockmatrix,), m)
+    ccall((:free_mat, CSDP.csdp), Nothing, (blockmatrix,), m)
 end
 export free_blockmatrix
 
