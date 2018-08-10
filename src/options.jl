@@ -10,7 +10,7 @@ function write_prob(m)
                 wrtf = "$wrt.$k"
                 k += 1
             end
-            @info "Writing problem to $(pwd())/$(wrtf)"
+            Compat.@info "Writing problem to $(pwd())/$(wrtf)"
             write_prob(wrtf, m.C, m.b, map(A->A.csdp, m.As))
         end
     end
