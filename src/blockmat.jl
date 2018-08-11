@@ -19,11 +19,11 @@ function mywrap(X::blockmatrix)
     BlockMatrix(X)
 end
 
-function _unsafe_wrap(args..., own::Bool)
+function _unsafe_wrap(A, x, n, own::Bool)
     @static if VERSION >= v"0.7-"
-        Base.unsafe_wrap(args..., own=own)
+        Base.unsafe_wrap(A, x, n, own=own)
     else
-        Base.unsafe_wrap(args..., own)
+        Base.unsafe_wrap(A, x, n, own)
     end
 end
 
