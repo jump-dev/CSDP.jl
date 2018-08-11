@@ -19,10 +19,18 @@ function mywrap(X::blockmatrix)
     BlockMatrix(X)
 end
 
+function _unsafe_wrap(args..., own::Bool)
+    @static if VERSION >= v"0.7-"
+        Base.unsafe_wrap(args..., own=own)
+    else
+        Base.unsafe_wrap(args..., own)
+    end
+end
+
 function mywrap(x::Ptr{T}, len) where T
     # I give false to unsafe_wrap to specify that Julia do not own the array so it should not free it
     # because the pointer it has has an offset
-    y = Base.unsafe_wrap(Array, x + sizeof(T), len, own=false)
+    y = _unsafe_wrap(Array, x + sizeof(T), len, false)
     # fptr takes care of this offset
     @compat finalizer(s -> Libc.free(fptr(s)), y)
     y
@@ -131,13 +139,13 @@ blockmatzeros(blkdims) = BlockMatrix(map(blockreczeros, blkdims))
 
 function BlockMatrix(csdp::blockmatrix)
     # I give false so that Julia does not try to free it
-    blocks = Base.unsafe_wrap(Array, csdp.blocks + sizeof(blockrec), csdp.nblocks, own=false)
+    blocks = _unsafe_wrap(Array, csdp.blocks + sizeof(blockrec), csdp.nblocks, false)
     jblocks = map(blocks) do csdp
         let n = csdp.blocksize, c = csdp.blockcategory, d = csdp.data._blockdatarec
             if c == MATRIX
-                _blockdatarec = Base.unsafe_wrap(Array, d, n^2, own=false)
+                _blockdatarec = _unsafe_wrap(Array, d, n^2, false)
             elseif c == DIAG
-                _blockdatarec = Base.unsafe_wrap(Array, d + sizeof(Cdouble), n, own=false)
+                _blockdatarec = _unsafe_wrap(Array, d + sizeof(Cdouble), n, false)
             else
                 error("Unknown block category $(c)")
             end
@@ -292,7 +300,7 @@ constrmatzeros(i, blkdims) = ConstraintMatrix(i, map(sparseblockzeros, blkdims))
 # but this is kind of annoying since I want to modify its entries in setindex!(::SparseBlock, ...)
 function ConstraintMatrix(csdp::constraintmatrix, k::Integer)
     # I take care to free the blocks array when necessary in mywrap since CSDP won't take care of that (see the code of read_prob)
-    blocks = Base.unsafe_wrap(Array, csdp.blocks, k, own=true) # FIXME this is a linked list, not an array...
+    blocks = _unsafe_wrap(Array, csdp.blocks, k, true) # FIXME this is a linked list, not an array...
     jblocks = map(blocks) do csdp
         ne = csdp.numentries
         i = mywrap(csdp.iindices, ne)
