@@ -4,7 +4,7 @@ import MathProgBase
 @static if VERSION >= v"0.7-"
     const MPB_test_path = joinpath(dirname(pathof(MathProgBase)), "..", "test")
 else
-    joinpath(Pkg.dir("MathProgBase"), "test")
+    const MPB_test_path = joinpath(Pkg.dir("MathProgBase"), "test")
 end
 
 @testset "Linear tests" begin
