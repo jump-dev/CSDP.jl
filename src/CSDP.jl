@@ -1,5 +1,9 @@
 module CSDP
 
+using Compat
+using Compat.LinearAlgebra # For Diagonal
+using Compat.SparseArrays # For SparseMatrixCSC
+
 # Try to load the binary dependency
 if isfile(joinpath(dirname(@__FILE__),"..","deps","deps.jl"))
     include("../deps/deps.jl")
