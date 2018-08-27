@@ -33,7 +33,7 @@ function patch_int(; verbose::Bool = false)
         isfile(patchsrc) || cp(patchf, patchsrc)
     end
     if JULIA_LAPACK
-        @info "Patching int --> integer"
+        Compat.@info "Patching int --> integer"
         cfiles = [Glob.glob("*.c", srcdir); [joinpath(srcdir, "..", "include", "$d.h")
                                         for d in ["declarations",
                                                   "blockmat",
@@ -65,7 +65,7 @@ function compile_objs(JULIA_LAPACK=JULIA_LAPACK)
         lapack = Libdl.dlpath(Compat.LinearAlgebra.LAPACK.liblapack)
         lflag = replace(splitext(basename(lapack))[1], r"^lib", "")
         libs = ["-L$(dirname(lapack))", "-l$lflag"]
-        @info libs
+        Compat.@info libs
         if endswith(Compat.LinearAlgebra.LAPACK.liblapack, "64_")
             push!(cflags, "-march=x86-64", "-m64", "-Dinteger=long")
             for f in FORTRAN_FUNCTIONS
@@ -73,7 +73,7 @@ function compile_objs(JULIA_LAPACK=JULIA_LAPACK)
                     push!(cflags, "-D$(f)_=$(f)_$ext")
                 end
             end
-            @info cflags
+            Compat.@info cflags
         end
     else
         libs = ["-l$l" for l in ["blas", "lapack"]]
@@ -82,7 +82,7 @@ function compile_objs(JULIA_LAPACK=JULIA_LAPACK)
 
 
     for o in find_obj()
-        @info "CC $o.c"
+        Compat.@info "CC $o.c"
         @static if Compat.Sys.isunix()  push!(cflags, "-fPIC") end
         run(`$CC $cflags -o $builddir/$o.o -c $srcdir/$o.c`)
     end
@@ -90,7 +90,7 @@ function compile_objs(JULIA_LAPACK=JULIA_LAPACK)
     cmd = `gcc -shared -o $dlpath $objs $libs`
     try
         run(cmd)
-        @info "LINK --> $dlpath"
+        Compat.@info "LINK --> $dlpath"
     catch
         println(cmd)
     end
