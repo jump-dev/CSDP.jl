@@ -31,7 +31,7 @@ context.options.wrap_structs = true
 wrap_c.wrap_c_headers(context, ["include/blockmat.h", "include/declarations.h"])
 
 function readchangewrite(f, fname)
-    content = Compat.read(fname)
+    content = Compat.read(fname, String)
     open(fname, "w") do file
         write(file, f(content))
     end

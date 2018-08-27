@@ -18,4 +18,4 @@ Makefile    = joinpath(srcdir, "Makefile")
 CC          = get(ENV, "CCOMPILER", "gcc")
 
 """Name of the current Git branch"""
-git_branch() = chomp(Compat.read(`git rev-parse --abbrev-ref HEAD`))
+git_branch() = chomp(Compat.read(`git rev-parse --abbrev-ref HEAD`, String))

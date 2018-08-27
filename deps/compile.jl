@@ -13,10 +13,10 @@ Remark: You cannot use the Makefile directly as it produces only a
 static library.
 """
 function find_obj(makefile_path=Makefile)
-     makefile = Compat.read(makefile_path)
+     makefile = Compat.read(makefile_path, String)
     m = match(r"libsdp\.a\:(.+)", makefile)
     m != nothing || error("Could not find `libsdp.a` target in '$makefile_path'")
-    objs = matchall(r"\w+\.o", m.captures[1])
+    objs = collect(m.match for m in eachmatch(r"\w+\.o", m.captures[1]))
     objs = String[splitext(o)[1] for o in [objs; basename(patchf)]]
 end
 
@@ -40,7 +40,7 @@ function patch_int(; verbose::Bool = false)
                                                   "parameters"]]]
         for cfile in cfiles
             if verbose; println(cfile); end
-            content = Compat.read(cfile)
+            content = Compat.read(cfile, String)
             for (re,subst) in
                 [(r"int ([^(]+);", s"integer \1;"),
                  (r"int ", s"integer "),
