@@ -14,7 +14,7 @@ catch
         error("llvm-config not found")
     end
 end
-push!(Libdl.DL_LOAD_PATH, readchomp(`$(ENV["LLVM_CONFIG"]) --libdir`))
+push!(Compat.Libdl.DL_LOAD_PATH, readchomp(`$(ENV["LLVM_CONFIG"]) --libdir`))
 
 include(joinpath(dirname(@__FILE__), "constants.jl"))
 cd(joinpath(dirname(@__FILE__), "src", csdpversion))
@@ -31,7 +31,7 @@ context.options.wrap_structs = true
 wrap_c.wrap_c_headers(context, ["include/blockmat.h", "include/declarations.h"])
 
 function readchangewrite(f, fname)
-    content = readstring(fname)
+    content = Compat.read(fname, String)
     open(fname, "w") do file
         write(file, f(content))
     end

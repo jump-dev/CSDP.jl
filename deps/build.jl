@@ -1,18 +1,19 @@
 using BinDeps
+using Compat
 
 @BinDeps.setup
 
 include("constants.jl")
 include("compile.jl")
 
-# info("libname = $libname")
+# Compat.@info "libname = $libname"
 blas = library_dependency("libblas", alias=["libblas.dll"])
 lapack = library_dependency("liblapack", alias=["liblapack.dll"])
 depends = JULIA_LAPACK ? [] : [blas, lapack]
 
 # LaPack/BLAS dependencies
 if !JULIA_LAPACK
-    @static if is_windows()
+    @static if Compat.Sys.iswindows()
         # wheel = "numpy/windows-wheel-builder/raw/master/atlas-builds"
         # atlas = "https://github.com/$wheel"
         # atlasdll = "/atlas-3.11.38-sse2-64/lib/numpy-atlas.dll"

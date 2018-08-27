@@ -1,4 +1,4 @@
-using Glob.glob
+import Glob
 
 const FORTRAN_FUNCTIONS =
     [:dnrm2, :dasum, :ddot, :idamax, :dgemm, :dgemv, :dger,
@@ -13,10 +13,10 @@ Remark: You cannot use the Makefile directly as it produces only a
 static library.
 """
 function find_obj(makefile_path=Makefile)
-     makefile = readstring(makefile_path)
+     makefile = Compat.read(makefile_path, String)
     m = match(r"libsdp\.a\:(.+)", makefile)
     m != nothing || error("Could not find `libsdp.a` target in '$makefile_path'")
-    objs = matchall(r"\w+\.o", m.captures[1])
+    objs = collect(m.match for m in eachmatch(r"\w+\.o", m.captures[1]))
     objs = String[splitext(o)[1] for o in [objs; basename(patchf)]]
 end
 
@@ -33,14 +33,14 @@ function patch_int(; verbose::Bool = false)
         isfile(patchsrc) || cp(patchf, patchsrc)
     end
     if JULIA_LAPACK
-        info("Patching int --> integer")
-        cfiles = [glob("*.c", srcdir); [joinpath(srcdir, "..", "include", "$d.h")
+        Compat.@info "Patching int --> integer"
+        cfiles = [Glob.glob("*.c", srcdir); [joinpath(srcdir, "..", "include", "$d.h")
                                         for d in ["declarations",
                                                   "blockmat",
                                                   "parameters"]]]
         for cfile in cfiles
             if verbose; println(cfile); end
-            content = readstring(cfile)
+            content = Compat.read(cfile, String)
             for (re,subst) in
                 [(r"int ([^(]+);", s"integer \1;"),
                  (r"int ", s"integer "),
@@ -62,35 +62,35 @@ end
 
 function compile_objs(JULIA_LAPACK=JULIA_LAPACK)
     if JULIA_LAPACK
-        lapack = Libdl.dlpath(LinAlg.LAPACK.liblapack)
+        lapack = Libdl.dlpath(Compat.LinearAlgebra.LAPACK.liblapack)
         lflag = replace(splitext(basename(lapack))[1], r"^lib", "")
         libs = ["-L$(dirname(lapack))", "-l$lflag"]
-        info(libs)
-        if endswith(LinAlg.LAPACK.liblapack, "64_")
+        Compat.@info libs
+        if endswith(Compat.LinearAlgebra.LAPACK.liblapack, "64_")
             push!(cflags, "-march=x86-64", "-m64", "-Dinteger=long")
             for f in FORTRAN_FUNCTIONS
-                let ext=string(BLAS.@blasfunc "")
+                let ext=string(Compat.LinearAlgebra.BLAS.@blasfunc "")
                     push!(cflags, "-D$(f)_=$(f)_$ext")
                 end
             end
-            info(cflags)
+            Compat.@info cflags
         end
     else
         libs = ["-l$l" for l in ["blas", "lapack"]]
-        @static if is_windows() unshift!(libs, "-L$libdir") end
+        @static if Compat.Sys.iswindows() unshift!(libs, "-L$libdir") end
     end
 
 
     for o in find_obj()
-        info("CC $o.c")
-        @static if is_unix()  push!(cflags, "-fPIC") end
+        Compat.@info "CC $o.c"
+        @static if Compat.Sys.isunix()  push!(cflags, "-fPIC") end
         run(`$CC $cflags -o $builddir/$o.o -c $srcdir/$o.c`)
     end
     objs = ["$builddir/$o.o" for o in find_obj()]
     cmd = `gcc -shared -o $dlpath $objs $libs`
     try
         run(cmd)
-        info("LINK --> $dlpath")
+        Compat.@info "LINK --> $dlpath"
     catch
         println(cmd)
     end
