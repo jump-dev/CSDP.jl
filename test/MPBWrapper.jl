@@ -21,9 +21,11 @@ end
             coniclineartest(solver, duals=true, tol=1e-6)
         end
 
-        @testset "Conic SOC tests" begin
-            conicSOCtest(CSDP.CSDPSolver(printlevel=0, write_prob="soc.prob"), duals=true, tol=1e-6)
-        end
+# TODO Fixed by https://github.com/JuliaOpt/SemidefiniteModels.jl/commit/d03248428f93772a05bd3d63a224982e2b85d88c
+#      uncomment when this is released or when Julia v0.6 is dropped
+#        @testset "Conic SOC tests" begin
+#            conicSOCtest(CSDP.CSDPSolver(printlevel=0, write_prob="soc.prob"), duals=true, tol=1e-6)
+#        end
 
         @testset "Conic SOC rotated tests" begin
             conicSOCRotatedtest(solver, duals=true, tol=1e-6)
