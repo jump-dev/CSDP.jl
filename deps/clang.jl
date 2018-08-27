@@ -14,7 +14,7 @@ catch
         error("llvm-config not found")
     end
 end
-push!(Libdl.DL_LOAD_PATH, readchomp(`$(ENV["LLVM_CONFIG"]) --libdir`))
+push!(Compat.Libdl.DL_LOAD_PATH, readchomp(`$(ENV["LLVM_CONFIG"]) --libdir`))
 
 include(joinpath(dirname(@__FILE__), "constants.jl"))
 cd(joinpath(dirname(@__FILE__), "src", csdpversion))

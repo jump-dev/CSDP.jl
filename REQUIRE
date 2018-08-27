@@ -4,5 +4,5 @@ Glob
 MathOptInterface 0.5 0.6
 SemidefiniteOptInterface 0.2 0.3
 MathProgBase 0.7 0.8
-SemidefiniteModels 0.0.3 0.1
+SemidefiniteModels 0.1 0.2
 Compat 1.0
