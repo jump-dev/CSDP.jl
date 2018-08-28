@@ -81,7 +81,6 @@ function MOI.get(m::SDOptimizer, ::MOI.TerminationStatus)
     end
 end
 
-MOI.canget(m::SDOptimizer, ::MOI.PrimalStatus) = m.status == 0 || m.status >= 2
 function MOI.get(m::SDOptimizer, ::MOI.PrimalStatus)
     status = m.status
     if status == 0
@@ -99,7 +98,6 @@ function MOI.get(m::SDOptimizer, ::MOI.PrimalStatus)
     end
 end
 
-MOI.canget(m::SDOptimizer, ::MOI.DualStatus) = 0 <= m.status <= 1 || m.status >= 3
 function MOI.get(m::SDOptimizer, ::MOI.DualStatus)
     status = m.status
     if status == 0
