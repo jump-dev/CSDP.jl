@@ -62,5 +62,9 @@ end
     @test CSDP.paramstruc(Dict(:axtol => 1e-7)).axtol == 1e-7
 end
 
-include("MOIWrapper.jl")
-include("MPBWrapper.jl")
+@testset "MathOptInterface" begin
+    include("MOIWrapper.jl")
+end
+@testset "MathProgBase" begin
+    include("MPBWrapper.jl")
+end
