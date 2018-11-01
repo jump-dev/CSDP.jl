@@ -1,11 +1,19 @@
-# CSDP
+# COIN-OR SemiDefinite Programming Interface (CSDP.jl)
+
+![](https://www.coin-or.org/wordpress/wp-content/uploads/2014/08/COINOR.png)
+
+`CSDP.jl` is an interface to the **[COIN-OR SemiDefinite
+Programming](https://projects.coin-or.org/Csdp)** solver. It provides a complete
+interface to the low-level C API, as well as an implementation of the
+solver-independent `MathProgBase` and `MathOptInterface` API's.
+
+*Note: This wrapper is maintained by the JuliaOpt community and is not a COIN-OR
+project.*
 
 | **PackageEvaluator** | **Build Status** |
 |:--------------------:|:----------------:|
 | [![][pkg-0.5-img]][pkg-0.5-url] | [![Build Status][build-img]][build-url] [![Build Status][winbuild-img]][winbuild-url] |
 | [![][pkg-0.6-img]][pkg-0.6-url] | [![Coveralls branch][coveralls-img]][coveralls-url] [![Codecov branch][codecov-img]][codecov-url] |
-
-Julia wrapper to [CSDP](https://projects.coin-or.org/Csdp) semidefinite programming solver.
 
 The original algorithm is described by
 B. Borchers.
@@ -25,10 +33,15 @@ Then, install CSDP using
 julia> Pkg.add("CSDP")
 ```
 
-To use CSDP with JuMP, do
+To use CSDP with JuMP v0.18, do
 ```julia
 using JuMP
-m = Model(solver=CSDPSolver())
+model = Model(solver=CSDPSolver())
+```
+and with JuMP development version, do
+```julia
+using JuMP
+model = Model(with_optimizer(CSDP.Optimizer))
 ```
 
 ## CSDP problem representation
