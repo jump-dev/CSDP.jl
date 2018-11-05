@@ -16,7 +16,7 @@ end
     include(joinpath(MPB_test_path, "conicinterface.jl"))
     # FIXME fails on Windows 32 bits... Maybe I should put linear vars/cons
     # in a diagonal matrix in SemidefiniteModels.jl instead of many 1x1 blocks
-    @static if !Compat.Sys.iswindows() || Compat.Sys.WORD_SIZE != 32
+    @static if !Compat.Sys.iswindows() || Sys.WORD_SIZE != 32
         @testset "Conic linear tests" begin
             coniclineartest(solver, duals=true, tol=1e-6)
         end
