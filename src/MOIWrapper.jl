@@ -5,12 +5,12 @@ using MathOptInterface
 MOI = MathOptInterface
 
 mutable struct SDOptimizer <: SDOI.AbstractSDOptimizer
-    C
-    b
-    As
-    X
-    y
-    Z
+    C::Union{Nothing, BlockMatrix}
+    b::Union{Nothing, Vector{Cdouble}}
+    As::Union{Nothing, Vector{ConstraintMatrix}}
+    X::Union{Nothing, BlockMatrix}
+    y::Union{Nothing, Vector{Cdouble}}
+    Z::Union{Nothing, BlockMatrix}
     status::Cint
     pobj::Cdouble
     dobj::Cdouble
@@ -21,6 +21,20 @@ mutable struct SDOptimizer <: SDOI.AbstractSDOptimizer
     end
 end
 Optimizer(; kws...) = SDOI.SDOIOptimizer(SDOptimizer(; kws...))
+
+MOI.get(::SDOptimizer, ::MOI.SolverName) = "CSDP"
+
+function MOI.empty!(optimizer::SDOptimizer)
+    optimizer.C = nothing
+    optimizer.b = nothing
+    optimizer.As = nothing
+    optimizer.X = nothing
+    optimizer.y = nothing
+    optimizer.Z = nothing
+    optimizer.status = -1
+    optimizer.pobj = 0.0
+    optimizer.dobj = 0.0
+end
 
 function SDOI.init!(m::SDOptimizer, blkdims::Vector{Int}, nconstrs::Int)
     @assert nconstrs >= 0
@@ -66,10 +80,16 @@ end
 
 function MOI.get(m::SDOptimizer, ::MOI.TerminationStatus)
     status = m.status
-    if 0 <= status <= 2
-        return MOI.Success
+    if status == -1
+        return MOI.OptimizeNotCalled
+    elseif status == 0
+        return MOI.Optimal
+    elseif status == 1
+        return MOI.Infeasible
+    elseif status == 2
+        return MOI.DualInfeasible
     elseif status == 3
-        return MOI.AlmostSuccess
+        return MOI.AlmostOptimal
     elseif status == 4
         return MOI.IterationLimit
     elseif 5 <= status <= 7
