@@ -16,8 +16,7 @@ function setupAs!(As::Vector{ConstraintMatrix}, C::BlockMatrix)
 
     nblocks = length(C.blocks)
 
-    byblocks = Vector{Ptr{sparseblock}}(undef, nblocks)
-    fill!(byblocks, C_NULL)
+    byblocks = fill(Ptr{sparseblock}(C_NULL), nblocks)
 
     for constr in length(As):-1:1
         A = As[constr]
