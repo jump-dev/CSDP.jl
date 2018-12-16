@@ -18,6 +18,10 @@ MOIU.@model(SDModelData,
 const optimizer = MOIU.CachingOptimizer(SDModelData{Float64}(), CSDP.Optimizer(printlevel=0))
 const config = MOIT.TestConfig(atol=1e-4, rtol=1e-4)
 
+@testset "SolverName" begin
+    @test MOI.get(optimizer, MOI.SolverName()) == "CSDP"
+end
+
 @testset "Unit" begin
     MOIT.unittest(MOIB.SplitInterval{Float64}(optimizer), config,
                   [# Quadratic functions are not supported
