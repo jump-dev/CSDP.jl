@@ -81,21 +81,21 @@ end
 function MOI.get(m::SDOptimizer, ::MOI.TerminationStatus)
     status = m.status
     if status == -1
-        return MOI.OptimizeNotCalled
+        return MOI.OPTIMIZE_NOT_CALLED
     elseif status == 0
-        return MOI.Optimal
+        return MOI.OPTIMAL
     elseif status == 1
-        return MOI.Infeasible
+        return MOI.INFEASIBLE
     elseif status == 2
-        return MOI.DualInfeasible
+        return MOI.DUAL_INFEASIBLE
     elseif status == 3
-        return MOI.AlmostOptimal
+        return MOI.ALMOST_OPTIMAL
     elseif status == 4
-        return MOI.IterationLimit
+        return MOI.ITERATION_LIMIT
     elseif 5 <= status <= 7
-        return MOI.SlowProgress
+        return MOI.SLOW_PROGRESS
     elseif 8 <= status <= 9
-        return MOI.NumericalError
+        return MOI.NUMERICAL_ERROR
     else
         error("Internal library error: status=$status")
     end
@@ -104,15 +104,15 @@ end
 function MOI.get(m::SDOptimizer, ::MOI.PrimalStatus)
     status = m.status
     if status == 0
-        return MOI.FeasiblePoint
+        return MOI.FEASIBLE_POINT
     elseif status == 1
-        return MOI.InfeasiblePoint
+        return MOI.INFEASIBLE_POINT
     elseif status == 2
-        return MOI.InfeasibilityCertificate
+        return MOI.INFEASIBILITY_CERTIFICATE
     elseif status == 3
-        return MOI.NearlyFeasiblePoint
+        return MOI.NEARLY_FEASIBLE_POINT
     elseif 4 <= status <= 9
-        return MOI.UnknownResultStatus
+        return MOI.UNKNOWN_RESULT_STATUS
     else
         error("Internal library error: status=$status")
     end
@@ -121,15 +121,15 @@ end
 function MOI.get(m::SDOptimizer, ::MOI.DualStatus)
     status = m.status
     if status == 0
-        return MOI.FeasiblePoint
+        return MOI.FEASIBLE_POINT
     elseif status == 1
-        return MOI.InfeasibilityCertificate
+        return MOI.INFEASIBILITY_CERTIFICATE
     elseif status == 2
-        return MOI.InfeasiblePoint
+        return MOI.INFEASIBLE_POINT
     elseif status == 3
-        return MOI.NearlyFeasiblePoint
+        return MOI.NEARLY_FEASIBLE_POINT
     elseif 4 <= status <= 9
-        return MOI.UnknownResultStatus
+        return MOI.UNKNOWN_RESULT_STATUS
     else
         error("Internal library error: status=$status")
     end
