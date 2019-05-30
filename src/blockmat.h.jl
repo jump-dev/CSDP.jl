@@ -3,7 +3,7 @@
 
 # TODO detect size and use bitstype because if the DLL changes and gets
 #      compiled with NOSHORTS we are screwed with the following code...
-@static if Compat.Sys.iswindows()
+@static if Sys.iswindows()
     const csdpshort = Cushort
   else
     const csdpshort = Cint

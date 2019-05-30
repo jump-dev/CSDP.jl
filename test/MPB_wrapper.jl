@@ -1,11 +1,7 @@
 const solver = CSDP.CSDPSolver(printlevel=0)
 
 import MathProgBase
-@static if VERSION >= v"0.7-"
-    const MPB_test_path = joinpath(dirname(pathof(MathProgBase)), "..", "test")
-else
-    const MPB_test_path = joinpath(Pkg.dir("MathProgBase"), "test")
-end
+const MPB_test_path = joinpath(dirname(pathof(MathProgBase)), "..", "test")
 
 @testset "Linear tests" begin
     include(joinpath(MPB_test_path, "linproginterface.jl"))
@@ -16,7 +12,7 @@ end
     include(joinpath(MPB_test_path, "conicinterface.jl"))
     # FIXME fails on Windows 32 bits... Maybe I should put linear vars/cons
     # in a diagonal matrix in SemidefiniteModels.jl instead of many 1x1 blocks
-    @static if !Compat.Sys.iswindows() || Sys.WORD_SIZE != 32
+    @static if !Sys.iswindows() || Sys.WORD_SIZE != 32
         @testset "Conic linear tests" begin
             coniclineartest(solver, duals=true, tol=1e-6)
         end

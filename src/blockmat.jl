@@ -15,16 +15,12 @@ end
 export fptr, ptr
 
 function mywrap(X::blockmatrix)
-    @compat finalizer(free_blockmatrix, X)
+    finalizer(free_blockmatrix, X)
     BlockMatrix(X)
 end
 
 function _unsafe_wrap(A, x, n, own::Bool)
-    @static if VERSION >= v"0.7-"
-        Base.unsafe_wrap(A, x, n, own=own)
-    else
-        Base.unsafe_wrap(A, x, n, own)
-    end
+    Base.unsafe_wrap(A, x, n, own=own)
 end
 
 function mywrap(x::Ptr{T}, len) where T
@@ -32,7 +28,7 @@ function mywrap(x::Ptr{T}, len) where T
     # because the pointer it has has an offset
     y = _unsafe_wrap(Array, x + sizeof(T), len, false)
     # fptr takes care of this offset
-    @compat finalizer(s -> Libc.free(fptr(s)), y)
+    finalizer(s -> Libc.free(fptr(s)), y)
     y
 end
 
@@ -72,7 +68,7 @@ function BlockRec(a::Vector{Cdouble}, n::Int)
 end
 BlockRec(a::Vector, n::Int) = BlockRec(Vector{Cdouble}(a), n)
 function BlockRec(A::Matrix)
-    return BlockRec(reshape(A, length(A)), Compat.LinearAlgebra.checksquare(A))
+    return BlockRec(reshape(A, length(A)), LinearAlgebra.checksquare(A))
 end
 function BlockRec(A::Diagonal)
     a = Vector{Cdouble}(diag(A))
@@ -205,7 +201,7 @@ end
 
 SparseBlock(A::SparseBlock) = A
 function SparseBlock(A::SparseMatrixCSC{Cdouble})
-    n = Compat.LinearAlgebra.checksquare(A)
+    n = LinearAlgebra.checksquare(A)
     nn = nnz(A)
     I = csdpshort[]
     J = csdpshort[]

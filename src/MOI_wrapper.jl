@@ -14,15 +14,61 @@ mutable struct SDOptimizer <: SDOI.AbstractSDOptimizer
     status::Cint
     pobj::Cdouble
     dobj::Cdouble
-    options::Dict{Symbol,Any}
+    solve_time::Float64
+    silent::Bool
+    options::Dict{Symbol, Any}
     function SDOptimizer(; kwargs...)
-        new(nothing, nothing, nothing, nothing, nothing, nothing,
-            -1, 0.0, 0.0, checkoptions(Dict{Symbol, Any}(kwargs)))
+        optimizer = new(nothing, nothing, nothing, nothing, nothing, nothing,
+            -1, NaN, NaN, NaN, false, Dict{Symbol, Any}())
+        for (key, value) in kwargs
+            MOI.set(optimizer, MOI.RawParameter(key), value)
+        end
+        return optimizer
     end
 end
 Optimizer(; kws...) = SDOI.SDOIOptimizer(SDOptimizer(; kws...))
 
+function MOI.supports(optimizer::SDOptimizer, param::MOI.RawParameter)
+    return param.name in ALLOWED_OPTIONS
+end
+function MOI.set(optimizer::SDOptimizer, param::MOI.RawParameter, value)
+    if !MOI.supports(optimizer, param)
+        throw(MOI.UnsupportedAttribute(param))
+    end
+    optimizer.options[param.name] = value
+end
+function MOI.get(optimizer::SDOptimizer, param::MOI.RawParameter)
+    # TODO: This gives a poor error message if the name of the parameter is invalid.
+    return optimizer.options[param.name]
+end
+
+MOI.supports(::SDOptimizer, ::MOI.Silent) = true
+function MOI.set(optimizer::SDOptimizer, ::MOI.Silent, value::Bool)
+    optimizer.silent = value
+end
+MOI.get(optimizer::SDOptimizer, ::MOI.Silent) = optimizer.silent
+
 MOI.get(::SDOptimizer, ::MOI.SolverName) = "CSDP"
+# See table "Return codes for easy_sdp() and CSDP" in `doc/csdpuser.pdf`.
+const RAW_STATUS = [
+    "Problem solved to optimality.",
+    "Problem is primal infeasible.",
+    "Problem is dual infeasible.",
+    "Problem solved to near optimality.",
+    "Maximum iterations reached.",
+    "Stuck at edge of primal feasibility.",
+    "Stuck at edge of dual feasibility.",
+    "Lack of progress.",
+    "X, Z, or O is singular.",
+    "NaN or Inf values encountered.",
+    "Program stopped by signal (SIXCPU, SIGTERM, etc.)"]
+
+function MOI.get(optimizer::SDOptimizer, ::MOI.RawStatusString)
+    return RAW_STATUS[optimizer.status + 1]
+end
+function MOI.get(optimizer::SDOptimizer, ::MOI.SolveTime)
+    return optimizer.solve_time
+end
 
 function MOI.empty!(optimizer::SDOptimizer)
     optimizer.C = nothing
@@ -67,15 +113,24 @@ function SDOI.setobjectivecoefficient!(m::SDOptimizer, coef, blk::Integer, i::In
     SDOI.block(m.C, blk)[i, j] = coef
 end
 
-function MOI.optimize!(m::SDOptimizer)
-    As = map(A->A.csdp, m.As)
+function MOI.optimize!(optimizer::SDOptimizer)
+    As = map(A->A.csdp, optimizer.As)
 
-    write_prob(m)
+    write_prob(optimizer)
 
-    m.X, m.y, m.Z = initsoln(m.C, m.b, As)
-    #verbose = get(m.options, :verbose, true)
-    #m.status, m.pobj, m.dobj = easy_sdp(m.C, m.b, As, m.X, m.y, m.Z, verbose)
-    m.status, m.pobj, m.dobj = sdp(m.C, m.b, m.As, m.X, m.y, m.Z, m.options)
+    start_time = time()
+    optimizer.X, optimizer.y, optimizer.Z = initsoln(optimizer.C, optimizer.b, As)
+
+    options = optimizer.options
+    if optimizer.silent
+        options = copy(options)
+        options[:printlevel] = 0
+    end
+
+    optimizer.status, optimizer.pobj, optimizer.dobj = sdp(
+        optimizer.C, optimizer.b, optimizer.As, optimizer.X, optimizer.y,
+        optimizer.Z, options)
+    optimizer.solve_time = time() - start_time
 end
 
 function MOI.get(m::SDOptimizer, ::MOI.TerminationStatus)
@@ -135,18 +190,18 @@ function MOI.get(m::SDOptimizer, ::MOI.DualStatus)
     end
 end
 
-function SDOI.getprimalobjectivevalue(m::SDOptimizer)
-    m.pobj
+function MOI.get(m::SDOptimizer, ::MOI.ObjectiveValue)
+    return m.pobj
 end
-function SDOI.getdualobjectivevalue(m::SDOptimizer)
-    m.dobj
+function MOI.get(m::SDOptimizer, ::MOI.DualObjectiveValue)
+    return m.dobj
 end
 function SDOI.getX(m::SDOptimizer)
-    m.X
+    return m.X
 end
 function SDOI.gety(m::SDOptimizer)
-    m.y
+    return m.y
 end
 function SDOI.getZ(m::SDOptimizer)
-    m.Z
+    return m.Z
 end

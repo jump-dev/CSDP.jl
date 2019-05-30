@@ -1,17 +1,16 @@
 using CSDP
 
-using Compat
-using Compat.Test
-using Compat.LinearAlgebra # For Diagonal
+using Test
+using LinearAlgebra # For Diagonal
 
 @testset "Interact with BLAS" begin
     vec = Cdouble[1.0, 2.0, 0.0, -1.0]
     l = length(vec)
     inc = 1
-    n1 = ccall((BLAS.@blasfunc(dasum_), Compat.LinearAlgebra.BLAS.libblas),
+    n1 = ccall((BLAS.@blasfunc(dasum_), LinearAlgebra.BLAS.libblas),
                Cdouble,
-               (Ref{Compat.LinearAlgebra.BlasInt}, Ptr{Cdouble},
-                Ref{Compat.LinearAlgebra.BlasInt}),
+               (Ref{LinearAlgebra.BlasInt}, Ptr{Cdouble},
+                Ref{LinearAlgebra.BlasInt}),
                l, vec, inc)
     @test abs(n1 - 4) < 1e-15
 end
@@ -58,7 +57,6 @@ end
 end
 
 @testset "Options" begin
-    @test_throws ErrorException CSDP.Optimizer(bad_option = 1)
     @test CSDP.paramstruc(Dict(:axtol => 1e-7)).axtol == 1e-7
 end
 
