@@ -1,3 +1,5 @@
+using Test
+
 using MathOptInterface
 const MOI = MathOptInterface
 const MOIT = MOI.Test
@@ -10,6 +12,7 @@ MOIU.@model(SDModelData,
              MOI.PositiveSemidefiniteConeTriangle), (),
             (), (MOI.ScalarAffineFunction,), (MOI.VectorOfVariables,), ())
 
+import CSDP
 const optimizer = CSDP.Optimizer()
 MOI.set(optimizer, MOI.Silent(), true)
 const cache = MOIU.UniversalFallback(SDModelData{Float64}())
