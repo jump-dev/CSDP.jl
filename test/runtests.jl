@@ -30,7 +30,7 @@ end
 end
 
 @testset "Example" begin
-    cd("../examples/") do
+    cd(joinpath(dirname(dirname(pathof(CSDP))), "examples")) do
         include(joinpath(pwd(), "example.jl"))
         @test size(X) == (7, 7)
         @test length(y) == 2
