@@ -19,6 +19,7 @@ end
     @test !MOIU.supports_allocate_load(optimizer, true)
 end
 
+# UniversalFallback is needed for starting values, even if they are ignored by CSDP
 const cache = MOIU.UniversalFallback(MOIU.Model{Float64}())
 const cached = MOIU.CachingOptimizer(cache, optimizer)
 const bridged = MOIB.full_bridge_optimizer(cached, Float64)
@@ -31,35 +32,26 @@ const config = MOIT.TestConfig(atol=1e-4, rtol=1e-4)
 end
 
 @testset "Unit" begin
-    MOIT.unittest(bridged, config,
-                  [# SingleVariable objective of bridged variables, will be solved by objective bridges
-                   "solve_time", "raw_status_string", "solve_singlevariable_obj",
-                   # Multiple variable constraints on same variable
-                   "solve_with_lowerbound", "solve_affine_interval",
-                   "solve_with_upperbound",
-                   # Quadratic functions are not supported
-                   "solve_qcp_edge_cases", "solve_qp_edge_cases",
-                   # Integer and ZeroOne sets are not supported
-                   "solve_integer_edge_cases", "solve_objbound_edge_cases",
-                   "solve_zero_one_with_bounds_1",
-                   "solve_zero_one_with_bounds_2",
-                   "solve_zero_one_with_bounds_3"])
+    MOIT.unittest(bridged, config, [
+        # SingleVariable objective of bridged variables, will be solved by objective bridges
+        "solve_time", "raw_status_string", "solve_singlevariable_obj",
+        # Quadratic functions are not supported
+        "solve_qcp_edge_cases", "solve_qp_edge_cases",
+        # Integer and ZeroOne sets are not supported
+        "solve_integer_edge_cases", "solve_objbound_edge_cases",
+        "solve_zero_one_with_bounds_1",
+        "solve_zero_one_with_bounds_2",
+        "solve_zero_one_with_bounds_3"])
 end
 @testset "Continuous Linear" begin
-    MOIT.contlineartest(bridged, config,
-                        [
-                         # Multiple variable constraints on same variable
-                         "linear10", "linear10b", "linear14"])
+    MOIT.contlineartest(bridged, config)
 end
 @testset "Continuous Conic" begin
-    MOIT.contconictest(
-        bridged, config,
-        [# See https://github.com/coin-or/Csdp/issues/11
-         "rotatedsoc1v",
-         # Need to investigate
-         "psds0v",
-         # Missing bridges
-         "rootdets",
-         # Does not support power and exponential cone
-         "pow", "logdet", "exp"])
+    MOIT.contconictest(bridged, config, [
+        # See https://github.com/coin-or/Csdp/issues/11
+        "rotatedsoc1v",
+        # Missing bridges
+        "rootdets",
+        # Does not support power and exponential cone
+        "pow", "logdet", "exp"])
 end
