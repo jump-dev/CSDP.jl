@@ -5,6 +5,15 @@ const SDM = SemidefiniteModels
 
 export CSDPMathProgModel, CSDPSolver
 
+function checkoptions(d::Dict{Symbol, Any})
+    for key in keys(d)
+        if !(key in ALLOWED_OPTIONS)
+            error("Option $key is not not a valid CSDP option. The valid options are $ALLOWED_OPTIONS.")
+        end
+    end
+    return d
+end
+
 struct CSDPSolver <: MPB.AbstractMathProgSolver
     options::Dict{Symbol,Any}
 end
@@ -56,10 +65,10 @@ function SDM.setconstrB!(m::CSDPMathProgModel, val, constr::Integer)
     m.b[constr] = val
 end
 function SDM.setconstrentry!(m::CSDPMathProgModel, coef, constr::Integer, blk::Integer, i::Integer, j::Integer)
-    SDOI.block(m.As[constr], blk)[i, j] = coef
+    block(m.As[constr], blk)[i, j] = coef
 end
 function SDM.setobjentry!(m::CSDPMathProgModel, coef, blk::Integer, i::Integer, j::Integer)
-    SDOI.block(m.C, blk)[i, j] = coef
+    block(m.C, blk)[i, j] = coef
 end
 
 function MPB.optimize!(m::CSDPMathProgModel)

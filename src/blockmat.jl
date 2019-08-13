@@ -15,16 +15,12 @@ end
 export fptr, ptr
 
 function mywrap(X::blockmatrix)
-    @compat finalizer(free_blockmatrix, X)
+    finalizer(free_blockmatrix, X)
     BlockMatrix(X)
 end
 
 function _unsafe_wrap(A, x, n, own::Bool)
-    @static if VERSION >= v"0.7-"
-        Base.unsafe_wrap(A, x, n, own=own)
-    else
-        Base.unsafe_wrap(A, x, n, own)
-    end
+    Base.unsafe_wrap(A, x, n, own=own)
 end
 
 function mywrap(x::Ptr{T}, len) where T
@@ -32,7 +28,7 @@ function mywrap(x::Ptr{T}, len) where T
     # because the pointer it has has an offset
     y = _unsafe_wrap(Array, x + sizeof(T), len, false)
     # fptr takes care of this offset
-    @compat finalizer(s -> Libc.free(fptr(s)), y)
+    finalizer(s -> Libc.free(fptr(s)), y)
     y
 end
 
@@ -53,9 +49,6 @@ end
 # * blockrec contains the blockdatarec, the category (dense or diagonal), and the block size
 # * blockmatrix contains the number of blocks and a vector containing the blocks (blockrec) (1-indexed)
 
-using SemidefiniteOptInterface
-const SDOI = SemidefiniteOptInterface
-
 # blockrec
 mutable struct BlockRec <: AbstractMatrix{Cdouble}
     _blockdatarec::Vector{Cdouble}
@@ -72,7 +65,7 @@ function BlockRec(a::Vector{Cdouble}, n::Int)
 end
 BlockRec(a::Vector, n::Int) = BlockRec(Vector{Cdouble}(a), n)
 function BlockRec(A::Matrix)
-    return BlockRec(reshape(A, length(A)), Compat.LinearAlgebra.checksquare(A))
+    return BlockRec(reshape(A, length(A)), LinearAlgebra.checksquare(A))
 end
 function BlockRec(A::Diagonal)
     a = Vector{Cdouble}(diag(A))
@@ -122,7 +115,7 @@ end
 
 
 # blockmatrix
-mutable struct BlockMatrix <: SDOI.AbstractBlockMatrix{Cdouble}
+mutable struct BlockMatrix <: AbstractBlockMatrix{Cdouble}
     jblocks::Vector{BlockRec}
     blocks::Vector{blockrec}
     csdp::blockmatrix
@@ -205,7 +198,7 @@ end
 
 SparseBlock(A::SparseBlock) = A
 function SparseBlock(A::SparseMatrixCSC{Cdouble})
-    n = Compat.LinearAlgebra.checksquare(A)
+    n = LinearAlgebra.checksquare(A)
     nn = nnz(A)
     I = csdpshort[]
     J = csdpshort[]
@@ -272,7 +265,7 @@ function Base.setindex!(A::SparseBlock, v, i, j)
 end
 
 
-mutable struct ConstraintMatrix <: SDOI.AbstractBlockMatrix{Cdouble}
+mutable struct ConstraintMatrix <: AbstractBlockMatrix{Cdouble}
     jblocks::Vector{SparseBlock}
     csdp::constraintmatrix
 end
@@ -313,13 +306,13 @@ end
 
 # Needed by MPB_wrapper
 function Base.getindex(A::Union{BlockMatrix, ConstraintMatrix}, i::Integer)
-    SDOI.block(A, i)
+    block(A, i)
 end
 
-function SDOI.block(A::Union{BlockMatrix, ConstraintMatrix}, i::Integer)
+function block(A::Union{BlockMatrix, ConstraintMatrix}, i::Integer)
     A.jblocks[i]
 end
-SDOI.nblocks(A::Union{BlockMatrix, ConstraintMatrix}) = length(A.jblocks)
+nblocks(A::Union{BlockMatrix, ConstraintMatrix}) = length(A.jblocks)
 
 function free_blockmatrix(m::blockmatrix)
     ccall((:free_mat, CSDP.csdp), Nothing, (blockmatrix,), m)

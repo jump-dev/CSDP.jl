@@ -1,0 +1,26 @@
+name = "CSDP"
+uuid = "0a46da34-8e4b-519e-b418-48813639ff34"
+repo = "https://github.com/JuliaOpt/CSDP.jl.git"
+version = "0.5.0"
+
+[deps]
+BinDeps = "9e28174c-4ba2-5203-b857-d8d62c4213ee"
+Glob = "c27321d9-0574-5035-807b-f59d2c89b15c"
+Libdl = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+MathOptInterface = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
+MathProgBase = "fdba3010-5040-5b88-9595-932c9decdf73"
+SemidefiniteModels = "169818f4-1a3d-53bf-95b3-11177825b1e3"
+SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+
+[compat]
+MathOptInterface = "0.9"
+MathProgBase = "~0.7.0"
+SemidefiniteModels = "~0.1.1"
+julia = "1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]

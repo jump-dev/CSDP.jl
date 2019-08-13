@@ -4,9 +4,8 @@ os:
   - linux
   - osx
 julia:
-  - 0.6
-  - 0.7
   - 1.0
+  - 1.1
 
 matrix:
   allow_failures:
@@ -21,7 +20,4 @@ addons:
 notifications:
   email: false
 after_success:
-  # push coverage results to Coveralls
-  - julia -e 'cd(Pkg.dir("CSDP")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(process_folder())'
-  # push coverage results to Codecov
-  - julia -e 'cd(Pkg.dir("CSDP")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
+  - julia -e 'import Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder()); Coveralls.submit(process_folder())'
