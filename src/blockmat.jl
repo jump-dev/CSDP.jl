@@ -49,9 +49,6 @@ end
 # * blockrec contains the blockdatarec, the category (dense or diagonal), and the block size
 # * blockmatrix contains the number of blocks and a vector containing the blocks (blockrec) (1-indexed)
 
-using SemidefiniteOptInterface
-const SDOI = SemidefiniteOptInterface
-
 # blockrec
 mutable struct BlockRec <: AbstractMatrix{Cdouble}
     _blockdatarec::Vector{Cdouble}
@@ -118,7 +115,7 @@ end
 
 
 # blockmatrix
-mutable struct BlockMatrix <: SDOI.AbstractBlockMatrix{Cdouble}
+mutable struct BlockMatrix <: AbstractBlockMatrix{Cdouble}
     jblocks::Vector{BlockRec}
     blocks::Vector{blockrec}
     csdp::blockmatrix
@@ -268,7 +265,7 @@ function Base.setindex!(A::SparseBlock, v, i, j)
 end
 
 
-mutable struct ConstraintMatrix <: SDOI.AbstractBlockMatrix{Cdouble}
+mutable struct ConstraintMatrix <: AbstractBlockMatrix{Cdouble}
     jblocks::Vector{SparseBlock}
     csdp::constraintmatrix
 end
@@ -309,13 +306,13 @@ end
 
 # Needed by MPB_wrapper
 function Base.getindex(A::Union{BlockMatrix, ConstraintMatrix}, i::Integer)
-    SDOI.block(A, i)
+    block(A, i)
 end
 
-function SDOI.block(A::Union{BlockMatrix, ConstraintMatrix}, i::Integer)
+function block(A::Union{BlockMatrix, ConstraintMatrix}, i::Integer)
     A.jblocks[i]
 end
-SDOI.nblocks(A::Union{BlockMatrix, ConstraintMatrix}) = length(A.jblocks)
+nblocks(A::Union{BlockMatrix, ConstraintMatrix}) = length(A.jblocks)
 
 function free_blockmatrix(m::blockmatrix)
     ccall((:free_mat, CSDP.csdp), Nothing, (blockmatrix,), m)
