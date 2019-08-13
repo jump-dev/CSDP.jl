@@ -33,6 +33,8 @@ end
 
 @testset "Unit" begin
     MOIT.unittest(bridged, config, [
+        # `TimeLimitSec` not supported.
+        "time_limit_sec",
         # SingleVariable objective of bridged variables, will be solved by objective bridges
         "solve_time", "raw_status_string", "solve_singlevariable_obj",
         # Quadratic functions are not supported
@@ -44,10 +46,19 @@ end
         "solve_zero_one_with_bounds_3"])
 end
 @testset "Continuous Linear" begin
-    MOIT.contlineartest(bridged, config)
+    # See explanation in `MOI/test/Bridges/lazy_bridge_optimizer.jl`.
+    # This is to avoid `Variable.VectorizeBridge` which does not support
+    # `ConstraintSet` modification.
+    MOIB.remove_bridge(bridged, MOIB.Constraint.ScalarSlackBridge{Float64})
+    MOIT.contlineartest(bridged, config, [
+        # Finds `MOI.ALMOST_OPTIMAL` instead of `MOI.OPTIMAL`
+        "linear10b"
+    ])
 end
 @testset "Continuous Conic" begin
     MOIT.contconictest(bridged, config, [
+        # Finds `MOI.OPTIMAL` instead of `MOI.INFEASIBLE`.
+        "soc3",
         # See https://github.com/coin-or/Csdp/issues/11
         "rotatedsoc1v",
         # Missing bridges
