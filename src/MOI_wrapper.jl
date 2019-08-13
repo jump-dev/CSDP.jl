@@ -366,12 +366,12 @@ end
 
 function MOI.get(optimizer::Optimizer, ::MOI.VariablePrimal, vi::MOI.VariableIndex)
     blk, i, j = varmap(optimizer, vi)
-    return block(optimizer.X, blk)[i, j]
+    return block(MOI.get(optimizer, PrimalSolutionMatrix()), blk)[i, j]
 end
 
-function MOI.get(m::Optimizer, ::MOI.ConstraintPrimal,
+function MOI.get(optimizer::Optimizer, ::MOI.ConstraintPrimal,
                  ci::MOI.ConstraintIndex{MOI.VectorOfVariables, S}) where S<:SupportedSets
-    return vectorize_block(m.X, block(m, ci), S)
+    return vectorize_block(MOI.get(optimizer, PrimalSolutionMatrix()), block(optimizer, ci), S)
 end
 function MOI.get(m::Optimizer, ::MOI.ConstraintPrimal, ci::AFFEQ)
     return m.b[ci.value]
@@ -379,8 +379,8 @@ end
 
 function MOI.get(optimizer::Optimizer, ::MOI.ConstraintDual,
                  ci::MOI.ConstraintIndex{MOI.VectorOfVariables, S}) where S<:SupportedSets
-    return vectorize_block(optimizer.Z, block(optimizer, ci), S)
+    return vectorize_block(MOI.get(optimizer, DualSlackMatrix()), block(optimizer, ci), S)
 end
 function MOI.get(optimizer::Optimizer, ::MOI.ConstraintDual, ci::AFFEQ)
-    return -optimizer.y[ci.value]
+    return -MOI.get(optimizer, DualSolutionVector())[ci.value]
 end

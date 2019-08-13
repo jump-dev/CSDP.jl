@@ -11,14 +11,12 @@ LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 MathOptInterface = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
 MathProgBase = "fdba3010-5040-5b88-9595-932c9decdf73"
 SemidefiniteModels = "169818f4-1a3d-53bf-95b3-11177825b1e3"
-SemidefiniteOptInterface = "f0680fed-b2cd-5302-98f9-f4da282d86b5"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [compat]
 MathOptInterface = "0.9"
 MathProgBase = "~0.7.0"
 SemidefiniteModels = "~0.1.1"
-SemidefiniteOptInterface = "0.6"
 julia = "1"
 
 [extras]
