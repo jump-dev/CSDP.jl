@@ -19,8 +19,5 @@ addons:
 
 notifications:
   email: false
-before_script:
-  - julia -e 'using Pkg; Pkg.add(PackageSpec(name="MathOptInterface", rev="master"))'
-  - julia -e 'using Pkg; Pkg.add(PackageSpec(name="SemidefiniteOptInterface", rev="bl/moiv0.9"))'
 after_success:
   - julia -e 'import Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder()); Coveralls.submit(process_folder())'
