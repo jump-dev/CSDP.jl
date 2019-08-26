@@ -1,7 +1,7 @@
 name = "CSDP"
 uuid = "0a46da34-8e4b-519e-b418-48813639ff34"
 repo = "https://github.com/JuliaOpt/CSDP.jl.git"
-version = "0.5.0"
+version = "0.5.1"
 
 [deps]
 BinDeps = "9e28174c-4ba2-5203-b857-d8d62c4213ee"
@@ -14,7 +14,7 @@ SemidefiniteModels = "169818f4-1a3d-53bf-95b3-11177825b1e3"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [compat]
-MathOptInterface = "0.9"
+MathOptInterface = "0.9.1"
 MathProgBase = "~0.7.0"
 SemidefiniteModels = "~0.1.1"
 julia = "1"
