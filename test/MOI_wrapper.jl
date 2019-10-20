@@ -33,6 +33,8 @@ end
 
 @testset "Unit" begin
     MOIT.unittest(bridged, config, [
+        # `NumberOfThreads` not supported.
+        "number_threads",
         # `TimeLimitSec` not supported.
         "time_limit_sec",
         # SingleVariable objective of bridged variables, will be solved by objective bridges
@@ -64,5 +66,5 @@ end
         # Missing bridges
         "rootdets",
         # Does not support power and exponential cone
-        "pow", "logdet", "exp"])
+        "pow", "dualpow", "logdet", "exp", "dualexp"])
 end
