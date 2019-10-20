@@ -66,5 +66,5 @@ end
         # Missing bridges
         "rootdets",
         # Does not support power and exponential cone
-        "pow", "logdet", "exp"])
+        "pow", "dualpow", "logdet", "exp", "dualexp"])
 end
