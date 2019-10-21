@@ -54,13 +54,17 @@ end
     MOIB.remove_bridge(bridged, MOIB.Constraint.ScalarSlackBridge{Float64})
     MOIT.contlineartest(bridged, config, [
         # Finds `MOI.ALMOST_OPTIMAL` instead of `MOI.OPTIMAL`
-        "linear10b"
+        "linear10b",
+        # Empty constraint
+        "linear15"
     ])
 end
 @testset "Continuous Conic" begin
     MOIT.contconictest(bridged, config, [
         # Finds `MOI.OPTIMAL` instead of `MOI.INFEASIBLE`.
         "soc3",
+        # Empty constraint `c4`
+        "psdt2",
         # See https://github.com/coin-or/Csdp/issues/11
         "rotatedsoc1v",
         # Missing bridges

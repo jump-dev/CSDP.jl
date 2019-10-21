@@ -15,7 +15,6 @@ end
 export fptr, ptr
 
 function mywrap(X::blockmatrix)
-    finalizer(free_blockmatrix, X)
     BlockMatrix(X)
 end
 
@@ -28,7 +27,7 @@ function mywrap(x::Ptr{T}, len) where T
     # because the pointer it has has an offset
     y = _unsafe_wrap(Array, x + sizeof(T), len, false)
     # fptr takes care of this offset
-    finalizer(s -> Libc.free(fptr(s)), y)
+    #finalizer(s -> Libc.free(fptr(s)), y)
     y
 end
 
@@ -79,10 +78,11 @@ function blockreczeros(n)
     end
 end
 
-function Base.size(A::BlockRec)
-    n = A.csdp.blocksize
+function Base.size(A::blockrec)
+    n = A.blocksize
     (n, n)
 end
+Base.size(A::BlockRec) = size(A.csdp)
 function Base.getindex(A::BlockRec, i, j)
     n = A.csdp.blocksize
     if A.csdp.blockcategory == MATRIX
@@ -309,15 +309,12 @@ function Base.getindex(A::Union{BlockMatrix, ConstraintMatrix}, i::Integer)
     block(A, i)
 end
 
+block(A::blockmatrix, i::Integer) = getblockrec(A, i)
 function block(A::Union{BlockMatrix, ConstraintMatrix}, i::Integer)
     A.jblocks[i]
 end
+nblocks(A::blockmatrix) = A.nblocks
 nblocks(A::Union{BlockMatrix, ConstraintMatrix}) = length(A.jblocks)
-
-function free_blockmatrix(m::blockmatrix)
-    ccall((:free_mat, CSDP.csdp), Nothing, (blockmatrix,), m)
-end
-export free_blockmatrix
 
 export BlockMatrix, ConstraintMatrix
 

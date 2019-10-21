@@ -20,13 +20,13 @@ struct blockdatarec
     _blockdatarec::Ptr{Cdouble}
 end
 
-struct blockrec
+struct blockrec <: AbstractMatrix{Cdouble}
     data::blockdatarec
     blockcategory::blockcat
     blocksize::csdpshort
 end
 
-mutable struct blockmatrix
+mutable struct blockmatrix <: AbstractBlockMatrix{Cdouble}
     nblocks::Cint
     blocks::Ptr{blockrec}
 end
