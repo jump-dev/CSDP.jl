@@ -219,7 +219,7 @@ function MOIU.load_variables(optimizer::Optimizer, nvars)
     for (key, value) in optimizer.num_entries
         num_entries[key...] = value
     end
-    optimizer.problem = allocate_loading_prob(Ref{blockmatrix}(optimizer.C), optimizer.blockdims, length(optimizer.b), num_entries, 3)
+    optimizer.problem = allocate_loading_prob(Ref(optimizer.C), optimizer.blockdims, length(optimizer.b), num_entries, 3)
     if dummy
         # See https://github.com/coin-or/Csdp/issues/2
         duplicate = addentry(optimizer.problem, 1, length(optimizer.blockdims), 1, 1, 1.0, true)

@@ -305,7 +305,7 @@ function ConstraintMatrix(csdp::constraintmatrix, k::Integer)
 end
 
 # Needed by MPB_wrapper
-function Base.getindex(A::Union{BlockMatrix, ConstraintMatrix}, i::Integer)
+function Base.getindex(A::Union{blockmatrix, BlockMatrix, ConstraintMatrix}, i::Integer)
     block(A, i)
 end
 

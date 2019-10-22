@@ -216,7 +216,15 @@ function read_sol(fname::Ptr{UInt8},n::Cint,k::Cint,C::blockmatrix,pX::Ptr{block
     ccall((:read_sol,CSDP.csdp),Cint,(Ptr{UInt8},Cint,Cint,blockmatrix,Ptr{blockmatrix},Ptr{Ptr{Cdouble}},Ptr{blockmatrix}),fname,n,k,C,pX,py,pZ)
 end
 
-function read_prob(fname::String,printlevel::Integer=0)
+function load_prob_from_file(fname::String,C::Ref{blockmatrix},printlevel::Integer=1)
+    problem = Ref{Ptr{Cvoid}}(C_NULL)
+    ret = ccall((:load_prob_from_file,CSDP.csdp),Cint,(Ptr{UInt8},Ref{blockmatrix},Ref{Ptr{Cvoid}},Cint),fname,C,problem,printlevel)
+    if !iszero(ret)
+        error("`CSDP.load_prob_from_file` failed.")
+    end
+    return LoadingProblem(problem[])
+end
+function read_prob(fname::String,printlevel::Integer=1)
     n = Ref{Cint}(0)
     k = Ref{Cint}(0)
     C = Ref{blockmatrix}(blockmatrix(0, C_NULL))
