@@ -33,6 +33,8 @@ end
 
 @testset "Unit" begin
     MOIT.unittest(bridged, config, [
+        # `NUMERICAL_ERROR` on Mac: https://travis-ci.org/JuliaOpt/CSDP.jl/jobs/601302777#L217-L219
+        "solve_unbounded_model",
         # `NumberOfThreads` not supported.
         "number_threads",
         # `TimeLimitSec` not supported.
