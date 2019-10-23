@@ -20,20 +20,20 @@ end
 CSDPSolver(; kwargs...) = CSDPSolver(checkoptions(Dict{Symbol,Any}(kwargs)))
 
 mutable struct CSDPMathProgModel <: SDM.AbstractSDModel
-    blockdims::Vector{Cint}
+    blockdims::Vector{CSDP_INT}
     b::Vector{Cdouble}
-    entries::Vector{Tuple{Cint,Cint,Cint,Cint,Cdouble}}
+    entries::Vector{Tuple{CSDP_INT,CSDP_INT,CSDP_INT,CSDP_INT,Cdouble}}
     C::blockmatrix
     problem::Union{Nothing, LoadingProblem}
     X::blockmatrix
     y::Union{Nothing, Vector{Cdouble}}
     Z::blockmatrix
-    status::Cint
+    status::CSDP_INT
     pobj::Cdouble
     dobj::Cdouble
     options::Dict{Symbol,Any}
     function CSDPMathProgModel(; kwargs...)
-        new(Cint[], Cdouble[], Tuple{Cint,Cint,Cint,Cint,Cdouble}[],
+        new(CSDP_INT[], Cdouble[], Tuple{CSDP_INT,CSDP_INT,CSDP_INT,CSDP_INT,Cdouble}[],
             blockmatrix(), nothing, blockmatrix(), nothing, blockmatrix(),
             -1, 0.0, 0.0, checkoptions(Dict{Symbol, Any}(kwargs)))
     end
@@ -93,7 +93,7 @@ function MPB.optimize!(m::CSDPMathProgModel)
     if m.problem === nothing
         # `m.problem` is not `nothing` if it was loaded from a file.
         m.C.nblocks = length(m.blockdims)
-        num_entries = zeros(Cint, length(m.b), length(m.blockdims))
+        num_entries = zeros(CSDP_INT, length(m.b), length(m.blockdims))
         for entry in m.entries
             if entry[1] > 0
                 num_entries[entry[1], entry[2]] += 1

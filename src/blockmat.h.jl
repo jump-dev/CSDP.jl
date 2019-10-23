@@ -6,7 +6,7 @@
 @static if Sys.iswindows()
     const csdpshort = Cushort
   else
-    const csdpshort = Cint
+    const csdpshort = CSDP_INT
 end
 
 # begin enum blockcat
@@ -27,10 +27,10 @@ struct blockrec <: AbstractMatrix{Cdouble}
 end
 
 mutable struct blockmatrix <: AbstractBlockMatrix{Cdouble}
-    nblocks::Cint
+    nblocks::CSDP_INT
     blocks::Ptr{blockrec}
 end
-blockmatrix() = blockmatrix(Cint(0), C_NULL)
+blockmatrix() = blockmatrix(CSDP_INT(0), C_NULL)
 
 mutable struct sparseblock
     next::Ptr{sparseblock}
@@ -38,7 +38,7 @@ mutable struct sparseblock
     entries::Ptr{Cdouble}
     iindices::Ptr{csdpshort}
     jindices::Ptr{csdpshort}
-    numentries::Cint
+    numentries::CSDP_INT
     blocknum::csdpshort
     blocksize::csdpshort
     constraintnum::csdpshort
@@ -67,16 +67,16 @@ mutable struct paramstruc
     objtol::Cdouble
     pinftol::Cdouble
     dinftol::Cdouble
-    maxiter::Cint
+    maxiter::CSDP_INT
     minstepfrac::Cdouble
     maxstepfrac::Cdouble
     minstepp::Cdouble
     minstepd::Cdouble
-    usexzgap::Cint
-    tweakgap::Cint
-    affine::Cint
+    usexzgap::CSDP_INT
+    tweakgap::CSDP_INT
+    affine::CSDP_INT
     perturbobj::Cdouble
-    fastmode::Cint
+    fastmode::CSDP_INT
 end
 
 function paramstruc(options::Dict)

@@ -19,7 +19,7 @@ function print_sizeof()
 end
 
 function print_constraints(C::Vector{constraintmatrix})
-    ccall((:print_constraints, CSDP.csdp), Nothing, (Cint, Ptr{constraintmatrix}), length(C), fptr(C))
+    ccall((:print_constraints, CSDP.csdp), Nothing, (CSDP_INT, Ptr{constraintmatrix}), length(C), fptr(C))
 end
 
 
