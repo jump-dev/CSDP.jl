@@ -3,9 +3,9 @@ const JULIA_LAPACK = false
 const suffix       = JULIA_LAPACK ? ".64" : ""
 const version      = "6.2.0"
 const libname      = "libcsdp$suffix.$(Libdl.dlext)"
-const csdpversion  = "Csdp-$version"
+const csdpversion  = "Csdp-readprob"
 const download_url =
-    "http://www.coin-or.org/download/source/Csdp/Csdp-$version.tgz"
+    "https://github.com/blegat/Csdp/archive/readprob.zip"
 
 patchf      = joinpath(dirname(@__FILE__), "src$suffix", "debug-mat.c")
 srcdir      = joinpath(dirname(@__FILE__), "src$suffix", csdpversion, "lib")

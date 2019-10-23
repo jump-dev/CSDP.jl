@@ -179,6 +179,11 @@ function initparams(params::Ptr{paramstruc},pprintlevel::Ptr{Cint})
     ccall((:initparams,CSDP.csdp),Nothing,(Ptr{paramstruc},Ptr{Cint}),params,pprintlevel)
 end
 
+function loaded_initsoln(problem::Ptr{Cvoid}, X::Ref{blockmatrix}, Z::Ref{blockmatrix})
+    y = Ref{Ptr{Cdouble}}(C_NULL)
+    ccall((:loaded_initsoln,CSDP.csdp),Nothing,(Ptr{Cvoid},Ref{blockmatrix},Ref{Ptr{Cdouble}},Ref{blockmatrix}),problem,X,y,Z)
+    return y[]
+end
 function initsoln(n::Cint,k::Cint,C::blockmatrix,a::Ptr{Cdouble},constraints::Ptr{constraintmatrix})
     X = Ref{blockmatrix}(blockmatrix(0, C_NULL))
     y = Ref{Ptr{Cdouble}}(C_NULL)
@@ -211,7 +216,15 @@ function read_sol(fname::Ptr{UInt8},n::Cint,k::Cint,C::blockmatrix,pX::Ptr{block
     ccall((:read_sol,CSDP.csdp),Cint,(Ptr{UInt8},Cint,Cint,blockmatrix,Ptr{blockmatrix},Ptr{Ptr{Cdouble}},Ptr{blockmatrix}),fname,n,k,C,pX,py,pZ)
 end
 
-function read_prob(fname::String,printlevel::Integer=0)
+function load_prob_from_file(fname::String,C::Ref{blockmatrix},printlevel::Integer=1)
+    problem = Ref{Ptr{Cvoid}}(C_NULL)
+    ret = ccall((:load_prob_from_file,CSDP.csdp),Cint,(Ptr{UInt8},Ref{blockmatrix},Ref{Ptr{Cvoid}},Cint),fname,C,problem,printlevel)
+    if !iszero(ret)
+        error("`CSDP.load_prob_from_file` failed.")
+    end
+    return LoadingProblem(problem[])
+end
+function read_prob(fname::String,printlevel::Integer=1)
     n = Ref{Cint}(0)
     k = Ref{Cint}(0)
     C = Ref{blockmatrix}(blockmatrix(0, C_NULL))
@@ -260,6 +273,38 @@ function free_prob(n::Cint,k::Cint,C::blockmatrix,a::Ptr{Cdouble},constraints::P
     ccall((:free_prob,CSDP.csdp),Nothing,(Cint,Cint,blockmatrix,Ptr{Cdouble},Ptr{constraintmatrix},blockmatrix,Ptr{Cdouble},blockmatrix),n,k,C,a,constraints,X,y,Z)
 end
 
+#function new_blockmatrix(nblocks::Integer)
+#    return ccall((:new_blockmatrix,CSDP.csdp),Ptr{Cvoid},(Cint,),nblocks)
+#end
+#function free_blockmatrix(C::Ptr{Cvoid})
+#    ccall((:free_blockmatrix,CSDP.csdp),Nothing,(Ptr{Cvoid},),C)
+#end
+
+
+function Base.getindex(A::blockrec, i::Integer, j::Integer)
+    return ccall((:getindex,CSDP.csdp), Cdouble, (blockrec,Cint,Cint), A, i, j)
+end
+function getblockrec(A::blockmatrix, i::Integer)
+    return ccall((:getblockrec,CSDP.csdp), blockrec, (blockmatrix,Cint), A, i)
+end
+
+function allocate_loading_prob(pC::Ref{blockmatrix}, block_dims::Ptr{Cint}, num_constraints::Integer, num_entries::Ptr{Cint}, printlevel::Integer)
+    return ccall((:allocate_loading_prob,CSDP.csdp),Ptr{Cvoid},(Ref{blockmatrix},Ptr{Cint},Cint,Ptr{Cint},Cint),pC,block_dims,num_constraints,num_entries,printlevel)
+end
+function free_loading_prob(problem::Ptr{Cvoid})
+    ccall((:free_loading_prob,CSDP.csdp),Nothing,(Ptr{Cvoid},),problem)
+end
+function free_loaded_prob(problem::Ptr{Cvoid},X::blockmatrix,y::Ptr{Cdouble},Z::blockmatrix)
+    ccall((:free_loaded_prob,CSDP.csdp),Nothing,(Ptr{Cvoid},blockmatrix,Ptr{Cdouble},blockmatrix),problem,X,y,Z)
+end
+
+function setconstant(problem::Ptr{Cvoid}, mat::Integer, ent::Cdouble)
+    ccall((:setconstant,CSDP.csdp),Nothing,(Ptr{Cvoid},Cint,Cdouble),problem,mat,ent)
+end
+function addentry(problem::Ptr{Cvoid}, mat::Integer, blk::Integer, indexi::Integer, indexj::Integer, ent::Cdouble, allow_duplicates::Integer)
+    ccall((:addentry,CSDP.csdp),Cint,(Ptr{Cvoid},Cint,Cint,Cint,Cint,Cdouble,Cint),problem,mat,blk,indexi,indexj,ent,allow_duplicates)
+end
+
 function sdp(n::Cint, k::Cint,
              C::blockmatrix, a::Ptr{Cdouble}, constant_offset::Cdouble, constraints::Ptr{constraintmatrix},
              byblocks::Ptr{Ptr{sparseblock}},
@@ -270,8 +315,8 @@ function sdp(n::Cint, k::Cint,
              O::Ptr{Cdouble}, rhs::Ptr{Cdouble}, dy::Ptr{Cdouble}, dy1::Ptr{Cdouble}, Fp::Ptr{Cdouble},
              printlevel::Cint, parameters::paramstruc)
 
-    pobj = Ref{Cdouble}(.0)
-    dobj = Ref{Cdouble}(.0)
+    pobj = Ref{Cdouble}(0.0)
+    dobj = Ref{Cdouble}(0.0)
 
     work1    = blockmatrix(); alloc_mat(C,        Ref{blockmatrix}(work1));
     work2    = blockmatrix(); alloc_mat(C,        Ref{blockmatrix}(work2));
@@ -333,14 +378,28 @@ function sdp(n::Cint, k::Cint,
     free_mat(dZ);
     free_mat(dX);
 
-    status, pobj[], dobj[]
+    return status, pobj[], dobj[]
 end
 
+function loaded_sdp(problem::Ptr{Cvoid},constant_offset::Cdouble,pX::Ref{blockmatrix},py::Ref{Ptr{Cdouble}},pZ::Ref{blockmatrix},printlevel::Cint,parameters::paramstruc)
+    pobj = Ref{Cdouble}(0.0)
+    dobj = Ref{Cdouble}(0.0)
+    status = ccall((:loaded_sdp,CSDP.csdp),Cint,
+        (Ptr{Cvoid},Cdouble,        Ref{blockmatrix},Ref{Ptr{Cdouble}},Ref{blockmatrix},Ref{Cdouble},Ref{Cdouble},Cint,paramstruc),
+         problem,   constant_offset,pX,              py,               pZ,pobj,dobj,printlevel,parameters)
+    return status, pobj[], dobj[]
+end
+function parametrized_sdp(n::Cint,k::Cint,C::blockmatrix,a::Ptr{Cdouble},constraints::Ptr{constraintmatrix},constant_offset::Cdouble,pX::Ptr{blockmatrix},py::Ref{Ptr{Cdouble}},pZ::Ptr{blockmatrix},printlevel::Cint,parameters::paramstruc)
+    pobj = Ref{Cdouble}(0.0)
+    dobj = Ref{Cdouble}(0.0)
+    status = ccall((:parametrized_sdp,CSDP.csdp),Cint,(Cint,Cint,blockmatrix,Ptr{Cdouble},Ptr{constraintmatrix},Cdouble,Ptr{blockmatrix},Ref{Ptr{Cdouble}},Ptr{blockmatrix},Ref{Cdouble},Ref{Cdouble},Cint,paramstruc),n,k,C,a,constraints,constant_offset,pX,py,pZ,pobj,dobj,printlevel,parameters)
+    return status, pobj[], dobj[]
+end
 function easy_sdp(n::Cint,k::Cint,C::blockmatrix,a::Ptr{Cdouble},constraints::Ptr{constraintmatrix},constant_offset::Cdouble,pX::Ptr{blockmatrix},py::Ref{Ptr{Cdouble}},pZ::Ptr{blockmatrix})
-    pobj = Ref{Cdouble}(.0)
-    dobj = Ref{Cdouble}(.0)
+    pobj = Ref{Cdouble}(0.0)
+    dobj = Ref{Cdouble}(0.0)
     status = ccall((:easy_sdp,CSDP.csdp),Cint,(Cint,Cint,blockmatrix,Ptr{Cdouble},Ptr{constraintmatrix},Cdouble,Ptr{blockmatrix},Ref{Ptr{Cdouble}},Ptr{blockmatrix},Ref{Cdouble},Ref{Cdouble}),n,k,C,a,constraints,constant_offset,pX,py,pZ,pobj,dobj)
-    status, pobj[], dobj[]
+    return status, pobj[], dobj[]
 end
 
 function tweakgap(n::Cint,k::Cint,a::Ptr{Cdouble},constraints::Ptr{constraintmatrix},gap::Cdouble,Z::blockmatrix,dZ::blockmatrix,y::Ptr{Cdouble},dy::Ptr{Cdouble},work1::blockmatrix,work2::blockmatrix,work3::blockmatrix,work4::blockmatrix,workvec1::Ptr{Cdouble},workvec2::Ptr{Cdouble},workvec3::Ptr{Cdouble},workvec4::Ptr{Cdouble},printlevel::Cint)

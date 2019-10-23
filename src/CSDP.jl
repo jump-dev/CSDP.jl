@@ -12,8 +12,8 @@ end
 
 export Blockmatrix
 
-include("blockmat.h.jl")
 include("blockdiag.jl")
+include("blockmat.h.jl")
 include("blockmat.jl")
 include("declarations.h.jl")
 include("declarations.jl")

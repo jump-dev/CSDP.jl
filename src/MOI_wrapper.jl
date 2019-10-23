@@ -6,14 +6,15 @@ const AFFEQ = MOI.ConstraintIndex{MOI.ScalarAffineFunction{Cdouble}, MOI.EqualTo
 mutable struct Optimizer <: MOI.AbstractOptimizer
     objconstant::Cdouble
     objsign::Int
-    blockdims::Vector{Int}
+    blockdims::Vector{Cint}
     varmap::Vector{Tuple{Int, Int, Int}} # Variable Index vi -> blk, i, j
+    num_entries::Dict{Tuple{Int, Int}, Int}
     b::Vector{Cdouble}
-    C::Union{Nothing, BlockMatrix}
-    As::Union{Nothing, Vector{ConstraintMatrix}}
-    X::Union{Nothing, BlockMatrix}
+    C::blockmatrix
+    problem::Union{Nothing, LoadingProblem}
+    X::blockmatrix
     y::Union{Nothing, Vector{Cdouble}}
-    Z::Union{Nothing, BlockMatrix}
+    Z::blockmatrix
     status::Cint
     pobj::Cdouble
     dobj::Cdouble
@@ -22,12 +23,15 @@ mutable struct Optimizer <: MOI.AbstractOptimizer
     options::Dict{Symbol, Any}
     function Optimizer(; kwargs...)
         optimizer = new(
-            zero(Cdouble), 1, Int[], Tuple{Int, Int, Int}[], Cdouble[],
-            nothing, nothing, nothing, nothing, nothing,
+            zero(Cdouble), 1, Cint[], Tuple{Int, Int, Int}[],
+            Dict{Tuple{Int, Int}, Int}(), Cdouble[],
+            blockmatrix(), nothing, blockmatrix(), nothing, blockmatrix(),
             -1, NaN, NaN, NaN, false, Dict{Symbol, Any}())
         for (key, value) in kwargs
             MOI.set(optimizer, MOI.RawParameter(key), value)
         end
+        # May need to call `free_loaded_prob` and `free_loading_prob`.
+        finalizer(MOI.empty!, optimizer)
         return optimizer
     end
 end
@@ -78,12 +82,14 @@ end
 
 function MOI.is_empty(optimizer::Optimizer)
     return iszero(optimizer.objconstant) &&
-        optimizer.objsign == 1 &&
+        isone(optimizer.objsign) &&
         isempty(optimizer.blockdims) &&
         isempty(optimizer.varmap) &&
+        isempty(optimizer.num_entries) &&
         isempty(optimizer.b) &&
-        optimizer.C === nothing &&
-        optimizer.As === nothing
+        iszero(optimizer.C.nblocks) &&
+        optimizer.C.blocks == C_NULL &&
+        optimizer.problem === nothing
 end
 
 function MOI.empty!(optimizer::Optimizer)
@@ -91,12 +97,22 @@ function MOI.empty!(optimizer::Optimizer)
     optimizer.objsign = 1
     empty!(optimizer.blockdims)
     empty!(optimizer.varmap)
+    empty!(optimizer.num_entries)
     empty!(optimizer.b)
-    optimizer.C = nothing
-    optimizer.As = nothing
-    optimizer.X = nothing
+    if optimizer.problem !== nothing
+        if optimizer.y !== nothing
+            free_loaded_prob(optimizer.problem, optimizer.X, optimizer.y, optimizer.Z)
+        end
+        free_loading_prob(optimizer.problem)
+    end
+    optimizer.problem = nothing
+    optimizer.C.nblocks = 0
+    optimizer.C.blocks = C_NULL
+    optimizer.X.nblocks = 0
+    optimizer.X.blocks = C_NULL
     optimizer.y = nothing
-    optimizer.Z = nothing
+    optimizer.Z.nblocks = 0
+    optimizer.Z.blocks = C_NULL
     optimizer.status = -1
     optimizer.pobj = 0.0
     optimizer.dobj = 0.0
@@ -140,12 +156,12 @@ function MOIU.load(::Optimizer, ::MOI.ObjectiveSense, ::MOI.OptimizationSense) e
 # Loads objective coefficient α * vi
 function load_objective_term!(optimizer::Optimizer, α, vi::MOI.VariableIndex)
     blk, i, j = varmap(optimizer, vi)
+    # in SDP format, it is max and in MPB Conic format it is min
     coef = optimizer.objsign * α
     if i != j
         coef /= 2
     end
-    # in SDP format, it is max and in MPB Conic format it is min
-    block(optimizer.C, blk)[i, j] = coef
+    addentry(optimizer.problem, 0, blk, i, j, coef, true)
 end
 function MOIU.load(optimizer::Optimizer, ::MOI.ObjectiveFunction, f::MOI.ScalarAffineFunction)
     obj = MOIU.canonical(f)
@@ -195,52 +211,78 @@ function MOIU.load_variables(optimizer::Optimizer, nvars)
     if dummy
         # See https://github.com/coin-or/Csdp/issues/2
         optimizer.b = [one(Cdouble)]
-        optimizer.blockdims = [optimizer.blockdims; -1]
+        optimizer.blockdims = [optimizer.blockdims; Cint(-1)]
+        count_entry(optimizer, 1, length(optimizer.blockdims))
     end
-    optimizer.C = blockmatzeros(optimizer.blockdims)
-    optimizer.As = [constrmatzeros(i, optimizer.blockdims) for i in eachindex(optimizer.b)]
+    optimizer.C.nblocks = length(optimizer.blockdims)
+    num_entries = zeros(Cint, length(optimizer.b), length(optimizer.blockdims))
+    for (key, value) in optimizer.num_entries
+        num_entries[key...] = value
+    end
+    optimizer.problem = allocate_loading_prob(Ref(optimizer.C), optimizer.blockdims, length(optimizer.b), num_entries, 3)
     if dummy
         # See https://github.com/coin-or/Csdp/issues/2
-        block(optimizer.As[1], length(optimizer.blockdims))[1, 1] = 1
+        duplicate = addentry(optimizer.problem, 1, length(optimizer.blockdims), 1, 1, 1.0, true)
+        @assert !duplicate
     end
 
+end
+
+function count_entry(optimizer::Optimizer, con_idx::Integer, blk::Integer)
+    key = (con_idx, blk)
+    optimizer.num_entries[key] = get(optimizer.num_entries, key, 0) + 1
 end
 
 function MOIU.allocate_constraint(optimizer::Optimizer,
                                   func::MOI.ScalarAffineFunction{Cdouble},
                                   set::MOI.EqualTo{Cdouble})
+    if !iszero(MOI.constant(func))
+        throw(MOI.ScalarFunctionConstantNotZero{
+            Cdouble, MOI.ScalarAffineFunction{Cdouble}, MOI.EqualTo{Cdouble}}(
+                MOI.constant(func)))
+    end
     push!(optimizer.b, MOI.constant(set))
+    func = MOIU.canonical(func) # sum terms with same variables and same output_index
+    for t in func.terms
+        if !iszero(t.coefficient)
+            blk, i, j = varmap(optimizer, t.variable_index)
+            count_entry(optimizer, length(optimizer.b), blk)
+        end
+    end
     return AFFEQ(length(optimizer.b))
 end
 
-function MOIU.load_constraint(m::Optimizer, ci::AFFEQ,
+function MOIU.load_constraint(optimizer::Optimizer, ci::AFFEQ,
                               f::MOI.ScalarAffineFunction, s::MOI.EqualTo)
     if !iszero(MOI.constant(f))
         throw(MOI.ScalarFunctionConstantNotZero{
             Cdouble, MOI.ScalarAffineFunction{Cdouble}, MOI.EqualTo{Cdouble}}(
                 MOI.constant(f)))
     end
-    f = MOIU.canonical(f) # sum terms with same variables and same outputindex
+    setconstant(optimizer.problem, ci.value, MOI.constant(s))
+    f = MOIU.canonical(f) # sum terms with same variables and same output_index
+    if isempty(f.terms)
+        throw(ArgumentError("Empty constraint $ci: $f-in-$s. Not supported by CSDP."))
+    end
     for t in f.terms
         if !iszero(t.coefficient)
-            blk, i, j = varmap(m, t.variable_index)
+            blk, i, j = varmap(optimizer, t.variable_index)
             coef = t.coefficient
             if i != j
                 coef /= 2
             end
-            block(m.As[ci.value], blk)[i, j] = coef
+            duplicate = addentry(optimizer.problem, ci.value, blk, i, j, coef, true)
+            @assert !duplicate
         end
     end
 end
 
 
 function MOI.optimize!(optimizer::Optimizer)
-    As = map(A->A.csdp, optimizer.As)
-
     write_prob(optimizer)
 
     start_time = time()
-    optimizer.X, optimizer.y, optimizer.Z = initsoln(optimizer.C, optimizer.b, As)
+    optimizer.y = loaded_initsoln(optimizer.problem, length(optimizer.b), Ref(optimizer.X), Ref(optimizer.Z))
 
     options = optimizer.options
     if optimizer.silent
@@ -248,9 +290,9 @@ function MOI.optimize!(optimizer::Optimizer)
         options[:printlevel] = 0
     end
 
-    optimizer.status, optimizer.pobj, optimizer.dobj = sdp(
-        optimizer.C, optimizer.b, optimizer.As, optimizer.X, optimizer.y,
-        optimizer.Z, options)
+    optimizer.status, optimizer.pobj, optimizer.dobj = loaded_sdp(
+        optimizer.problem, Ref(optimizer.X), optimizer.y,
+        Ref(optimizer.Z), options)
     optimizer.solve_time = time() - start_time
 end
 

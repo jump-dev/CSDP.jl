@@ -20,18 +20,21 @@ end
 CSDPSolver(; kwargs...) = CSDPSolver(checkoptions(Dict{Symbol,Any}(kwargs)))
 
 mutable struct CSDPMathProgModel <: SDM.AbstractSDModel
-    C
-    b
-    As
-    X
-    y
-    Z
+    blockdims::Vector{Cint}
+    b::Vector{Cdouble}
+    entries::Vector{Tuple{Cint,Cint,Cint,Cint,Cdouble}}
+    C::blockmatrix
+    problem::Union{Nothing, LoadingProblem}
+    X::blockmatrix
+    y::Union{Nothing, Vector{Cdouble}}
+    Z::blockmatrix
     status::Cint
     pobj::Cdouble
     dobj::Cdouble
     options::Dict{Symbol,Any}
     function CSDPMathProgModel(; kwargs...)
-        new(nothing, nothing, nothing, nothing, nothing, nothing,
+        new(Cint[], Cdouble[], Tuple{Cint,Cint,Cint,Cint,Cdouble}[],
+            blockmatrix(), nothing, blockmatrix(), nothing, blockmatrix(),
             -1, 0.0, 0.0, checkoptions(Dict{Symbol, Any}(kwargs)))
     end
 end
@@ -47,39 +50,66 @@ function MPB.setvartype!(m::CSDPMathProgModel, vtype, blk, i, j)
 end
 
 function MPB.loadproblem!(m::CSDPMathProgModel, filename::AbstractString)
+    if m.problem !== nothing
+        if m.y !== nothing
+            free_loaded_prob(m.problem, m.X, m.y, m.Z)
+        end
+        free_loading_prob(m.problem)
+    end
+    m.problem = nothing
+    m.y = nothing
     if endswith(filename,".dat-s")
-       m.C, m.b, As = read_prob(filename)
-       m.As = [ConstraintMatrix(As[i], i) for i in 1:length(As)]
+        m.problem = load_prob_from_file(filename, Ref(m.C))
     else
-       error("unrecognized input format extension in $filename")
+        error("unrecognized input format extension in $filename")
     end
 end
 #writeproblem(m, filename::String)
 function MPB.loadproblem!(m::CSDPMathProgModel, blkdims::Vector{Int}, constr::Int)
-    m.C = blockmatzeros(blkdims)
+    if m.problem !== nothing
+        if m.y !== nothing
+            free_loaded_prob(m.problem, m.X, m.y, m.Z)
+        end
+        free_loading_prob(m.problem)
+    end
+    m.problem = nothing
+    m.y = nothing
+    m.blockdims = blkdims
     m.b = zeros(Cdouble, constr)
-    m.As = [constrmatzeros(i, blkdims) for i in 1:constr]
+    empty!(m.entries)
 end
 
 function SDM.setconstrB!(m::CSDPMathProgModel, val, constr::Integer)
     m.b[constr] = val
 end
 function SDM.setconstrentry!(m::CSDPMathProgModel, coef, constr::Integer, blk::Integer, i::Integer, j::Integer)
-    block(m.As[constr], blk)[i, j] = coef
+    push!(m.entries, (constr, blk, i, j, coef))
 end
 function SDM.setobjentry!(m::CSDPMathProgModel, coef, blk::Integer, i::Integer, j::Integer)
-    block(m.C, blk)[i, j] = coef
+    push!(m.entries, (0, blk, i, j, coef))
 end
 
 function MPB.optimize!(m::CSDPMathProgModel)
-    As = map(A->A.csdp, m.As)
-
-    write_prob(m)
-
-    m.X, m.y, m.Z = initsoln(m.C, m.b, As)
-    #verbose = get(m.options, :verbose, true)
-    #m.status, m.pobj, m.dobj = easy_sdp(m.C, m.b, As, m.X, m.y, m.Z, verbose)
-    m.status, m.pobj, m.dobj = sdp(m.C, m.b, m.As, m.X, m.y, m.Z, m.options)
+    if m.problem === nothing
+        # `m.problem` is not `nothing` if it was loaded from a file.
+        m.C.nblocks = length(m.blockdims)
+        num_entries = zeros(Cint, length(m.b), length(m.blockdims))
+        for entry in m.entries
+            if entry[1] > 0
+                num_entries[entry[1], entry[2]] += 1
+            end
+        end
+        m.problem = allocate_loading_prob(Ref(m.C), m.blockdims, length(m.b), num_entries, 3)
+        for (i, x) in enumerate(m.b)
+            setconstant(m.problem, i, x)
+        end
+        for entry in m.entries
+            duplicate = addentry(m.problem, entry..., true)
+            @assert !duplicate
+        end
+    end
+    m.y = loaded_initsoln(m.problem, length(m.b), Ref(m.X), Ref(m.Z))
+    m.status, m.pobj, m.dobj = loaded_sdp(m.problem, Ref(m.X), m.y, Ref(m.Z), m.options)
 end
 
 function MPB.status(m::CSDPMathProgModel)
