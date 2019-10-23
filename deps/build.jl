@@ -16,11 +16,11 @@ const JULIA_LAPACK = if haskey(ENV, ENV_VAR)
         @info "Using system blas and lapack libraries as the environment variable `$ENV_VAR` is set to `$value`."
         false
     else
-        error("The environment variable `$ENV_VAR` is set to `$value`. Set it to `1` or `0` instead.")
+        error("The environment variable `$ENV_VAR` is set to `$value`. Set it to `true` or `false` instead.")
     end
 else
     if BinDeps.issatisfied(blas) && BinDeps.issatisfied(lapack)
-        @info "Using system blas and lapack libraries. Set the environment variable `$ENV_VAR` to `1` to use the blas/lapack library shipped with Julia."
+        @info "Using system blas and lapack libraries. Set the environment variable `$ENV_VAR` to `true` to use the blas/lapack library shipped with Julia."
         false
     else
         @info "Using the blas and lapack libraries shipped with Julia as there is no system blas and lapack libraries installed."

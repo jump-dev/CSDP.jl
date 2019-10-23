@@ -10,10 +10,10 @@ solver-independent `MathProgBase` and `MathOptInterface` API's.
 *Note: This wrapper is maintained by the JuliaOpt community and is not a COIN-OR
 project.*
 
-| **PackageEvaluator** | **Build Status** |
-|:--------------------:|:----------------:|
-| [![][pkg-0.5-img]][pkg-0.5-url] | [![Build Status][build-img]][build-url] [![Build Status][winbuild-img]][winbuild-url] |
-| [![][pkg-0.6-img]][pkg-0.6-url] | [![Coveralls branch][coveralls-img]][coveralls-url] [![Codecov branch][codecov-img]][codecov-url] |
+| **Build Status** |
+|:----------------:|
+| [![Build Status][build-img]][build-url] [![Build Status][winbuild-img]][winbuild-url] |
+| [![Coveralls branch][coveralls-img]][coveralls-url] [![Codecov branch][codecov-img]][codecov-url] |
 
 The original algorithm is described by
 B. Borchers.
@@ -23,25 +23,37 @@ DOI [10.1080/10556789908805765](http://dx.doi.org/10.1080/10556789908805765).
 [Preprint](http://euler.nmt.edu/~brian/csdppaper.pdf).
 
 ## Installing CSDP
-First, make sure that you have a compiler available and that LAPACK and BLAS are installed. On Ubuntu, simply do
+
+You can either use the system LAPACK and BLAS libaries or the libraries shipped with Julia.
+First, make sure that you have a compiler available, e.g. on Ubuntu do
 ```
-$ sudo apt-get install build-essential liblapack-dev libopenblas-dev
+$ sudo apt-get install build-essential
+```
+To use the libraries shipped by Julia, simply do
+```julia
+$ CSDP_USE_JULIA_LAPACK=true julia -e 'import Pkg; Pkg.add("CSDP"); Pkg.build("CSDP")'
+```
+To use the system libaries, first make sure it is installed, e.g. on Ubuntu do
+```julia
+$ sudo apt-get install liblapack-dev libopenblas-dev
+```
+and then do
+```julia
+$ CSDP_USE_JULIA_LAPACK=false julia -e 'import Pkg; Pkg.add("CSDP"); Pkg.build("CSDP")'
 ```
 
-Then, install CSDP using
-```julia
-julia> Pkg.add("CSDP")
-```
+Note that if the environment variable `CSDP_USE_JULIA_LAPACK` is not set, it defaults
+to using the system libraries if available and the Julia libraries otherwise.
 
-To use CSDP with JuMP v0.18, do
-```julia
-using JuMP
-model = Model(solver=CSDPSolver())
-```
-and with JuMP development version, do
+To use CSDP with JuMP v0.19 and later, do
 ```julia
 using JuMP
 model = Model(with_optimizer(CSDP.Optimizer))
+```
+and with JuMP v0.18 and earlier, do
+```julia
+using JuMP
+model = Model(solver=CSDPSolver())
 ```
 
 ## CSDP problem representation
@@ -146,17 +158,13 @@ For Windows, a pre-compiled DLL is downloaded (unless you configure the `build.j
 
 
 ## Next Steps (TODOs)
+
 - [ ] Maybe port `libcsdp` to use 64bit Lapack, aka replace “some `int`s” by `long int` (the variables used in a Lapack call).  Started in brach `julias_openblas64`
 - [ ] Maybe think about an own array type to circumvent the 1-index problems in `libcsdp`.
 - [ ] Map Julia's sparse arrays to `sparsematrixblock`.
 - [ ] Upload `libcsdp.dll` for Windows via Appveyor deployment as described at
       [JuliaCon](https://www.youtube.com/watch?v=XKdKdfHB2KM&index=12&list=PLP8iPy9hna6SQPwZUDtAM59-wPzCPyD_S).
       Currently we use a [separate repository](https://github.com/EQt/winlapack).
-
-[pkg-0.5-img]: http://pkg.julialang.org/badges/CSDP_0.5.svg
-[pkg-0.5-url]: http://pkg.julialang.org/?pkg=CSDP
-[pkg-0.6-img]: http://pkg.julialang.org/badges/CSDP_0.6.svg
-[pkg-0.6-url]: http://pkg.julialang.org/?pkg=CSDP
 
 [build-img]: https://travis-ci.org/JuliaOpt/CSDP.jl.svg?branch=master
 [build-url]: https://travis-ci.org/JuliaOpt/CSDP.jl
