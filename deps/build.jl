@@ -1,7 +1,7 @@
 using BinDeps
 using LinearAlgebra, Libdl
 
-@BinDeps.setup
+BinDeps.@setup
 
 blas = library_dependency("libblas", alias=["libblas.dll"])
 lapack = library_dependency("liblapack", alias=["liblapack.dll"])
@@ -32,6 +32,14 @@ include("constants.jl")
 include("compile.jl")
 
 # @info "libname = $libname"
+const depends = if JULIA_LAPACK
+    # Create a new `bindeps_context` global variable that does not
+    # have `blas` and `lapack` in the list of dependencies.
+    BinDeps.@setup
+    []
+else
+    [blas, lapack]
+end
 depends = JULIA_LAPACK ? [] : [blas, lapack]
 
 # LaPack/BLAS dependencies
