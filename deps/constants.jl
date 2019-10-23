@@ -1,16 +1,14 @@
 # use Julia's libopenblas instead of system's liblapack and libblas?
-const JULIA_LAPACK = false
-const suffix       = JULIA_LAPACK ? ".64" : ""
 const version      = "6.2.0"
-const libname      = "libcsdp$suffix.$(Libdl.dlext)"
+const libname      = "libcsdp.$(Libdl.dlext)"
 const csdpversion  = "Csdp-readprob"
 const download_url =
     "https://github.com/blegat/Csdp/archive/readprob.zip"
 
-patchf      = joinpath(dirname(@__FILE__), "src$suffix", "debug-mat.c")
-srcdir      = joinpath(dirname(@__FILE__), "src$suffix", csdpversion, "lib")
+patchf      = joinpath(dirname(@__FILE__), "src", "debug-mat.c")
+srcdir      = joinpath(dirname(@__FILE__), "src", csdpversion, "lib")
 prefix      = joinpath(dirname(@__FILE__), "usr")
-builddir    = joinpath(dirname(@__FILE__), "build$suffix")
+builddir    = joinpath(dirname(@__FILE__), "build")
 cflags      = ["-I$srcdir/../include",  "-DNOSHORTS", "-g"]
 libdir      = joinpath(prefix, @static Sys.iswindows() ? "bin" : "lib/")
 dlpath      = joinpath(libdir, libname)

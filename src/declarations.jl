@@ -4,7 +4,7 @@ struct LoadingProblem
     ptr::Ptr{Cvoid}
 end
 
-function allocate_loading_prob(pC::Ref{blockmatrix}, block_dims::Vector{Cint}, num_constraints::Integer, num_entries::Matrix{Cint}, printlevel::Integer)
+function allocate_loading_prob(pC::Ref{blockmatrix}, block_dims::Vector{CSDP_INT}, num_constraints::Integer, num_entries::Matrix{CSDP_INT}, printlevel::Integer)
     ptr = allocate_loading_prob(pC, fptr(block_dims), num_constraints, pointer(num_entries), printlevel)
     return LoadingProblem(ptr)
 end
@@ -28,7 +28,7 @@ function loaded_initsoln(problem::LoadingProblem, num_constraints::Integer, X::R
 end
 function initsoln(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{constraintmatrix})
     m = length(As)
-    X, y, Z = initsoln(Cint(size(C, 1)), Cint(m), C.csdp, fptr(b), fptr(As))
+    X, y, Z = initsoln(CSDP_INT(size(C, 1)), CSDP_INT(m), C.csdp, fptr(b), fptr(As))
     mywrap(X), mywrap(y, m), mywrap(Z)
 end
 function initsoln(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{ConstraintMatrix})
@@ -75,8 +75,8 @@ function sdp(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{ConstraintMatrix}, X
     Zcsdp = Z.csdp
     Ascsdp = map(A->A.csdp, As)
 
-    n = Cint(size(C, 1))
-    k = Cint(length(As))
+    n = CSDP_INT(size(C, 1))
+    k = CSDP_INT(length(As))
     nd = sizeof(Cdouble) * (n+1)
     kd = sizeof(Cdouble) * (k+1)
     md = max(nd, kd)
@@ -85,8 +85,8 @@ function sdp(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{ConstraintMatrix}, X
 
     byblocks = setupAs!(As, C)
 
-    status, pobj, dobj = sdp(n,                                    # n::Cint
-                             k,                                    # k::Cint
+    status, pobj, dobj = sdp(n,                                    # n::CSDP_INT
+                             k,                                    # k::CSDP_INT
                              C.csdp,                               # C::blockmatrix
                              fptr(b),                              # a::Ptr{Cdouble}
                              0.0,                                  # constant_offset::Cdouble
@@ -110,7 +110,7 @@ function sdp(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{ConstraintMatrix}, X
                              pointer(Vector{Cdouble}(undef, kd)),  # dy::Ptr{Cdouble}
                              pointer(Vector{Cdouble}(undef, kd)),  # dy1::Ptr{Cdouble}
                              pointer(Vector{Cdouble}(undef, kd)),  # Fp::Ptr{Cdouble}
-                             Cint(printlevel),                     # printlevel::Cint
+                             CSDP_INT(printlevel),                     # printlevel::CSDP_INT
                              params)                               # parameters::paramstruc
     # I can even assert that they won't change
     @assert Xcsdp == X.csdp
@@ -133,7 +133,7 @@ function loaded_sdp(problem::LoadingProblem, X::Ref{blockmatrix}, y::Vector{Cdou
         X,                # pX::Ptr{blockmatrix}
         ycsdp,            # py::Ptr{Cdouble}
         Z,                # pZ::Ptr{blockmatrix}
-        Cint(printlevel), # printlevel::Cint
+        CSDP_INT(printlevel), # printlevel::CSDP_INT
         params)           # parameters::paramstruc
     # I can even assert that they won't change
     @assert ycsdp[] == fptr(y)
@@ -151,8 +151,8 @@ function parametrized_sdp(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{Constra
     Ascsdp = map(A->A.csdp, As)
 
     status, pobj, dobj = parametrized_sdp(
-        Cint(size(C, 1)), # n::Cint
-        Cint(length(As)), # k::Cint
+        CSDP_INT(size(C, 1)), # n::CSDP_INT
+        CSDP_INT(length(As)), # k::CSDP_INT
         C.csdp,           # C::blockmatrix
         fptr(b),          # a::Ptr{Cdouble}
         fptr(Ascsdp),     # constraints::Ptr{constraintmatrix}
@@ -160,7 +160,7 @@ function parametrized_sdp(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{Constra
         ptr(Xcsdp),       # pX::Ptr{blockmatrix}
         ycsdp,            # py::Ptr{Cdouble}
         ptr(Zcsdp),       # pZ::Ptr{blockmatrix}
-        Cint(printlevel), # printlevel::Cint
+        CSDP_INT(printlevel), # printlevel::CSDP_INT
         params)           # parameters::paramstruc
     # I can even assert that they won't change
     @assert Xcsdp == X.csdp
@@ -176,8 +176,8 @@ function easy_sdp(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{constraintmatri
     ycsdp = Ref{Ptr{Cdouble}}(fptr(y))
     Zcsdp = Z.csdp
 
-    status, pobj, dobj = easy_sdp(Cint(size(C, 1)), # n::Cint
-                                  Cint(length(As)), # k::Cint
+    status, pobj, dobj = easy_sdp(CSDP_INT(size(C, 1)), # n::CSDP_INT
+                                  CSDP_INT(length(As)), # k::CSDP_INT
                                   C.csdp,           # C::blockmatrix
                                   fptr(b),          # a::Ptr{Cdouble}
                                   fptr(As),         # constraints::Ptr{constraintmatrix}
@@ -193,9 +193,9 @@ function easy_sdp(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{constraintmatri
 end
 
 function write_prob(fname::String, C::BlockMatrix, b::Vector{Cdouble}, As::Vector{constraintmatrix})
-    write_prob(fname, Cint(size(C, 1)), Cint(length(As)), C.csdp, fptr(b), fptr(As))
+    write_prob(fname, CSDP_INT(size(C, 1)), CSDP_INT(length(As)), C.csdp, fptr(b), fptr(As))
 end
 
 function write_sol(fname::String, X::BlockMatrix, y::Vector{Cdouble}, Z::BlockMatrix)
-    write_sol(fname, Cint(size(X, 1)), Cint(length(y)), X.csdp, fptr(y), Z.csdp)
+    write_sol(fname, CSDP_INT(size(X, 1)), CSDP_INT(length(y)), X.csdp, fptr(y), Z.csdp)
 end

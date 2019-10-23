@@ -12,6 +12,10 @@ matrix:
   allow_failures:
     - julia: nightly
 
+env:
+  - CSDP_USE_JULIA_LAPACK=true
+  - CSDP_USE_JULIA_LAPACK=false
+
 addons:
   apt: # apt-get for linux
     packages:

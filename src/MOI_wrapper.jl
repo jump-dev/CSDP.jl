@@ -6,7 +6,7 @@ const AFFEQ = MOI.ConstraintIndex{MOI.ScalarAffineFunction{Cdouble}, MOI.EqualTo
 mutable struct Optimizer <: MOI.AbstractOptimizer
     objconstant::Cdouble
     objsign::Int
-    blockdims::Vector{Cint}
+    blockdims::Vector{CSDP_INT}
     varmap::Vector{Tuple{Int, Int, Int}} # Variable Index vi -> blk, i, j
     num_entries::Dict{Tuple{Int, Int}, Int}
     b::Vector{Cdouble}
@@ -15,7 +15,7 @@ mutable struct Optimizer <: MOI.AbstractOptimizer
     X::blockmatrix
     y::Union{Nothing, Vector{Cdouble}}
     Z::blockmatrix
-    status::Cint
+    status::CSDP_INT
     pobj::Cdouble
     dobj::Cdouble
     solve_time::Float64
@@ -23,7 +23,7 @@ mutable struct Optimizer <: MOI.AbstractOptimizer
     options::Dict{Symbol, Any}
     function Optimizer(; kwargs...)
         optimizer = new(
-            zero(Cdouble), 1, Cint[], Tuple{Int, Int, Int}[],
+            zero(Cdouble), 1, CSDP_INT[], Tuple{Int, Int, Int}[],
             Dict{Tuple{Int, Int}, Int}(), Cdouble[],
             blockmatrix(), nothing, blockmatrix(), nothing, blockmatrix(),
             -1, NaN, NaN, NaN, false, Dict{Symbol, Any}())
@@ -211,11 +211,11 @@ function MOIU.load_variables(optimizer::Optimizer, nvars)
     if dummy
         # See https://github.com/coin-or/Csdp/issues/2
         optimizer.b = [one(Cdouble)]
-        optimizer.blockdims = [optimizer.blockdims; Cint(-1)]
+        optimizer.blockdims = [optimizer.blockdims; CSDP_INT(-1)]
         count_entry(optimizer, 1, length(optimizer.blockdims))
     end
     optimizer.C.nblocks = length(optimizer.blockdims)
-    num_entries = zeros(Cint, length(optimizer.b), length(optimizer.blockdims))
+    num_entries = zeros(CSDP_INT, length(optimizer.b), length(optimizer.blockdims))
     for (key, value) in optimizer.num_entries
         num_entries[key...] = value
     end

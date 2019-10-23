@@ -49,8 +49,9 @@ function patch_int(; verbose::Bool = false)
                  (r"\(int\)", s"(integer)"),
                  (r"%d", s"%ld"),
                  (r"%2d", s"%2ld"),
-                 (r" int ", s" integer ")]
-                content = replace(content, re, subst)
+                 (r" int ", s" integer "),
+                 (r"dsymv_", s"dsymv_64_")]
+                content = replace(content, re => subst)
             end
             open(cfile, "w") do io
                 print(io, content)
@@ -63,7 +64,7 @@ end
 function compile_objs(JULIA_LAPACK=JULIA_LAPACK)
     if JULIA_LAPACK
         lapack = Libdl.dlpath(LinearAlgebra.LAPACK.liblapack)
-        lflag = replace(splitext(basename(lapack))[1], r"^lib", "")
+        lflag = replace(splitext(basename(lapack))[1], r"^lib" => "")
         libs = ["-L$(dirname(lapack))", "-l$lflag"]
         @info libs
         if endswith(LinearAlgebra.LAPACK.liblapack, "64_")

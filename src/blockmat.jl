@@ -174,7 +174,7 @@ mutable struct SparseBlock <: AbstractMatrix{Cdouble}
     i::Vector{csdpshort}
     j::Vector{csdpshort}
     v::Vector{Cdouble}
-    n::Cint
+    n::CSDP_INT
     csdp::sparseblock
     function SparseBlock(i::Vector{csdpshort}, j::Vector{csdpshort}, v::Vector{Cdouble}, n::Integer, csdp)
         new(i, j, v, n, csdp)
@@ -217,7 +217,7 @@ function SparseBlock(A::SparseMatrixCSC{Cdouble})
     end
     SparseBlock(I, J, V, n)
 end
-SparseBlock(A::AbstractMatrix{Cdouble}) = SparseBlock(SparseMatrixCSC{Cdouble, Cint}(A))
+SparseBlock(A::AbstractMatrix{Cdouble}) = SparseBlock(SparseMatrixCSC{Cdouble, CSDP_INT}(A))
 SparseBlock(A::AbstractMatrix) = SparseBlock(map(Cdouble, A))
 Base.convert(::Type{SparseBlock}, A::AbstractMatrix) = SparseBlock(A)
 
@@ -320,8 +320,8 @@ export BlockMatrix, ConstraintMatrix
 
 """Solver status"""
 mutable struct Csdp
-    n::Cint
-    k::Cint
+    n::CSDP_INT
+    k::CSDP_INT
     X::BlockMatrix
     y::Vector{Cdouble}
     constant_offset::Cdouble

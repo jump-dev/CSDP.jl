@@ -43,12 +43,12 @@ readchangewrite(header_naming("blockmat.h")) do b
                       #,(r"::Ptr", s"::Ref")
                        ,(r"\ntype "m, "\nimmutable ")
                        ]
-        b = replace(b, pat, subs)
+        b = replace(b, pat => subs)
     end
     b
 end
 
 readchangewrite(header_naming("declarations.h")) do d
-    replace(d, r"\nfunction \w+_\(\)\n(.+?)\nend\n"sm, "")
+    replace(d, r"\nfunction \w+_\(\)\n(.+?)\nend\n"sm => "")
 end
 
