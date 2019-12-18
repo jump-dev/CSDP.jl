@@ -47,12 +47,12 @@ to using the system libraries if available and the Julia libraries otherwise.
 
 To use CSDP with JuMP v0.19 and later, do
 ```julia
-using JuMP
+using JuMP, CSDP
 model = Model(with_optimizer(CSDP.Optimizer))
 ```
 and with JuMP v0.18 and earlier, do
 ```julia
-using JuMP
+using JuMP, CSDP
 model = Model(solver=CSDPSolver())
 ```
 
