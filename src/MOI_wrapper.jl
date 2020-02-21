@@ -28,7 +28,7 @@ mutable struct Optimizer <: MOI.AbstractOptimizer
             blockmatrix(), nothing, blockmatrix(), nothing, blockmatrix(),
             -1, NaN, NaN, NaN, false, Dict{Symbol, Any}())
         for (key, value) in kwargs
-            MOI.set(optimizer, MOI.RawParameter(key), value)
+            MOI.set(optimizer, MOI.RawParameter(String(key)), value)
         end
         # May need to call `free_loaded_prob` and `free_loading_prob`.
         finalizer(MOI.empty!, optimizer)
@@ -39,17 +39,31 @@ end
 varmap(optimizer::Optimizer, vi::MOI.VariableIndex) = optimizer.varmap[vi.value]
 
 function MOI.supports(optimizer::Optimizer, param::MOI.RawParameter)
-    return param.name in ALLOWED_OPTIONS
+    return Symbol(param.name) in ALLOWED_OPTIONS
 end
 function MOI.set(optimizer::Optimizer, param::MOI.RawParameter, value)
+    if !(param.name isa String)
+        Base.depwarn(
+            "passing `$(param.name)` to `MOI.RawParameter` as type " *
+            "`$(typeof(param.name))` is deprecated. Use a string instead.",
+            Symbol("MOI.set")
+        )
+    end
     if !MOI.supports(optimizer, param)
         throw(MOI.UnsupportedAttribute(param))
     end
-    optimizer.options[param.name] = value
+    optimizer.options[Symbol(param.name)] = value
 end
 function MOI.get(optimizer::Optimizer, param::MOI.RawParameter)
     # TODO: This gives a poor error message if the name of the parameter is invalid.
-    return optimizer.options[param.name]
+    if !(param.name isa String)
+        Base.depwarn(
+            "passing `$(param.name)` to `MOI.RawParameter` as type " *
+            "`$(typeof(param.name))` is deprecated. Use a string instead.",
+            Symbol("MOI.set")
+        )
+    end
+    return optimizer.options[Symbol(param.name)]
 end
 
 MOI.supports(::Optimizer, ::MOI.Silent) = true

@@ -7,8 +7,8 @@ const MOIU = MOI.Utilities
 const MOIB = MOI.Bridges
 
 import CSDP
-const optimizer = CSDP.Optimizer()
-MOI.set(optimizer, MOI.Silent(), true)
+const optimizer_constructor = MOI.OptimizerWithAttributes(CSDP.Optimizer, MOI.Silent() => true)
+const optimizer = MOI.instantiate(optimizer_constructor)
 
 @testset "SolverName" begin
     @test MOI.get(optimizer, MOI.SolverName()) == "CSDP"
@@ -19,16 +19,13 @@ end
     @test !MOIU.supports_allocate_load(optimizer, true)
 end
 
-# UniversalFallback is needed for starting values, even if they are ignored by CSDP
-const cache = MOIU.UniversalFallback(MOIU.Model{Float64}())
-const cached = MOIU.CachingOptimizer(cache, optimizer)
-const bridged = MOIB.full_bridge_optimizer(cached, Float64)
+const bridged = MOI.instantiate(optimizer_constructor, with_bridge_type=Float64)
 const config = MOIT.TestConfig(atol=1e-4, rtol=1e-4)
 
 @testset "Options" begin
-    param = MOI.RawParameter(:bad_option)
+    param = MOI.RawParameter("bad_option")
     err = MOI.UnsupportedAttribute(param)
-    @test_throws err CSDP.Optimizer(bad_option = 1)
+    @test_throws err MOI.set(optimizer, MOI.RawParameter("bad_option"), 0)
 end
 
 @testset "Unit" begin
