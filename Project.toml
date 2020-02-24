@@ -1,7 +1,7 @@
 name = "CSDP"
 uuid = "0a46da34-8e4b-519e-b418-48813639ff34"
 repo = "https://github.com/JuliaOpt/CSDP.jl.git"
-version = "0.5.3"
+version = "0.5.4"
 
 [deps]
 BinDeps = "9e28174c-4ba2-5203-b857-d8d62c4213ee"
