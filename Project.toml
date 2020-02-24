@@ -14,10 +14,10 @@ SemidefiniteModels = "169818f4-1a3d-53bf-95b3-11177825b1e3"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [compat]
-BinDeps = "0.8"
+BinDeps = "0.8, 0.9, 1"
 Glob = "1.2"
 MathOptInterface = "0.9.5"
-MathProgBase = "~0.7.0"
+MathProgBase = "0.7"
 SemidefiniteModels = "~0.1.1"
 julia = "1"
 
