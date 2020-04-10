@@ -3,11 +3,15 @@ module CSDP
 using LinearAlgebra # For Diagonal
 using SparseArrays # For SparseMatrixCSC
 
-# Try to load the binary dependency
-if isfile(joinpath(dirname(@__FILE__),"..","deps","deps.jl"))
-    include("../deps/deps.jl")
+if VERSION < v"1.3"
+    if isfile(joinpath(dirname(@__FILE__),"..","deps","deps.jl"))
+        include("../deps/deps.jl")
+    else
+        error("CSDP not properly installed. Please run Pkg.build(\"CSDP\")")
+    end
 else
-    error("CSDP not properly installed. Please run Pkg.build(\"CSDP\")")
+    import CSDP_jll: csdp
+    const CSDP_INT = Cint
 end
 
 export Blockmatrix
