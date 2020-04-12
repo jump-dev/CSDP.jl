@@ -18,7 +18,7 @@ end
 @testset "Call libcsdp.norm1" begin
     vec = Cdouble[1.0, 2.0, 0.0, -1.0]
     try
-        n1 = ccall((:norm1, CSDP.csdp),
+        n1 = ccall((:norm1, CSDP.libcsdp),
                    Cdouble,
                    (Cint, Ptr{Cdouble}),
                    length(vec), vec)

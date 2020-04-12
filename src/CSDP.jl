@@ -10,7 +10,7 @@ if VERSION < v"1.3"
         error("CSDP not properly installed. Please run Pkg.build(\"CSDP\")")
     end
 else
-    import CSDP_jll: csdp
+    import CSDP_jll: libcsdp
     const CSDP_INT = Cint
 end
 
