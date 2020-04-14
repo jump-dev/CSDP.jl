@@ -11,8 +11,11 @@ if VERSION < v"1.3"
     end
 else
     import CSDP_jll: libcsdp
-    const CSDP_INT = Cint
 end
+
+# This is the size of int used by the LAPACK library used by CSDP.
+# If libcsdp is patched to use a 64-bit integer LAPACK, this should be replaced by `Clong`.
+const CSDP_INT = Cint
 
 export Blockmatrix
 

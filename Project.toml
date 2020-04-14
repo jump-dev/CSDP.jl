@@ -4,7 +4,7 @@ repo = "https://github.com/JuliaOpt/CSDP.jl.git"
 version = "0.6.0"
 
 [deps]
-BinDeps = "9e28174c-4ba2-5203-b857-d8d62c4213ee"
+BinaryProvider = "b99e7846-7c00-51b0-8f62-c81ae34c0232"
 CSDP_jll = "9ce75daa-2788-5e2c-ba1d-cf8c48367b27"
 Glob = "c27321d9-0574-5035-807b-f59d2c89b15c"
 Libdl = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
@@ -15,7 +15,7 @@ SemidefiniteModels = "169818f4-1a3d-53bf-95b3-11177825b1e3"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [compat]
-BinDeps = "0.8, 0.9, 1"
+BinaryProvider = "0.5"
 CSDP_jll = "=6.2.0"
 Glob = "1.2"
 MathOptInterface = "0.9.5"
