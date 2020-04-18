@@ -89,6 +89,3 @@ if unsatisfied || !isinstalled(dl_info...; prefix=prefix)
     # Download and install binaries
     install(dl_info...; prefix=prefix, force=true, verbose=verbose, ignore_platform=true)
 end
-
-# Write out a deps.jl file that will contain mappings for our products
-write_deps_file(joinpath(@__DIR__, "deps.jl"), products, verbose=verbose)
