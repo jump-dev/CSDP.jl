@@ -46,7 +46,7 @@ end
 # trying to install is not itself installed) then load it up!
 if unsatisfied || !isinstalled(dl_info...; prefix=prefix)
     # Download and install binaries
-    install(dl_info...; prefix=prefix, force=true, verbose=verbose)
+    install(dl_info...; prefix=prefix, force=true, verbose=verbose, ignore_platform=true)
 end
 
 # Write out a deps.jl file that will contain mappings for our products
