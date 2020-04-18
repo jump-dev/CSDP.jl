@@ -74,7 +74,7 @@ download_info = Dict(
 )
 
 # Install unsatisfied or updated dependencies:
-unsatisfied = any(!satisfied(p; verbose=verbose) for p in products)
+unsatisfied = any(!satisfied(p; verbose=verbose, isolate=true) for p in products)
 dl_info = choose_download(download_info, platform_key_abi())
 if dl_info === nothing && unsatisfied
     # If we don't have a compatible .tar.gz to download, complain.
