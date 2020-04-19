@@ -17,6 +17,9 @@ addons:
     - liblapack-dev
     - libblas-dev
 
+before_script:
+  - julia -e 'using Pkg; Pkg.add(PackageSpec(name="BinaryProvider", rev="mg/fix-write-deps-isolation"))'
+
 notifications:
   email: false
 after_success:
