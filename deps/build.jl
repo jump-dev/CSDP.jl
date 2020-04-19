@@ -18,6 +18,6 @@ Anon1.include("build_OpenBLAS32.v0.3.9.jl")
 Anon2.include("build_CSDP.v6.2.0.jl")
 
 # Finally, write out a deps.jl file
-write_deps_file(joinpath(@__DIR__, "deps.jl"), products)
+write_deps_file(joinpath(@__DIR__, "deps.jl"), products, verbose=true)
 
 end # VERSION
