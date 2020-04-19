@@ -33,6 +33,8 @@ download_info = Dict(
 )
 
 # Install unsatisfied or updated dependencies:
+# We added `, isolate=true` as otherwise, it would segfault when closing `OpenBLAS32`,
+# probably because it is conflicting with Julia openblas.
 unsatisfied = any(!satisfied(p; verbose=verbose, isolate=true) for p in products)
 dl_info = choose_download(download_info, platform_key_abi())
 if dl_info === nothing && unsatisfied
