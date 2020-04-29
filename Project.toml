@@ -15,7 +15,7 @@ SemidefiniteModels = "169818f4-1a3d-53bf-95b3-11177825b1e3"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [compat]
-BinaryProvider = "0.5"
+BinaryProvider = "0.5.9"
 CSDP_jll = "=6.2.0"
 Glob = "1.2"
 MathOptInterface = "0.9.5"
