@@ -3,12 +3,19 @@ module CSDP
 using LinearAlgebra # For Diagonal
 using SparseArrays # For SparseMatrixCSC
 
-# Try to load the binary dependency
-if isfile(joinpath(dirname(@__FILE__),"..","deps","deps.jl"))
-    include("../deps/deps.jl")
+if VERSION < v"1.3"
+    if isfile(joinpath(dirname(@__FILE__),"..","deps","deps.jl"))
+        include("../deps/deps.jl")
+    else
+        error("CSDP not properly installed. Please run Pkg.build(\"CSDP\")")
+    end
 else
-    error("CSDP not properly installed. Please run Pkg.build(\"CSDP\")")
+    import CSDP_jll: libcsdp
 end
+
+# This is the size of int used by the LAPACK library used by CSDP.
+# If libcsdp is patched to use a 64-bit integer LAPACK, this should be replaced by `Clong`.
+const CSDP_INT = Cint
 
 export Blockmatrix
 

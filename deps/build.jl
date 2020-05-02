@@ -1,89 +1,25 @@
-using BinDeps
-using LinearAlgebra, Libdl
+# Inspired from https://github.com/JuliaDatabases/MySQL.jl/blob/36eaf2bfbbdd9a27c408d0b2a734fff0d81b63ad/deps/build.jl
+module Anon1 end
+module Anon2 end
+module Anon3 end
 
-BinDeps.@setup
+@static if VERSION < v"1.3.0"
 
-blas = library_dependency("libblas", alias=["libblas.dll"])
-lapack = library_dependency("liblapack", alias=["liblapack.dll"])
+using BinaryProvider # requires BinaryProvider 0.3.0 or later
 
-const ENV_VAR      = "CSDP_USE_JULIA_LAPACK"
-const JULIA_LAPACK = if haskey(ENV, ENV_VAR)
-    value = ENV[ENV_VAR]
-    if lowercase(value) in ["1", "true", "yes"]
-        @info "Using the blas and lapack libraries shipped with Julia as the environment variable `$ENV_VAR` is set to `$value`."
-        true
-    elseif lowercase(value) in ["0", "false", "no"]
-        @info "Using system blas and lapack libraries as the environment variable `$ENV_VAR` is set to `$value`."
-        false
-    else
-        error("The environment variable `$ENV_VAR` is set to `$value`. Set it to `true` or `false` instead.")
-    end
-else
-    if BinDeps.issatisfied(blas) && BinDeps.issatisfied(lapack)
-        @info "Using system blas and lapack libraries. Set the environment variable `$ENV_VAR` to `true` to use the blas/lapack library shipped with Julia."
-        false
-    else
-        @info "Using the blas and lapack libraries shipped with Julia as there is no system blas and lapack libraries installed."
-        true
-    end
-end
+# Parse some basic command-line arguments
+const verbose = "--verbose" in ARGS
+const prefix = Prefix(get([a for a in ARGS if a != "--verbose"], 1, joinpath(@__DIR__, "usr")))
 
-include("constants.jl")
-include("compile.jl")
+products = [
+    LibraryProduct(prefix, ["libcsdp"], :libcsdp)
+]
 
-# @info "libname = $libname"
-const depends = if JULIA_LAPACK
-    # Create a new `bindeps_context` global variable that does not
-    # have `blas` and `lapack` in the list of dependencies.
-    BinDeps.@setup
-    []
-else
-    [blas, lapack]
-end
-depends = JULIA_LAPACK ? [] : [blas, lapack]
+Anon1.include("build_CompilerSupportLibraries.v0.3.3.jl")
+Anon2.include("build_OpenBLAS32.v0.3.9.jl")
+Anon3.include("build_CSDP.v6.2.0.jl")
 
-# LaPack/BLAS dependencies
-if !JULIA_LAPACK
-    @static if Sys.iswindows()
-        # wheel = "numpy/windows-wheel-builder/raw/master/atlas-builds"
-        # atlas = "https://github.com/$wheel"
-        # atlasdll = "/atlas-3.11.38-sse2-64/lib/numpy-atlas.dll"
-        # download("https://raw.githubusercontent.com/$wheel/$atlasdll"),
-        #           "$libdir/libatlas.dll")
-        ## at the end ...
-        # push!(BinDeps.defaults, BuildProcess)
-    end
-end
+# Finally, write out a deps.jl file
+write_deps_file(joinpath(@__DIR__, "deps.jl"), products, verbose=true)
 
-csdp = library_dependency("csdp", aliases=[libname], depends=depends)
-
-provides(Sources, URI(download_url), csdp, unpacked_dir=csdpversion)
-
-provides(BuildProcess,
-         (@build_steps begin
-             GetSources(csdp)
-             CreateDirectory(libdir)
-             CreateDirectory(builddir)
-             @build_steps begin
-                  ChangeDirectory(srcdir)
-                  patch_int
-                  compile_objs
-             end
-         end),
-         [csdp])
-
-# Prebuilt DLLs for Windows
-provides(Binaries,
-   URI("https://github.com/EQt/winlapack/blob/49454aee32649dc52c5b64f408a17b5270bd30f4/win-csdp-$(Sys.WORD_SIZE).7z?raw=true"),
-   [csdp, lapack, blas], unpacked_dir="usr", os = :Windows)
-
-@BinDeps.install Dict(:csdp => :csdp)
-
-open(joinpath(dirname(@__FILE__), "deps.jl"), write = true, append = true) do io
-    print(io, "const CSDP_INT = ")
-    if JULIA_LAPACK
-        println(io, "Clong")
-    else
-        println(io, "Cint")
-    end
-end
+end # VERSION

@@ -1,25 +1,25 @@
 function print_block(b::blockrec)
-    ccall((:printb, CSDP.csdp), Nothing, (blockrec,), b)
+    ccall((:printb, CSDP.libcsdp), Nothing, (blockrec,), b)
 end
 
 function printm(A::blockmatrix)
-    ccall((:printm, CSDP.csdp), Nothing, (blockmatrix,), A)
+    ccall((:printm, CSDP.libcsdp), Nothing, (blockmatrix,), A)
 end
 printm(A::BlockMatrix) = printm(A.csdp)
 export printm
 
 print_sparseblock(A::sparseblock) = print_sparseblock(pointer_from_objref(A))
 function print_sparseblock(a::Ptr{sparseblock})
-    ccall((:print_sparse_block, CSDP.csdp), Nothing, (Ptr{sparseblock},), a)
+    ccall((:print_sparse_block, CSDP.libcsdp), Nothing, (Ptr{sparseblock},), a)
 end
 
 
 function print_sizeof()
-    ccall((:print_sizeof, CSDP.csdp), Nothing, ())
+    ccall((:print_sizeof, CSDP.libcsdp), Nothing, ())
 end
 
 function print_constraints(C::Vector{constraintmatrix})
-    ccall((:print_constraints, CSDP.csdp), Nothing, (CSDP_INT, Ptr{constraintmatrix}), length(C), fptr(C))
+    ccall((:print_constraints, CSDP.libcsdp), Nothing, (CSDP_INT, Ptr{constraintmatrix}), length(C), fptr(C))
 end
 
 

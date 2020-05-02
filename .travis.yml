@@ -5,16 +5,11 @@ os:
   - osx
 julia:
   - 1.0
-  - 1.1
-  - 1.2
+  - 1.4
 
 matrix:
   allow_failures:
     - julia: nightly
-
-env:
-  - CSDP_USE_JULIA_LAPACK=true
-  - CSDP_USE_JULIA_LAPACK=false
 
 addons:
   apt: # apt-get for linux
