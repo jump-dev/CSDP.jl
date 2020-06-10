@@ -135,10 +135,10 @@ Name          |                                                                 
 `maxiter`     | Limit for the total number of iterations                                                                             | `100`          |
 `minstepfrac` | The `minstepfrac` and `maxstepfrac` parameters determine how close to the edge of the feasible region CSDP will step | `0.90`         |
 `maxstepfrac` | The `minstepfrac` and `maxstepfrac` parameters determine how close to the edge of the feasible region CSDP will step | `0.97`         |
-`minstepp`    | If the primal step is shorter than minstepp then CSDP declares a line search failure                                 | `1.0e-8`       |
-`minstepd`    | If the primal step is shorter than minstepp then CSDP declares a line search failure                                 | `1.0e-8`       |
-`usexzgap`    | If `usexzgap` is `0` then CSDP will use the objective duality gap `d - p` instead of the XY duality gap `⟨Z, X⟩`             | `1`            |
-`tweakgap`    | If `tweakgap` is set to `1`, and `usexzgap` is set to `0`, then CSDP will attempt to "fix" negative duality gaps         | `0`            |
+`minstepp`    | If the primal step is shorter than `minstepp` then CSDP declares a line search failure                               | `1.0e-8`       |
+`minstepd`    | If the dual step is shorter than `minstepd` then CSDP declares a line search failure                                 | `1.0e-8`       |
+`usexzgap`    | If `usexzgap` is `0` then CSDP will use the objective duality gap `d - p` instead of the XY duality gap `⟨Z, X⟩`     | `1`            |
+`tweakgap`    | If `tweakgap` is set to `1`, and `usexzgap` is set to `0`, then CSDP will attempt to "fix" negative duality gaps     | `0`            |
 `affine`      | If `affine` is set to `1`, then CSDP will take only primal-dual affine steps and not make use of the barrier term. This can be useful for some problems that do not have feasible solutions that are strictly in the interior of the cone of semidefinite matrices | `0`            |
 `perturbobj`  | The `perturbobj` parameter determines whether the objective function will be perturbed to help deal with problems that have unbounded optimal solution sets. If `perturbobj` is `0`, then the objective will not be perturbed. If `perturbobj` is `1`, then the objective function will be perturbed by a default amount. Larger values of `perturbobj` (e.g. `100`) increase the size of the perturbation. This can be helpful in solving some difficult problems. | `1`            |
 `fastmode`    | The `fastmode` parameter determines whether or not CSDP will skip certain time consuming operations that slightly improve the accuracy of the solutions. If `fastmode` is set to `1`, then CSDP may be somewhat faster, but also somewhat less accurate | `0`            |
