@@ -7,7 +7,7 @@ Programming](https://projects.coin-or.org/Csdp)** solver. It provides a complete
 interface to the low-level C API, as well as an implementation of the
 solver-independent `MathProgBase` and `MathOptInterface` API's.
 
-*Note: This wrapper is maintained by the JuliaOpt community and is not a COIN-OR
+*Note: This wrapper is maintained by the JuMP community and is not a COIN-OR
 project.*
 
 | **Build Status** |
@@ -166,11 +166,11 @@ For Windows, a pre-compiled DLL is downloaded (unless you configure the `build.j
       [JuliaCon](https://www.youtube.com/watch?v=XKdKdfHB2KM&index=12&list=PLP8iPy9hna6SQPwZUDtAM59-wPzCPyD_S).
       Currently we use a [separate repository](https://github.com/EQt/winlapack).
 
-[build-img]: https://travis-ci.org/JuliaOpt/CSDP.jl.svg?branch=master
-[build-url]: https://travis-ci.org/JuliaOpt/CSDP.jl
+[build-img]: https://travis-ci.org/jump-dev/CSDP.jl.svg?branch=master
+[build-url]: https://travis-ci.org/jump-dev/CSDP.jl
 [winbuild-img]: https://ci.appveyor.com/api/projects/status/v8nb0yb7ahn9n7ol?svg=true
-[winbuild-url]: https://ci.appveyor.com/project/JuliaOpt/csdp-jl
-[coveralls-img]: https://coveralls.io/repos/github/JuliaOpt/CSDP.jl/badge.svg?branch=master
-[coveralls-url]: https://coveralls.io/github/JuliaOpt/CSDP.jl?branch=master
-[codecov-img]: http://codecov.io/github/JuliaOpt/CSDP.jl/coverage.svg?branch=master
-[codecov-url]: http://codecov.io/github/JuliaOpt/CSDP.jl?branch=master
+[winbuild-url]: https://ci.appveyor.com/project/jump-dev/csdp-jl
+[coveralls-img]: https://coveralls.io/repos/github/jump-dev/CSDP.jl/badge.svg?branch=master
+[coveralls-url]: https://coveralls.io/github/jump-dev/CSDP.jl?branch=master
+[codecov-img]: http://codecov.io/github/jump-dev/CSDP.jl/coverage.svg?branch=master
+[codecov-url]: http://codecov.io/github/jump-dev/CSDP.jl?branch=master
