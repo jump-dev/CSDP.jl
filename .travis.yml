@@ -1,11 +1,12 @@
 # Documentation: http://docs.travis-ci.com/user/languages/julia/
 language: julia
+codecov: true
 os:
   - linux
   - osx
 julia:
   - 1.0
-  - 1.4
+  - 1
 
 matrix:
   allow_failures:
@@ -19,5 +20,3 @@ addons:
 
 notifications:
   email: false
-after_success:
-  - julia -e 'import Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder()); Coveralls.submit(process_folder())'

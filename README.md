@@ -13,7 +13,7 @@ project.*
 | **Build Status** |
 |:----------------:|
 | [![Build Status][build-img]][build-url] [![Build Status][winbuild-img]][winbuild-url] |
-| [![Coveralls branch][coveralls-img]][coveralls-url] [![Codecov branch][codecov-img]][codecov-url] |
+| [![Codecov branch][codecov-img]][codecov-url] |
 
 The original algorithm is described by
 B. Borchers.
@@ -170,7 +170,5 @@ For Windows, a pre-compiled DLL is downloaded (unless you configure the `build.j
 [build-url]: https://travis-ci.org/jump-dev/CSDP.jl
 [winbuild-img]: https://ci.appveyor.com/api/projects/status/v8nb0yb7ahn9n7ol?svg=true
 [winbuild-url]: https://ci.appveyor.com/project/jump-dev/csdp-jl
-[coveralls-img]: https://coveralls.io/repos/github/jump-dev/CSDP.jl/badge.svg?branch=master
-[coveralls-url]: https://coveralls.io/github/jump-dev/CSDP.jl?branch=master
 [codecov-img]: http://codecov.io/github/jump-dev/CSDP.jl/coverage.svg?branch=master
 [codecov-url]: http://codecov.io/github/jump-dev/CSDP.jl?branch=master
