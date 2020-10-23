@@ -1,7 +1,7 @@
 name = "CSDP"
 uuid = "0a46da34-8e4b-519e-b418-48813639ff34"
 repo = "https://github.com/jump-dev/CSDP.jl.git"
-version = "0.6.1"
+version = "0.7.0"
 
 [deps]
 BinaryProvider = "b99e7846-7c00-51b0-8f62-c81ae34c0232"
