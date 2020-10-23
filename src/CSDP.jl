@@ -27,6 +27,5 @@ include("declarations.jl")
 include("debug-mat.jl")
 include("options.jl")
 include("MOI_wrapper.jl")
-include("MPB_wrapper.jl")
 
 end # module
