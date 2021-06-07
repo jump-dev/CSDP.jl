@@ -301,8 +301,9 @@ function MOI.optimize!(optimizer::Optimizer)
     end
 
     optimizer.status, optimizer.pobj, optimizer.dobj = loaded_sdp(
-        optimizer.problem, Ref(optimizer.X), optimizer.y,
-        Ref(optimizer.Z), options)
+        optimizer.problem, optimizer.objsign * optimizer.objconstant,
+        Ref(optimizer.X), optimizer.y, Ref(optimizer.Z), options,
+    )
     optimizer.solve_time = time() - start_time
 end
 
@@ -372,11 +373,11 @@ end
 MOI.get(m::Optimizer, ::MOI.ResultCount) = 1
 function MOI.get(m::Optimizer, attr::MOI.ObjectiveValue)
     MOI.check_result_index_bounds(m, attr)
-    return m.objsign * m.pobj + m.objconstant
+    return m.objsign * m.pobj
 end
 function MOI.get(m::Optimizer, attr::MOI.DualObjectiveValue)
     MOI.check_result_index_bounds(m, attr)
-    return m.objsign * m.dobj + m.objconstant
+    return m.objsign * m.dobj
 end
 struct PrimalSolutionMatrix <: MOI.AbstractModelAttribute end
 MOI.is_set_by_optimize(::PrimalSolutionMatrix) = true
