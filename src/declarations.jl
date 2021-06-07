@@ -66,8 +66,10 @@ function setupAs!(As::Vector{ConstraintMatrix}, C::BlockMatrix)
     byblocks
 end
 
-sdp(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{ConstraintMatrix}, X::BlockMatrix, y::Vector{Cdouble}, Z::BlockMatrix, params::Dict{Symbol}) = sdp(C, b, As, X, y, Z, options(params)...)
-function sdp(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{ConstraintMatrix}, X::BlockMatrix, y::Vector{Cdouble}, Z::BlockMatrix, printlevel, params)
+sdp(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{ConstraintMatrix}, X::BlockMatrix, y::Vector{Cdouble}, Z::BlockMatrix, params::Dict{Symbol}) = sdp(C, b, As, 0.0, X, y, Z, options(params)...)
+sdp(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{ConstraintMatrix}, X::BlockMatrix, y::Vector{Cdouble}, Z::BlockMatrix, printlevel, params) = sdp(C, b, As, 0.0, X, y, Z, printlevel, params)
+sdp(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{ConstraintMatrix}, co::Cdouble, X::BlockMatrix, y::Vector{Cdouble}, Z::BlockMatrix, params::Dict{Symbol}) = sdp(C, b, As, co, X, y, Z, options(params)...)
+function sdp(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{ConstraintMatrix}, co::Cdouble, X::BlockMatrix, y::Vector{Cdouble}, Z::BlockMatrix, printlevel, params)
     # I pass pointers pX, py and pZ to X, y and Z but only *pX, *py and *pZ are use in the code
     # so no need to worry, they won't change :)
     Xcsdp = X.csdp
@@ -89,7 +91,7 @@ function sdp(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{ConstraintMatrix}, X
                              k,                                    # k::CSDP_INT
                              C.csdp,                               # C::blockmatrix
                              fptr(b),                              # a::Ptr{Cdouble}
-                             0.0,                                  # constant_offset::Cdouble
+                             co,                                   # constant_offset::Cdouble
                              fptr(Ascsdp),                         # constraints::Ptr{constraintmatrix}
                              fptr(byblocks),
                              Xcsdp,                                # X::blockmatrix
@@ -119,17 +121,17 @@ function sdp(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{ConstraintMatrix}, X
     return status, pobj, dobj
 end
 
-function loaded_sdp(problem::LoadingProblem, X::Ref{blockmatrix}, y::Vector{Cdouble}, Z::Ref{blockmatrix}, params::Dict{Symbol})
-    return loaded_sdp(problem, X, y, Z, options(params)...)
-end
-function loaded_sdp(problem::LoadingProblem, X::Ref{blockmatrix}, y::Vector{Cdouble}, Z::Ref{blockmatrix}, printlevel, params)
+loaded_sdp(problem::LoadingProblem, X::Ref{blockmatrix}, y::Vector{Cdouble}, Z::Ref{blockmatrix}, params::Dict{Symbol}) = loaded_sdp(problem, 0.0, X, y, Z, options(params)...)
+loaded_sdp(problem::LoadingProblem, X::Ref{blockmatrix}, y::Vector{Cdouble}, Z::Ref{blockmatrix}, printlevel, params) = loaded_sdp(problem, 0.0, X, y, Z, printlevel, params)
+loaded_sdp(problem::LoadingProblem, co::Cdouble, X::Ref{blockmatrix}, y::Vector{Cdouble}, Z::Ref{blockmatrix}, params::Dict{Symbol}) = loaded_sdp(problem, co, X, y, Z, options(params)...)
+function loaded_sdp(problem::LoadingProblem, co::Cdouble, X::Ref{blockmatrix}, y::Vector{Cdouble}, Z::Ref{blockmatrix}, printlevel, params)
     # I pass pointers py to X, y and Z but only *pX, *py and *pZ are
     # used in the code so no need to worry, they won't change :)
     ycsdp = Ref{Ptr{Cdouble}}(fptr(y))
 
     status, pobj, dobj = loaded_sdp(
         problem.ptr,      # problem::Ptr{Cvoid}
-        0.0,              # constant_offset::Cdouble
+        co,               # constant_offset::Cdouble
         X,                # pX::Ptr{blockmatrix}
         ycsdp,            # py::Ptr{Cdouble}
         Z,                # pZ::Ptr{blockmatrix}
@@ -139,10 +141,11 @@ function loaded_sdp(problem::LoadingProblem, X::Ref{blockmatrix}, y::Vector{Cdou
     @assert ycsdp[] == fptr(y)
     return status, pobj, dobj
 end
-function parametrized_sdp(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{ConstraintMatrix}, X::BlockMatrix, y::Vector{Cdouble}, Z::BlockMatrix, params::Dict{Symbol})
-    return parametrized_sdp(C, b, As, X, y, Z, options(params)...)
-end
-function parametrized_sdp(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{ConstraintMatrix}, X::BlockMatrix, y::Vector{Cdouble}, Z::BlockMatrix, printlevel, params)
+
+parametrized_sdp(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{ConstraintMatrix}, X::BlockMatrix, y::Vector{Cdouble}, Z::BlockMatrix, params::Dict{Symbol}) = parametrized_sdp(C, b, As, 0.0, X, y, Z, options(params)...)
+parametrized_sdp(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{ConstraintMatrix}, X::BlockMatrix, y::Vector{Cdouble}, Z::BlockMatrix, printlevel, params) = parametrized_sdp(C, b, As, 0.0, X, y, Z, printlevel, params)
+parametrized_sdp(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{ConstraintMatrix}, co::Cdouble, X::BlockMatrix, y::Vector{Cdouble}, Z::BlockMatrix, params::Dict{Symbol}) = parametrized_sdp(C, b, As, co, X, y, Z, options(params)...)
+function parametrized_sdp(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{ConstraintMatrix}, co::Cdouble, X::BlockMatrix, y::Vector{Cdouble}, Z::BlockMatrix, printlevel, params)
     # I pass pointers pX, py and pZ to X, y and Z but only *pX, *py and *pZ are
     # used in the code so no need to worry, they won't change :)
     Xcsdp = X.csdp
@@ -156,7 +159,7 @@ function parametrized_sdp(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{Constra
         C.csdp,           # C::blockmatrix
         fptr(b),          # a::Ptr{Cdouble}
         fptr(Ascsdp),     # constraints::Ptr{constraintmatrix}
-        0.0,              # constant_offset::Cdouble
+        co,               # constant_offset::Cdouble
         ptr(Xcsdp),       # pX::Ptr{blockmatrix}
         ycsdp,            # py::Ptr{Cdouble}
         ptr(Zcsdp),       # pZ::Ptr{blockmatrix}
@@ -169,7 +172,8 @@ function parametrized_sdp(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{Constra
     return status, pobj, dobj
 end
 
-function easy_sdp(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{constraintmatrix}, X::BlockMatrix, y::Vector{Cdouble}, Z::BlockMatrix)
+easy_sdp(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{constraintmatrix}, X::BlockMatrix, y::Vector{Cdouble}, Z::BlockMatrix) = easy_sdp(C, b, As, 0.0, X, y, Z)
+function easy_sdp(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{constraintmatrix}, co::Cdouble, X::BlockMatrix, y::Vector{Cdouble}, Z::BlockMatrix)
     # I pass pointers pX, py and pZ to X, y and Z but only *pX, *py and *pZ are
     # used in the code so no need to worry, they won't change :)
     Xcsdp = X.csdp
@@ -181,7 +185,7 @@ function easy_sdp(C::BlockMatrix, b::Vector{Cdouble}, As::Vector{constraintmatri
                                   C.csdp,           # C::blockmatrix
                                   fptr(b),          # a::Ptr{Cdouble}
                                   fptr(As),         # constraints::Ptr{constraintmatrix}
-                                  0.0,              # constant_offset::Cdouble
+                                  co,               # constant_offset::Cdouble
                                   ptr(Xcsdp),       # pX::Ptr{blockmatrix}
                                   ycsdp,            # py::Ptr{Cdouble}
                                   ptr(Zcsdp))       # pZ::Ptr{blockmatrix}
