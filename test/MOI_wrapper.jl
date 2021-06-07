@@ -36,8 +36,6 @@ end
         "number_threads",
         # `TimeLimitSec` not supported.
         "time_limit_sec",
-        # SingleVariable objective of bridged variables, will be solved by objective bridges
-        "solve_time", "raw_status_string", "solve_singlevariable_obj",
         # Quadratic functions are not supported
         "solve_qcp_edge_cases", "solve_qp_edge_cases",
         # Integer and ZeroOne sets are not supported
