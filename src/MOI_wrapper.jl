@@ -143,8 +143,6 @@ MOI.supports_add_constrained_variables(::Optimizer, ::Type{MOI.Reals}) = false
 
 const SupportedSets = Union{MOI.Nonnegatives, MOI.PositiveSemidefiniteConeTriangle}
 MOI.supports_add_constrained_variables(::Optimizer, ::Type{<:SupportedSets}) = true
-# Remove this when support for MOI v0.9.14 is dropped
-MOI.supports_constraint(::Optimizer, ::Type{MOI.VectorOfVariables}, ::Type{<:SupportedSets}) = true
 function MOI.supports_constraint(
     ::Optimizer, ::Type{MOI.ScalarAffineFunction{Cdouble}},
     ::Type{MOI.EqualTo{Cdouble}})
