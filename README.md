@@ -12,7 +12,7 @@ project.*
 
 | **Build Status** |
 |:----------------:|
-| [![Build Status][build-img]][build-url] [![Build Status][winbuild-img]][winbuild-url] |
+| [![Build Status][build-img]][build-url] |
 | [![Codecov branch][codecov-img]][codecov-url] |
 
 The original algorithm is described by
@@ -134,3 +134,8 @@ Name          |                                                                 
 `perturbobj`  | The `perturbobj` parameter determines whether the objective function will be perturbed to help deal with problems that have unbounded optimal solution sets. If `perturbobj` is `0`, then the objective will not be perturbed. If `perturbobj` is `1`, then the objective function will be perturbed by a default amount. Larger values of `perturbobj` (e.g. `100`) increase the size of the perturbation. This can be helpful in solving some difficult problems. | `1`            |
 `fastmode`    | The `fastmode` parameter determines whether or not CSDP will skip certain time consuming operations that slightly improve the accuracy of the solutions. If `fastmode` is set to `1`, then CSDP may be somewhat faster, but also somewhat less accurate | `0`            |
 `printlevel`  | The `printlevel` parameter determines how much debugging information is output. Use a `printlevel` of `0` for no output and a `printlevel` of `1` for normal output. Higher values of printlevel will generate more debugging output | `1`            |
+
+[build-img]: https://github.com/jump-dev/CSDP.jl/workflows/CI/badge.svg?branch=master
+[build-url]: https://github.com/jump-dev/CSDP.jl/actions?query=workflow%3ACI
+[codecov-img]: http://codecov.io/github/jump-dev/CSDP.jl/coverage.svg?branch=master
+[codecov-url]: http://codecov.io/github/jump-dev/CSDP.jl?branch=master
