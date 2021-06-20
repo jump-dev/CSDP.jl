@@ -22,38 +22,29 @@ Optimization Methods and Software 11(1):613-623, 1999.
 DOI [10.1080/10556789908805765](http://dx.doi.org/10.1080/10556789908805765).
 [Preprint](http://euler.nmt.edu/~brian/csdppaper.pdf).
 
-## Installing CSDP
+## Installation
 
-You can either use the system LAPACK and BLAS libaries or the libraries shipped with Julia.
-First, make sure that you have a compiler available, e.g. on Ubuntu do
+The package can be installed with `Pkg.add`.
+
 ```
-$ sudo apt-get install build-essential
-```
-To use the libraries shipped by Julia, simply do
-```julia
-$ CSDP_USE_JULIA_LAPACK=true julia -e 'import Pkg; Pkg.add("CSDP"); Pkg.build("CSDP")'
-```
-To use the system libaries, first make sure it is installed, e.g. on Ubuntu do
-```julia
-$ sudo apt-get install liblapack-dev libopenblas-dev
-```
-and then do
-```julia
-$ CSDP_USE_JULIA_LAPACK=false julia -e 'import Pkg; Pkg.add("CSDP"); Pkg.build("CSDP")'
+julia> import Pkg; Pkg.add("CSDP")
 ```
 
-Note that if the environment variable `CSDP_USE_JULIA_LAPACK` is not set, it defaults
-to using the system libraries if available and the Julia libraries otherwise.
+CSDP.jl will use [BinaryProvider.jl](https://github.com/JuliaPackaging/BinaryProvider.jl) to automatically install the CSDP binaries. This should work for both the [official Julia binaries](https://julialang.org/downloads) and source-builds.
 
-To use CSDP with JuMP v0.19 and later, do
+### Using with **[JuMP]**
+[JuMP]: https://github.com/jump-dev/JuMP.jl
+
+We highly recommend that you use the *CSDP.jl* package with higher level
+packages such as [CSDP.jl](https://github.com/jump-dev/CSDP.jl).
+
+This can be done using the ``CSDP.Optimizer`` object. Here is how to create a
+*JuMP* model that uses CSDP as the solver.
 ```julia
 using JuMP, CSDP
-model = Model(with_optimizer(CSDP.Optimizer))
-```
-and with JuMP v0.18 and earlier, do
-```julia
-using JuMP, CSDP
-model = Model(solver=CSDPSolver())
+
+model = Model(CSDP.Optimizer)
+set_optimizer_attribute(model, "maxiter", 1000)
 ```
 
 ## CSDP problem representation
@@ -95,20 +86,20 @@ In practice, this is somewhat more conservative than simply requiring all eigenv
 
 ## Status
 
-The table below shows how the different CSDP status are converted to [MathProgBase](https://github.com/JuliaOpt/MathProgBase.jl) status.
+The table below shows how the different CSDP status are converted to [MathOptInterface (MOI)](https://github.com/jump-dev/MathOptInterface.jl) status.
 
-CSDP code | State           | Description                                                   | MathProgBase status |
---------- | --------------- | ------------------------------------------------------------- | ------------------- |
-`0`       | Success         | SDP solved                                                    | Optimal             |
-`1`       | Success         | The problem is primal infeasible, and we have a certificate   | Infeasible          |
-`2`       | Success         | The problem is dual infeasible, and we have a certificate     | Unbounded           |
-`3`       | Partial Success | A solution has been found, but full accuracy was not achieved | Suboptimal          |
-`4`       | Failure         | Maximum iterations reached                                    | UserLimit           |
-`5`       | Failure         | Stuck at edge of primal feasibility                           | Error               |
-`6`       | Failure         | Stuck at edge of dual infeasibility                           | Error               |
-`7`       | Failure         | Lack of progress                                              | Error               |
-`8`       | Failure         | `X`, `Z`, or `O` was singular                                 | Error               |
-`9`       | Failure         | Detected `NaN` or `Inf` values                                | Error               |
+CSDP code | State           | Description                                                   | MOI status      |
+--------- | --------------- | ------------------------------------------------------------- | --------------- |
+`0`       | Success         | SDP solved                                                    | OPTIMAL         |
+`1`       | Success         | The problem is primal infeasible, and we have a certificate   | INFEASIBLE      |
+`2`       | Success         | The problem is dual infeasible, and we have a certificate     | DUAL_INFEASIBLE |
+`3`       | Partial Success | A solution has been found, but full accuracy was not achieved | ALMOST_OPTIMAL  |
+`4`       | Failure         | Maximum iterations reached                                    | ITERATION_LIMIT |
+`5`       | Failure         | Stuck at edge of primal feasibility                           | SLOW_PROGRESS   |
+`6`       | Failure         | Stuck at edge of dual infeasibility                           | SLOW_PROGRESS   |
+`7`       | Failure         | Lack of progress                                              | SLOW_PROGRESS   |
+`8`       | Failure         | `X`, `Z`, or `O` was singular                                 | NUMERICAL_ERROR |
+`9`       | Failure         | Detected `NaN` or `Inf` values                                | NUMERICAL_ERROR |
 
 If the `printlevel` option is at least `1`, the following will be printed:
 
@@ -143,32 +134,3 @@ Name          |                                                                 
 `perturbobj`  | The `perturbobj` parameter determines whether the objective function will be perturbed to help deal with problems that have unbounded optimal solution sets. If `perturbobj` is `0`, then the objective will not be perturbed. If `perturbobj` is `1`, then the objective function will be perturbed by a default amount. Larger values of `perturbobj` (e.g. `100`) increase the size of the perturbation. This can be helpful in solving some difficult problems. | `1`            |
 `fastmode`    | The `fastmode` parameter determines whether or not CSDP will skip certain time consuming operations that slightly improve the accuracy of the solutions. If `fastmode` is set to `1`, then CSDP may be somewhat faster, but also somewhat less accurate | `0`            |
 `printlevel`  | The `printlevel` parameter determines how much debugging information is output. Use a `printlevel` of `0` for no output and a `printlevel` of `1` for normal output. Higher values of printlevel will generate more debugging output | `1`            |
-
-## Getting the CSDP Library
-The original make-file build system only provides a static library.
-The quite old (September 2010) [`pycsdp`](https://github.com/BenjaminKern/pycsdp) interface by [Benjamin Kern](http://ifatwww.et.uni-magdeburg.de/syst/about_us/people/kern/index.shtml) circumvents the problem by writing some C++ [code](https://github.com/BenjaminKern/pycsdp/tree/master/CXX) to which the static library is linked.
-The Sage [module](https://github.com/mghasemi/pycsdp) by @mghasemi is a Cython interface; I don't know how the libcsdp is installed or whether they assume that it is already available on the system.
-
-That is why this package tries to parse the makefile and compiles it itself on Unix systems (so `gcc` is needed).
-<!-- ~~Furthermore `libblas` and `liblapack` are needed to be installed.~~ -->
-For Windows, a pre-compiled DLL is downloaded (unless you configure the `build.jl` differently).
-
-<!-- On Windows you need the MinGW `gcc` compiler available in the `PATH`.
-    Currently, only the Win32 builds work. -->
-
-
-## Next Steps (TODOs)
-
-- [ ] Maybe port `libcsdp` to use 64bit Lapack, aka replace “some `int`s” by `long int` (the variables used in a Lapack call).  Started in brach `julias_openblas64`
-- [ ] Maybe think about an own array type to circumvent the 1-index problems in `libcsdp`.
-- [ ] Map Julia's sparse arrays to `sparsematrixblock`.
-- [ ] Upload `libcsdp.dll` for Windows via Appveyor deployment as described at
-      [JuliaCon](https://www.youtube.com/watch?v=XKdKdfHB2KM&index=12&list=PLP8iPy9hna6SQPwZUDtAM59-wPzCPyD_S).
-      Currently we use a [separate repository](https://github.com/EQt/winlapack).
-
-[build-img]: https://travis-ci.org/jump-dev/CSDP.jl.svg?branch=master
-[build-url]: https://travis-ci.org/jump-dev/CSDP.jl
-[winbuild-img]: https://ci.appveyor.com/api/projects/status/v8nb0yb7ahn9n7ol?svg=true
-[winbuild-url]: https://ci.appveyor.com/project/jump-dev/csdp-jl
-[codecov-img]: http://codecov.io/github/jump-dev/CSDP.jl/coverage.svg?branch=master
-[codecov-url]: http://codecov.io/github/jump-dev/CSDP.jl?branch=master
