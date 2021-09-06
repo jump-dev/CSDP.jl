@@ -3,6 +3,11 @@ using CSDP
 using Test
 using LinearAlgebra # For Diagonal
 
+if get(ENV, "GITHUB_ACTIONS", "") == "true"
+    import Pkg
+    Pkg.add(Pkg.PackageSpec(name = "MathOptInterface", rev = "master"))
+end
+
 @testset "Interact with BLAS" begin
     vec = Cdouble[1.0, 2.0, 0.0, -1.0]
     l = length(vec)
