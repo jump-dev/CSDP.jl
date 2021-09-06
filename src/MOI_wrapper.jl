@@ -2,7 +2,7 @@ using MathOptInterface
 const MOI = MathOptInterface
 const AFF = MOI.ScalarAffineFunction{Cdouble}
 const EQ = MOI.EqualTo{Cdouble}
-const AFFEQ = MOI.ConstraintIndex{AFF, EQ}
+const AFFEQ = MOI.ConstraintIndex{AFF,EQ}
 
 mutable struct Optimizer <: MOI.AbstractOptimizer
     objective_constant::Cdouble
@@ -288,11 +288,7 @@ function MOI.copy_to(dest::Optimizer, src::MOI.ModelLike)
                 if i != j
                     coef /= 2
                 end
-                @assert dest.num_entries[(k, blk)] > 0
-                @assert 1 <= i <= abs(dest.blockdims[blk])
-                @assert 1 <= j <= abs(dest.blockdims[blk])
                 duplicate = addentry(dest.problem, k, blk, i, j, coef, true)
-                dest.num_entries[(k, blk)] -= 1
                 @assert !duplicate
             end
         end
