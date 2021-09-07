@@ -2,7 +2,7 @@ using Test
 
 using MathOptInterface
 const MOI = MathOptInterface
-const MOIT = MOI.Test
+const MOIT = MOI.DeprecatedTest
 const MOIU = MOI.Utilities
 const MOIB = MOI.Bridges
 
@@ -14,18 +14,13 @@ const optimizer = MOI.instantiate(optimizer_constructor)
     @test MOI.get(optimizer, MOI.SolverName()) == "CSDP"
 end
 
-@testset "supports_default_copy_to" begin
-    @test MOIU.supports_allocate_load(optimizer, false)
-    @test !MOIU.supports_allocate_load(optimizer, true)
-end
-
 const bridged = MOI.instantiate(optimizer_constructor, with_bridge_type=Float64)
-const config = MOIT.TestConfig(atol=1e-4, rtol=1e-4)
+const config = MOIT.Config(atol = 1e-4, rtol = 1e-4)
 
 @testset "Options" begin
-    param = MOI.RawParameter("bad_option")
+    param = MOI.RawOptimizerAttribute("bad_option")
     err = MOI.UnsupportedAttribute(param)
-    @test_throws err MOI.set(optimizer, MOI.RawParameter("bad_option"), 0)
+    @test_throws err MOI.set(optimizer, MOI.RawOptimizerAttribute("bad_option"), 0)
 end
 
 @testset "Unit" begin
@@ -40,6 +35,7 @@ end
         "solve_qcp_edge_cases", "solve_qp_edge_cases",
         # Integer and ZeroOne sets are not supported
         "solve_integer_edge_cases", "solve_objbound_edge_cases",
+        "solve_start_soc", # RSOCtoPSDBridge seems to be incorrect for dimension-2 RSOC cone.
         "solve_zero_one_with_bounds_1",
         "solve_zero_one_with_bounds_2",
         "solve_zero_one_with_bounds_3"])
