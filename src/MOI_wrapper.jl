@@ -8,26 +8,40 @@ mutable struct Optimizer <: MOI.AbstractOptimizer
     objective_constant::Cdouble
     objective_sign::Int
     blockdims::Vector{CSDP_INT}
-    varmap::Vector{Tuple{Int, Int, Int}} # Variable Index vi -> blk, i, j
-    num_entries::Dict{Tuple{Int, Int}, Int}
+    varmap::Vector{Tuple{Int,Int,Int}} # Variable Index vi -> blk, i, j
+    num_entries::Dict{Tuple{Int,Int},Int}
     b::Vector{Cdouble}
     C::blockmatrix
-    problem::Union{Nothing, LoadingProblem}
+    problem::Union{Nothing,LoadingProblem}
     X::blockmatrix
-    y::Union{Nothing, Vector{Cdouble}}
+    y::Union{Nothing,Vector{Cdouble}}
     Z::blockmatrix
     status::CSDP_INT
     pobj::Cdouble
     dobj::Cdouble
     solve_time::Float64
     silent::Bool
-    options::Dict{Symbol, Any}
+    options::Dict{Symbol,Any}
     function Optimizer(; kwargs...)
         optimizer = new(
-            zero(Cdouble), 1, CSDP_INT[], Tuple{Int, Int, Int}[],
-            Dict{Tuple{Int, Int}, Int}(), Cdouble[],
-            blockmatrix(), nothing, blockmatrix(), nothing, blockmatrix(),
-            -1, NaN, NaN, NaN, false, Dict{Symbol, Any}())
+            zero(Cdouble),
+            1,
+            CSDP_INT[],
+            Tuple{Int,Int,Int}[],
+            Dict{Tuple{Int,Int},Int}(),
+            Cdouble[],
+            blockmatrix(),
+            nothing,
+            blockmatrix(),
+            nothing,
+            blockmatrix(),
+            -1,
+            NaN,
+            NaN,
+            NaN,
+            false,
+            Dict{Symbol,Any}(),
+        )
         for (key, value) in kwargs
             MOI.set(optimizer, MOI.RawOptimizerAttribute(String(key)), value)
         end
@@ -47,13 +61,13 @@ function MOI.set(optimizer::Optimizer, param::MOI.RawOptimizerAttribute, value)
         Base.depwarn(
             "passing `$(param.name)` to `MOI.RawOptimizerAttribute` as type " *
             "`$(typeof(param.name))` is deprecated. Use a string instead.",
-            Symbol("MOI.set")
+            Symbol("MOI.set"),
         )
     end
     if !MOI.supports(optimizer, param)
         throw(MOI.UnsupportedAttribute(param))
     end
-    optimizer.options[Symbol(param.name)] = value
+    return optimizer.options[Symbol(param.name)] = value
 end
 function MOI.get(optimizer::Optimizer, param::MOI.RawOptimizerAttribute)
     # TODO: This gives a poor error message if the name of the parameter is invalid.
@@ -61,7 +75,7 @@ function MOI.get(optimizer::Optimizer, param::MOI.RawOptimizerAttribute)
         Base.depwarn(
             "passing `$(param.name)` to `MOI.RawOptimizerAttribute` as type " *
             "`$(typeof(param.name))` is deprecated. Use a string instead.",
-            Symbol("MOI.set")
+            Symbol("MOI.set"),
         )
     end
     return optimizer.options[Symbol(param.name)]
@@ -69,7 +83,7 @@ end
 
 MOI.supports(::Optimizer, ::MOI.Silent) = true
 function MOI.set(optimizer::Optimizer, ::MOI.Silent, value::Bool)
-    optimizer.silent = value
+    return optimizer.silent = value
 end
 MOI.get(optimizer::Optimizer, ::MOI.Silent) = optimizer.silent
 
@@ -86,10 +100,11 @@ const RAW_STATUS = [
     "Lack of progress.",
     "X, Z, or O is singular.",
     "NaN or Inf values encountered.",
-    "Program stopped by signal (SIXCPU, SIGTERM, etc.)"]
+    "Program stopped by signal (SIXCPU, SIGTERM, etc.)",
+]
 
 function MOI.get(optimizer::Optimizer, ::MOI.RawStatusString)
-    return RAW_STATUS[optimizer.status + 1]
+    return RAW_STATUS[optimizer.status+1]
 end
 function MOI.get(optimizer::Optimizer, ::MOI.SolveTimeSec)
     return optimizer.solve_time
@@ -97,14 +112,14 @@ end
 
 function MOI.is_empty(optimizer::Optimizer)
     return iszero(optimizer.objective_constant) &&
-        isone(optimizer.objective_sign) &&
-        isempty(optimizer.blockdims) &&
-        isempty(optimizer.varmap) &&
-        isempty(optimizer.num_entries) &&
-        isempty(optimizer.b) &&
-        iszero(optimizer.C.nblocks) &&
-        optimizer.C.blocks == C_NULL &&
-        optimizer.problem === nothing
+           isone(optimizer.objective_sign) &&
+           isempty(optimizer.blockdims) &&
+           isempty(optimizer.varmap) &&
+           isempty(optimizer.num_entries) &&
+           isempty(optimizer.b) &&
+           iszero(optimizer.C.nblocks) &&
+           optimizer.C.blocks == C_NULL &&
+           optimizer.problem === nothing
 end
 
 function MOI.empty!(optimizer::Optimizer)
@@ -116,7 +131,12 @@ function MOI.empty!(optimizer::Optimizer)
     empty!(optimizer.b)
     if optimizer.problem !== nothing
         if optimizer.y !== nothing
-            free_loaded_prob(optimizer.problem, optimizer.X, optimizer.y, optimizer.Z)
+            free_loaded_prob(
+                optimizer.problem,
+                optimizer.X,
+                optimizer.y,
+                optimizer.Z,
+            )
         end
         free_loading_prob(optimizer.problem)
     end
@@ -130,20 +150,26 @@ function MOI.empty!(optimizer::Optimizer)
     optimizer.Z.blocks = C_NULL
     optimizer.status = -1
     optimizer.pobj = 0.0
-    optimizer.dobj = 0.0
+    return optimizer.dobj = 0.0
 end
 
 function MOI.supports(
     optimizer::Optimizer,
-    ::Union{MOI.ObjectiveSense,
-            MOI.ObjectiveFunction{AFF}})
+    ::Union{MOI.ObjectiveSense,MOI.ObjectiveFunction{AFF}},
+)
     return true
 end
 
 MOI.supports_add_constrained_variables(::Optimizer, ::Type{MOI.Reals}) = false
 
-const SupportedSets = Union{MOI.Nonnegatives, MOI.PositiveSemidefiniteConeTriangle}
-MOI.supports_add_constrained_variables(::Optimizer, ::Type{<:SupportedSets}) = true
+const SupportedSets =
+    Union{MOI.Nonnegatives,MOI.PositiveSemidefiniteConeTriangle}
+function MOI.supports_add_constrained_variables(
+    ::Optimizer,
+    ::Type{<:SupportedSets},
+)
+    return true
+end
 function MOI.supports_constraint(::Optimizer, ::Type{AFF}, ::Type{EQ})
     return true
 end
@@ -156,7 +182,10 @@ function _new_block(optimizer::Optimizer, set::MOI.Nonnegatives)
     end
 end
 
-function _new_block(optimizer::Optimizer, set::MOI.PositiveSemidefiniteConeTriangle)
+function _new_block(
+    optimizer::Optimizer,
+    set::MOI.PositiveSemidefiniteConeTriangle,
+)
     push!(optimizer.blockdims, set.side_dimension)
     blk = length(optimizer.blockdims)
     for i in 1:set.side_dimension
@@ -169,12 +198,16 @@ end
 function _add_constrained_variables(optimizer::Optimizer, set::SupportedSets)
     offset = length(optimizer.varmap)
     _new_block(optimizer, set)
-    ci = MOI.ConstraintIndex{MOI.VectorOfVariables, typeof(set)}(offset + 1)
+    ci = MOI.ConstraintIndex{MOI.VectorOfVariables,typeof(set)}(offset + 1)
     return [MOI.VariableIndex(i) for i in offset .+ (1:MOI.dimension(set))], ci
 end
 
 function _error(start, stop)
-    error(start, ". Use `MOI.instantiate(CSDP.Optimizer, with_bridge_type = Float64)` ", stop)
+    return error(
+        start,
+        ". Use `MOI.instantiate(CSDP.Optimizer, with_bridge_type = Float64)` ",
+        stop,
+    )
 end
 
 function constrain_variables_on_creation(
@@ -187,11 +220,15 @@ function constrain_variables_on_creation(
         MOI.get(src, MOI.ListOfConstraintIndices{MOI.VectorOfVariables,S}())
         f_src = MOI.get(src, MOI.ConstraintFunction(), ci_src)
         if !allunique(f_src.variables)
-            _error("Cannot copy constraint `$(ci_src)` as variables constrained on creation because there are duplicate variables in the function `$(f_src)`",
-                   "to bridge this by creating slack variables.")
+            _error(
+                "Cannot copy constraint `$(ci_src)` as variables constrained on creation because there are duplicate variables in the function `$(f_src)`",
+                "to bridge this by creating slack variables.",
+            )
         elseif any(vi -> haskey(index_map, vi), f_src.variables)
-            _error("Cannot copy constraint `$(ci_src)` as variables constrained on creation because some variables of the function `$(f_src)` are in another constraint as well.",
-                   "to bridge constraints having the same variables by creating slack variables.")
+            _error(
+                "Cannot copy constraint `$(ci_src)` as variables constrained on creation because some variables of the function `$(f_src)` are in another constraint as well.",
+                "to bridge constraints having the same variables by creating slack variables.",
+            )
         else
             set = MOI.get(src, MOI.ConstraintSet(), ci_src)::S
             vis_dest, ci_dest = _add_constrained_variables(dest, set)
@@ -205,7 +242,7 @@ end
 
 function count_entry(optimizer::Optimizer, con_idx::Integer, blk::Integer)
     key = (con_idx, blk)
-    optimizer.num_entries[key] = get(optimizer.num_entries, key, 0) + 1
+    return optimizer.num_entries[key] = get(optimizer.num_entries, key, 0) + 1
 end
 
 # Loads objective coefficient α * vi
@@ -216,7 +253,7 @@ function load_objective_term!(optimizer::Optimizer, α, vi::MOI.VariableIndex)
     if i != j
         coef /= 2
     end
-    addentry(optimizer.problem, 0, blk, i, j, coef, true)
+    return addentry(optimizer.problem, 0, blk, i, j, coef, true)
 end
 
 function MOI.copy_to(dest::Optimizer, src::MOI.ModelLike)
@@ -224,12 +261,7 @@ function MOI.copy_to(dest::Optimizer, src::MOI.ModelLike)
     index_map = MOI.Utilities.IndexMap()
 
     # Step 1) Compute the dimensions of what needs to be allocated
-    constrain_variables_on_creation(
-        dest,
-        src,
-        index_map,
-        MOI.Nonnegatives,
-    )
+    constrain_variables_on_creation(dest, src, index_map, MOI.Nonnegatives)
     constrain_variables_on_creation(
         dest,
         src,
@@ -238,8 +270,10 @@ function MOI.copy_to(dest::Optimizer, src::MOI.ModelLike)
     )
     vis_src = MOI.get(src, MOI.ListOfVariableIndices())
     if length(vis_src) < length(index_map.var_map)
-        _error("Free variables are not supported by CSDP",
-               "to bridge free variables into `x - y` where `x` and `y` are nonnegative.")
+        _error(
+            "Free variables are not supported by CSDP",
+            "to bridge free variables into `x - y` where `x` and `y` are nonnegative.",
+        )
     end
     cis_src = MOI.get(src, MOI.ListOfConstraintIndices{AFF,EQ}())
     dest.b = Vector{Cdouble}(undef, length(cis_src))
@@ -248,12 +282,18 @@ function MOI.copy_to(dest::Optimizer, src::MOI.ModelLike)
         funcs[k] = MOI.get(src, MOI.CanonicalConstraintFunction(), ci_src)
         set = MOI.get(src, MOI.ConstraintSet(), ci_src)
         if isempty(funcs[k].terms)
-            throw(ArgumentError("Empty constraint $cis_src: $(funcs[k])-in-$set. Not supported by CSDP."))
+            throw(
+                ArgumentError(
+                    "Empty constraint $cis_src: $(funcs[k])-in-$set. Not supported by CSDP.",
+                ),
+            )
         end
         if !iszero(MOI.constant(funcs[k]))
-            throw(MOI.ScalarFunctionConstantNotZero{
-                Cdouble, AFF, EQ}(
-                    MOI.constant(funcs[k])))
+            throw(
+                MOI.ScalarFunctionConstantNotZero{Cdouble,AFF,EQ}(
+                    MOI.constant(funcs[k]),
+                ),
+            )
         end
         for t in funcs[k].terms
             if !iszero(t.coefficient)
@@ -278,10 +318,17 @@ function MOI.copy_to(dest::Optimizer, src::MOI.ModelLike)
     for (key, value) in dest.num_entries
         num_entries[key...] = value
     end
-    dest.problem = allocate_loading_prob(Ref(dest.C), dest.blockdims, length(dest.b), num_entries, 3)
+    dest.problem = allocate_loading_prob(
+        Ref(dest.C),
+        dest.blockdims,
+        length(dest.b),
+        num_entries,
+        3,
+    )
     if dummy
         # See https://github.com/coin-or/Csdp/issues/2
-        duplicate = addentry(dest.problem, 1, length(dest.blockdims), 1, 1, 1.0, true)
+        duplicate =
+            addentry(dest.problem, 1, length(dest.blockdims), 1, 1, 1.0, true)
         @assert !duplicate
     end
 
@@ -324,7 +371,11 @@ function MOI.copy_to(dest::Optimizer, src::MOI.ModelLike)
         dest.objective_constant = obj.constant
         for term in obj.terms
             if !iszero(term.coefficient)
-                load_objective_term!(dest, term.coefficient, index_map[term.variable])
+                load_objective_term!(
+                    dest,
+                    term.coefficient,
+                    index_map[term.variable],
+                )
             end
         end
     end
@@ -335,7 +386,12 @@ function MOI.optimize!(optimizer::Optimizer)
     write_prob(optimizer)
 
     start_time = time()
-    optimizer.y = loaded_initsoln(optimizer.problem, length(optimizer.b), Ref(optimizer.X), Ref(optimizer.Z))
+    optimizer.y = loaded_initsoln(
+        optimizer.problem,
+        length(optimizer.b),
+        Ref(optimizer.X),
+        Ref(optimizer.Z),
+    )
 
     options = optimizer.options
     if optimizer.silent
@@ -344,8 +400,12 @@ function MOI.optimize!(optimizer::Optimizer)
     end
 
     optimizer.status, optimizer.pobj, optimizer.dobj = loaded_sdp(
-        optimizer.problem, optimizer.objective_sign * optimizer.objective_constant,
-        Ref(optimizer.X), optimizer.y, Ref(optimizer.Z), options,
+        optimizer.problem,
+        optimizer.objective_sign * optimizer.objective_constant,
+        Ref(optimizer.X),
+        optimizer.y,
+        Ref(optimizer.Z),
+        options,
     )
     optimizer.solve_time = time() - start_time
     return
@@ -435,10 +495,16 @@ struct DualSlackMatrix <: MOI.AbstractModelAttribute end
 MOI.is_set_by_optimize(::DualSlackMatrix) = true
 MOI.get(optimizer::Optimizer, ::DualSlackMatrix) = optimizer.Z
 
-function block(optimizer::Optimizer, ci::MOI.ConstraintIndex{MOI.VectorOfVariables})
+function block(
+    optimizer::Optimizer,
+    ci::MOI.ConstraintIndex{MOI.VectorOfVariables},
+)
     return optimizer.varmap[ci.value][1]
 end
-function dimension(optimizer::Optimizer, ci::MOI.ConstraintIndex{MOI.VectorOfVariables})
+function dimension(
+    optimizer::Optimizer,
+    ci::MOI.ConstraintIndex{MOI.VectorOfVariables},
+)
     blockdim = optimizer.blockdims[block(optimizer, ci)]
     if blockdim < 0
         return -blockdim
@@ -449,7 +515,11 @@ end
 function vectorize_block(M, blk::Integer, s::Type{MOI.Nonnegatives})
     return diag(block(M, blk))
 end
-function vectorize_block(M::AbstractMatrix{Cdouble}, blk::Integer, s::Type{MOI.PositiveSemidefiniteConeTriangle}) where T
+function vectorize_block(
+    M::AbstractMatrix{Cdouble},
+    blk::Integer,
+    s::Type{MOI.PositiveSemidefiniteConeTriangle},
+) where {T}
     B = block(M, blk)
     d = LinearAlgebra.checksquare(B)
     n = MOI.dimension(MOI.PositiveSemidefiniteConeTriangle(d))
@@ -465,26 +535,44 @@ function vectorize_block(M::AbstractMatrix{Cdouble}, blk::Integer, s::Type{MOI.P
     return v
 end
 
-function MOI.get(optimizer::Optimizer, attr::MOI.VariablePrimal, vi::MOI.VariableIndex)
+function MOI.get(
+    optimizer::Optimizer,
+    attr::MOI.VariablePrimal,
+    vi::MOI.VariableIndex,
+)
     MOI.check_result_index_bounds(optimizer, attr)
     blk, i, j = varmap(optimizer, vi)
     return block(MOI.get(optimizer, PrimalSolutionMatrix()), blk)[i, j]
 end
 
-function MOI.get(optimizer::Optimizer, attr::MOI.ConstraintPrimal,
-                 ci::MOI.ConstraintIndex{MOI.VectorOfVariables, S}) where S<:SupportedSets
+function MOI.get(
+    optimizer::Optimizer,
+    attr::MOI.ConstraintPrimal,
+    ci::MOI.ConstraintIndex{MOI.VectorOfVariables,S},
+) where {S<:SupportedSets}
     MOI.check_result_index_bounds(optimizer, attr)
-    return vectorize_block(MOI.get(optimizer, PrimalSolutionMatrix()), block(optimizer, ci), S)
+    return vectorize_block(
+        MOI.get(optimizer, PrimalSolutionMatrix()),
+        block(optimizer, ci),
+        S,
+    )
 end
 function MOI.get(optimizer::Optimizer, attr::MOI.ConstraintPrimal, ci::AFFEQ)
     MOI.check_result_index_bounds(optimizer, attr)
     return optimizer.b[ci.value]
 end
 
-function MOI.get(optimizer::Optimizer, attr::MOI.ConstraintDual,
-                 ci::MOI.ConstraintIndex{MOI.VectorOfVariables, S}) where S<:SupportedSets
+function MOI.get(
+    optimizer::Optimizer,
+    attr::MOI.ConstraintDual,
+    ci::MOI.ConstraintIndex{MOI.VectorOfVariables,S},
+) where {S<:SupportedSets}
     MOI.check_result_index_bounds(optimizer, attr)
-    return vectorize_block(MOI.get(optimizer, DualSlackMatrix()), block(optimizer, ci), S)
+    return vectorize_block(
+        MOI.get(optimizer, DualSlackMatrix()),
+        block(optimizer, ci),
+        S,
+    )
 end
 function MOI.get(optimizer::Optimizer, attr::MOI.ConstraintDual, ci::AFFEQ)
     MOI.check_result_index_bounds(optimizer, attr)

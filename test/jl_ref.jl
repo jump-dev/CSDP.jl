@@ -18,7 +18,6 @@ mutable struct S
     e::Ptr{Cdouble}
 end
 
-
 """Use Ref instead of Ptr"""
 mutable struct R
     c::UInt32
@@ -27,20 +26,21 @@ mutable struct R
 end
 
 # Say hello, print sizeof(int)
-println(ccall((:hello,libn), Cdouble, ()))
+println(ccall((:hello, libn), Cdouble, ()))
 
 vec = Cdouble[1.0, 2.0]
 println("&vec = $(pointer(vec))")
 
 # Call with S --> should work
 s = S(OP1, length(vec), pointer(vec))
-ccall((:sum,libn), Cdouble, (S,), s)
+ccall((:sum, libn), Cdouble, (S,), s)
 
 # Call with R --> does not work
 r = R(OP2, length(vec), Ref(vec))
-ccall((:sum,libn), Cdouble, (R,), r)
+ccall((:sum, libn), Cdouble, (R,), r)
 
 # Now call with S, instead of R
-Base.cconvert(::Type{R}, r::R) =
-    S(r.c, r.n, Base.unsafe_convert(Ptr{Cdouble}, r.e))
-ccall((:sum,libn), Cdouble, (S,), r)
+function Base.cconvert(::Type{R}, r::R)
+    return S(r.c, r.n, Base.unsafe_convert(Ptr{Cdouble}, r.e))
+end
+ccall((:sum, libn), Cdouble, (S,), r)

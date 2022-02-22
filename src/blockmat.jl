@@ -4,33 +4,32 @@
 
 # Utils
 
-function fptr(x::Vector{T}) where T
+function fptr(x::Vector{T}) where {T}
     # CSDP starts indexing at 1 so we need to do "- sizeof(T)"
-    pointer(x) - sizeof(T)
+    return pointer(x) - sizeof(T)
 end
 
-function ptr(x::X) where X
-    Base.reinterpret(Base.Ptr{X}, Base.pointer_from_objref(x))
+function ptr(x::X) where {X}
+    return Base.reinterpret(Base.Ptr{X}, Base.pointer_from_objref(x))
 end
 export fptr, ptr
 
 function mywrap(X::blockmatrix)
-    BlockMatrix(X)
+    return BlockMatrix(X)
 end
 
 function _unsafe_wrap(A, x, n, own::Bool)
-    Base.unsafe_wrap(A, x, n, own=own)
+    return Base.unsafe_wrap(A, x, n, own = own)
 end
 
-function mywrap(x::Ptr{T}, len) where T
+function mywrap(x::Ptr{T}, len) where {T}
     # I give false to unsafe_wrap to specify that Julia do not own the array so it should not free it
     # because the pointer it has has an offset
     y = _unsafe_wrap(Array, x + sizeof(T), len, false)
     # fptr takes care of this offset
     #finalizer(s -> Libc.free(fptr(s)), y)
-    y
+    return y
 end
-
 
 # The problem is
 # max ⟨C, X⟩
@@ -68,7 +67,7 @@ function BlockRec(A::Matrix)
 end
 function BlockRec(A::Diagonal)
     a = Vector{Cdouble}(diag(A))
-    BlockRec(a, -length(a))
+    return BlockRec(a, -length(a))
 end
 function blockreczeros(n)
     if n > 0
@@ -80,14 +79,14 @@ end
 
 function Base.size(A::blockrec)
     n = A.blocksize
-    (n, n)
+    return (n, n)
 end
 Base.size(A::BlockRec) = size(A.csdp)
 function Base.getindex(A::BlockRec, i, j)
     n = A.csdp.blocksize
     if A.csdp.blockcategory == MATRIX
         A._blockdatarec[i+(j-1)*n]
-    elseif  A.csdp.blockcategory == DIAG
+    elseif A.csdp.blockcategory == DIAG
         if i == j
             A._blockdatarec[i]
         else
@@ -102,7 +101,7 @@ function Base.setindex!(A::BlockRec, v, i, j)
     if A.csdp.blockcategory == MATRIX
         A._blockdatarec[i+(j-1)*n] = v
         A._blockdatarec[j+(i-1)*n] = v
-    elseif  A.csdp.blockcategory == DIAG
+    elseif A.csdp.blockcategory == DIAG
         if i == j
             A._blockdatarec[i] = v
         else
@@ -113,7 +112,6 @@ function Base.setindex!(A::BlockRec, v, i, j)
     end
 end
 
-
 # blockmatrix
 mutable struct BlockMatrix <: AbstractBlockMatrix{Cdouble}
     jblocks::Vector{BlockRec}
@@ -122,9 +120,9 @@ mutable struct BlockMatrix <: AbstractBlockMatrix{Cdouble}
 end
 
 function BlockMatrix(jblocks::AbstractVector{BlockRec})
-    blocks = map(block->block.csdp, jblocks)
+    blocks = map(block -> block.csdp, jblocks)
     csdp = blockmatrix(length(blocks), fptr(blocks))
-    BlockMatrix(jblocks, blocks, csdp)
+    return BlockMatrix(jblocks, blocks, csdp)
 end
 BlockMatrix(As::AbstractVector) = BlockMatrix(map(BlockRec, As))
 BlockMatrix(As::AbstractMatrix...) = BlockMatrix(collect(As))
@@ -132,20 +130,22 @@ blockmatzeros(blkdims) = BlockMatrix(map(blockreczeros, blkdims))
 
 function BlockMatrix(csdp::blockmatrix)
     # I give false so that Julia does not try to free it
-    blocks = _unsafe_wrap(Array, csdp.blocks + sizeof(blockrec), csdp.nblocks, false)
+    blocks =
+        _unsafe_wrap(Array, csdp.blocks + sizeof(blockrec), csdp.nblocks, false)
     jblocks = map(blocks) do csdp
         let n = csdp.blocksize, c = csdp.blockcategory, d = csdp.data._blockdatarec
             if c == MATRIX
                 _blockdatarec = _unsafe_wrap(Array, d, n^2, false)
             elseif c == DIAG
-                _blockdatarec = _unsafe_wrap(Array, d + sizeof(Cdouble), n, false)
+                _blockdatarec =
+                    _unsafe_wrap(Array, d + sizeof(Cdouble), n, false)
             else
                 error("Unknown block category $(c)")
             end
             BlockRec(_blockdatarec, csdp)
         end
     end
-    BlockMatrix(jblocks, blocks, csdp)
+    return BlockMatrix(jblocks, blocks, csdp)
 end
 
 ## Old function for that...
@@ -176,24 +176,37 @@ mutable struct SparseBlock <: AbstractMatrix{Cdouble}
     v::Vector{Cdouble}
     n::CSDP_INT
     csdp::sparseblock
-    function SparseBlock(i::Vector{csdpshort}, j::Vector{csdpshort}, v::Vector{Cdouble}, n::Integer, csdp)
-        new(i, j, v, n, csdp)
+    function SparseBlock(
+        i::Vector{csdpshort},
+        j::Vector{csdpshort},
+        v::Vector{Cdouble},
+        n::Integer,
+        csdp,
+    )
+        return new(i, j, v, n, csdp)
     end
 end
 
-function SparseBlock(i::Vector{csdpshort}, j::Vector{csdpshort}, v::Vector{Cdouble}, n::Integer)
+function SparseBlock(
+    i::Vector{csdpshort},
+    j::Vector{csdpshort},
+    v::Vector{Cdouble},
+    n::Integer,
+)
     @assert length(i) == length(j) == length(v)
-    block = sparseblock(C_NULL,    # next
-                        C_NULL,    # nextbyblock
-                        fptr(v),   # entries
-                        fptr(i),   # iindices
-                        fptr(j),   # jindices
-                        length(i), # numentries
-                        0,         # blocknum
-                        n,         # blocksize
-                        0,         # constraintnum
-                        1)         # issparse
-    SparseBlock(i, j, v, n, block)
+    block = sparseblock(
+        C_NULL,    # next
+        C_NULL,    # nextbyblock
+        fptr(v),   # entries
+        fptr(i),   # iindices
+        fptr(j),   # jindices
+        length(i), # numentries
+        0,         # blocknum
+        n,         # blocksize
+        0,         # constraintnum
+        1,
+    )         # issparse
+    return SparseBlock(i, j, v, n, block)
 end
 
 SparseBlock(A::SparseBlock) = A
@@ -205,7 +218,7 @@ function SparseBlock(A::SparseMatrixCSC{Cdouble})
     V = Cdouble[]
     vals = nonzeros(A)
     rows = rowvals(A)
-    for col = 1:n
+    for col in 1:n
         for j in nzrange(A, col)
             row = rows[j]
             if row <= col
@@ -215,18 +228,20 @@ function SparseBlock(A::SparseMatrixCSC{Cdouble})
             end
         end
     end
-    SparseBlock(I, J, V, n)
+    return SparseBlock(I, J, V, n)
 end
-SparseBlock(A::AbstractMatrix{Cdouble}) = SparseBlock(SparseMatrixCSC{Cdouble, CSDP_INT}(A))
+function SparseBlock(A::AbstractMatrix{Cdouble})
+    return SparseBlock(SparseMatrixCSC{Cdouble,CSDP_INT}(A))
+end
 SparseBlock(A::AbstractMatrix) = SparseBlock(map(Cdouble, A))
 Base.convert(::Type{SparseBlock}, A::AbstractMatrix) = SparseBlock(A)
 
 function sparseblockzeros(n)
-    SparseBlock(csdpshort[], csdpshort[], Cdouble[], abs(n))
+    return SparseBlock(csdpshort[], csdpshort[], Cdouble[], abs(n))
 end
 
 function Base.size(A::SparseBlock)
-    (A.n, A.n)
+    return (A.n, A.n)
 end
 function findindices(A::SparseBlock, i, j)
     if i > A.n || j > A.n || i <= 0 || j <= 0
@@ -264,7 +279,6 @@ function Base.setindex!(A::SparseBlock, v, i, j)
     end
 end
 
-
 mutable struct ConstraintMatrix <: AbstractBlockMatrix{Cdouble}
     jblocks::Vector{SparseBlock}
     csdp::constraintmatrix
@@ -284,9 +298,11 @@ function ConstraintMatrix(constr, jblocks::AbstractVector{SparseBlock})
         #next = Base.unsafe_convert(Ptr{sparseblock}, Ref(block))
     end
     csdp = constraintmatrix(Ptr{sparseblock}(next))
-    ConstraintMatrix(jblocks, csdp)
+    return ConstraintMatrix(jblocks, csdp)
 end
-ConstraintMatrix(i, bs::AbstractMatrix...) = ConstraintMatrix(i, SparseBlock[b for b in bs])
+function ConstraintMatrix(i, bs::AbstractMatrix...)
+    return ConstraintMatrix(i, SparseBlock[b for b in bs])
+end
 constrmatzeros(i, blkdims) = ConstraintMatrix(i, map(sparseblockzeros, blkdims))
 
 # I need sparseblock to be immutable for this function to work
@@ -299,22 +315,25 @@ function ConstraintMatrix(csdp::constraintmatrix, k::Integer)
         i = mywrap(csdp.iindices, ne)
         j = mywrap(csdp.jindices, ne)
         v = mywrap(csdp.entries, ne)
-        SparseBlock(i, j, v, csdp.blocksize, csdp)
+        return SparseBlock(i, j, v, csdp.blocksize, csdp)
     end
-    ConstraintMatrix(jblocks, csdp)
+    return ConstraintMatrix(jblocks, csdp)
 end
 
 # Needed by MPB_wrapper
-function Base.getindex(A::Union{blockmatrix, BlockMatrix, ConstraintMatrix}, i::Integer)
-    block(A, i)
+function Base.getindex(
+    A::Union{blockmatrix,BlockMatrix,ConstraintMatrix},
+    i::Integer,
+)
+    return block(A, i)
 end
 
 block(A::blockmatrix, i::Integer) = getblockrec(A, i)
-function block(A::Union{BlockMatrix, ConstraintMatrix}, i::Integer)
-    A.jblocks[i]
+function block(A::Union{BlockMatrix,ConstraintMatrix}, i::Integer)
+    return A.jblocks[i]
 end
 nblocks(A::blockmatrix) = A.nblocks
-nblocks(A::Union{BlockMatrix, ConstraintMatrix}) = length(A.jblocks)
+nblocks(A::Union{BlockMatrix,ConstraintMatrix}) = length(A.jblocks)
 
 export BlockMatrix, ConstraintMatrix
 
