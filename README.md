@@ -2,44 +2,42 @@
 
 ![](https://www.coin-or.org/wordpress/wp-content/uploads/2014/08/COINOR.png)
 
-`CSDP.jl` is an interface to the **[COIN-OR SemiDefinite
-Programming](https://projects.coin-or.org/Csdp)** solver. It provides a complete
-interface to the low-level C API, as well as an implementation of the
-solver-independent `MathProgBase` and `MathOptInterface` API's.
+[![Build Status](https://github.com/jump-dev/CSDP.jl/workflows/CI/badge.svg?branch=master)](https://github.com/jump-dev/CSDP.jl/actions?query=workflow%3ACI)
+[![codecov](https://codecov.io/gh/jump-dev/CSDP.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/jump-dev/CSDP.jl)
+
+`CSDP.jl` is a wrapper for the [COIN-OR SemiDefinite Programming](https://projects.coin-or.org/Csdp)
+solver.
+
+The wrapper has two components:
+ * a thin wrapper around the low-level C API
+ * an interface to [MathOptInterface](https://github.com/jump-dev/MathOptInterface.jl)
 
 *Note: This wrapper is maintained by the JuMP community and is not a COIN-OR
 project.*
 
-| **Build Status** |
-|:----------------:|
-| [![Build Status][build-img]][build-url] |
-| [![Codecov branch][codecov-img]][codecov-url] |
-
-The original algorithm is described by
-B. Borchers.
-*CSDP, A C Library for Semidefinite Programming*.
+The original algorithm is described by B. Borchers.
+_CSDP, A C Library for Semidefinite Programming_.
 Optimization Methods and Software 11(1):613-623, 1999.
 DOI [10.1080/10556789908805765](http://dx.doi.org/10.1080/10556789908805765).
 [Preprint](http://euler.nmt.edu/~brian/csdppaper.pdf).
 
 ## Installation
 
-The package can be installed with `Pkg.add`.
-
+Install CSDP using `Pkg.add`:
+```julia
+import Pkg; Pkg.add("CSDP")
 ```
-julia> import Pkg; Pkg.add("CSDP")
-```
 
-CSDP.jl will use [BinaryProvider.jl](https://github.com/JuliaPackaging/BinaryProvider.jl) to automatically install the CSDP binaries. This should work for both the [official Julia binaries](https://julialang.org/downloads) and source-builds.
+In addition to installing the CSDP.jl package, this will also download and
+install the CSDP binaries. (You do not need to install CSDP separately.)
 
-### Using with **[JuMP]**
-[JuMP]: https://github.com/jump-dev/JuMP.jl
+## Use with JuMP
 
 We highly recommend that you use the *CSDP.jl* package with higher level
 packages such as [CSDP.jl](https://github.com/jump-dev/CSDP.jl).
 
-This can be done using the ``CSDP.Optimizer`` object. Here is how to create a
-*JuMP* model that uses CSDP as the solver.
+To use CSDP with [JuMP](https://github.com/jump-dev/JuMP.jl), use
+`CSDP.Optimizer`:
 ```julia
 using JuMP, CSDP
 
@@ -114,7 +112,7 @@ If the `printlevel` option is at least `1`, the following will be printed:
 
 ## Options
 
-The CSDP options are listed in the table below. Their value can be specified in the constructor of the CSDP solver, e.g. `CSDPSolver(axtol=1e-7, printlevel=0)`.
+The CSDP options are listed in the table below.
 
 Name          |                                                                                                                      | Default Value  |
  ------------ | -----------------------------------                                                                                  | -------------- |
@@ -134,8 +132,3 @@ Name          |                                                                 
 `perturbobj`  | The `perturbobj` parameter determines whether the objective function will be perturbed to help deal with problems that have unbounded optimal solution sets. If `perturbobj` is `0`, then the objective will not be perturbed. If `perturbobj` is `1`, then the objective function will be perturbed by a default amount. Larger values of `perturbobj` (e.g. `100`) increase the size of the perturbation. This can be helpful in solving some difficult problems. | `1`            |
 `fastmode`    | The `fastmode` parameter determines whether or not CSDP will skip certain time consuming operations that slightly improve the accuracy of the solutions. If `fastmode` is set to `1`, then CSDP may be somewhat faster, but also somewhat less accurate | `0`            |
 `printlevel`  | The `printlevel` parameter determines how much debugging information is output. Use a `printlevel` of `0` for no output and a `printlevel` of `1` for normal output. Higher values of printlevel will generate more debugging output | `1`            |
-
-[build-img]: https://github.com/jump-dev/CSDP.jl/workflows/CI/badge.svg?branch=master
-[build-url]: https://github.com/jump-dev/CSDP.jl/actions?query=workflow%3ACI
-[codecov-img]: http://codecov.io/github/jump-dev/CSDP.jl/coverage.svg?branch=master
-[codecov-url]: http://codecov.io/github/jump-dev/CSDP.jl?branch=master
