@@ -1,4 +1,22 @@
-const ALLOWED_OPTIONS = [:printlevel, :axtol, :atytol, :objtol, :pinftol, :dinftol, :maxiter, :minstepfrac, :maxstepfrac, :minstepp, :minstepd, :usexzgap, :tweakgap, :affine, :perturbobj, :fastmode, :write_prob]
+const ALLOWED_OPTIONS = [
+    :printlevel,
+    :axtol,
+    :atytol,
+    :objtol,
+    :pinftol,
+    :dinftol,
+    :maxiter,
+    :minstepfrac,
+    :maxstepfrac,
+    :minstepp,
+    :minstepd,
+    :usexzgap,
+    :tweakgap,
+    :affine,
+    :perturbobj,
+    :fastmode,
+    :write_prob,
+]
 
 # The :write_prob option is for the following function
 function write_prob(m)
@@ -11,7 +29,7 @@ function write_prob(m)
                 k += 1
             end
             @info "Writing problem to $(pwd())/$(wrtf)"
-            write_prob(wrtf, m.C, m.b, map(A->A.csdp, m.As))
+            write_prob(wrtf, m.C, m.b, map(A -> A.csdp, m.As))
         end
     end
 end

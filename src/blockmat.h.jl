@@ -5,7 +5,7 @@
 #      compiled with NOSHORTS we are screwed with the following code...
 @static if Sys.iswindows()
     const csdpshort = Cushort
-  else
+else
     const csdpshort = CSDP_INT
 end
 
@@ -48,7 +48,7 @@ function sparseblock(next, jblock, blocknum, constr)
     # See easysdp.c
     blocksize = jblock.n
     numentries = length(jblock.i)
-    issparse = numentries <= blocksize / 4 || numentries <= 15 # FIXME also if category (which is in C...) is DIAG
+    return issparse = numentries <= blocksize / 4 || numentries <= 15 # FIXME also if category (which is in C...) is DIAG
 end
 
 # If I add mutable here I get : ReadOnlyMemoryError() in initsoln (I know it is counter-intuitive)
@@ -80,19 +80,21 @@ mutable struct paramstruc
 end
 
 function paramstruc(options::Dict)
-    paramstruc(get(options, :axtol      , 1.0e-8),
-               get(options, :atytol     , 1.0e-8),
-               get(options, :objtol     , 1.0e-8),
-               get(options, :pinftol    , 1.0e8),
-               get(options, :dinftol    , 1.0e8),
-               get(options, :maxiter    , 100),
-               get(options, :minstepfrac, 0.90),
-               get(options, :maxstepfrac, 0.97),
-               get(options, :minstepp   , 1.0e-8),
-               get(options, :minstepd   , 1.0e-8),
-               get(options, :usexzgap   , 1),
-               get(options, :tweakgap   , 0),
-               get(options, :affine     , 0),
-               get(options, :perturbobj , 1),
-               get(options, :fastmode   , 0))
+    return paramstruc(
+        get(options, :axtol, 1.0e-8),
+        get(options, :atytol, 1.0e-8),
+        get(options, :objtol, 1.0e-8),
+        get(options, :pinftol, 1.0e8),
+        get(options, :dinftol, 1.0e8),
+        get(options, :maxiter, 100),
+        get(options, :minstepfrac, 0.90),
+        get(options, :maxstepfrac, 0.97),
+        get(options, :minstepp, 1.0e-8),
+        get(options, :minstepd, 1.0e-8),
+        get(options, :usexzgap, 1),
+        get(options, :tweakgap, 0),
+        get(options, :affine, 0),
+        get(options, :perturbobj, 1),
+        get(options, :fastmode, 0),
+    )
 end

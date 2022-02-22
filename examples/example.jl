@@ -43,33 +43,47 @@ using CSDP
 =#
 
 C = BlockMatrix(
-   [2 1
-    1 2],
-        [3 0 1
-         0 2 0
-         1 0 3],
-      Diagonal([0,
-                  0]))
+    [
+        2 1
+        1 2
+    ],
+    [
+        3 0 1
+        0 2 0
+        1 0 3
+    ],
+    Diagonal([0, 0]),
+)
 
 b = [1.0, 2.0]
 
-A1 = ConstraintMatrix(1,
-   [3 1
-    1 3],
-          [0 0 0
-           0 0 0
-           0 0 0],
-       Diagonal([1,
-                   0]))
+A1 = ConstraintMatrix(
+    1,
+    [
+        3 1
+        1 3
+    ],
+    [
+        0 0 0
+        0 0 0
+        0 0 0
+    ],
+    Diagonal([1, 0]),
+)
 
-A2 = ConstraintMatrix(2,
-      [0 0
-       0 0],
-          [3 0 1
-           0 4 0
-           1 0 5],
-       Diagonal([0,
-                   1]))
+A2 = ConstraintMatrix(
+    2,
+    [
+        0 0
+        0 0
+    ],
+    [
+        3 0 1
+        0 4 0
+        1 0 5
+    ],
+    Diagonal([0, 1]),
+)
 
 constraints = [A.csdp for A in [A1, A2]]
 

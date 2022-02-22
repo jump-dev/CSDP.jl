@@ -4,8 +4,12 @@ function nblocks end
 function block end
 
 function Base.size(bm::AbstractBlockMatrix)
-    n = mapreduce(blk -> LinearAlgebra.checksquare(block(bm, blk)),
-                  +, 1:nblocks(bm), init=0)
+    n = mapreduce(
+        blk -> LinearAlgebra.checksquare(block(bm, blk)),
+        +,
+        1:nblocks(bm),
+        init = 0,
+    )
     return (n, n)
 end
 function Base.getindex(bm::AbstractBlockMatrix, i::Integer, j::Integer)

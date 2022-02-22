@@ -4,7 +4,7 @@ using LinearAlgebra # For Diagonal
 using SparseArrays # For SparseMatrixCSC
 
 if VERSION < v"1.3"
-    if isfile(joinpath(dirname(@__FILE__),"..","deps","deps.jl"))
+    if isfile(joinpath(dirname(@__FILE__), "..", "deps", "deps.jl"))
         include("../deps/deps.jl")
     else
         error("CSDP not properly installed. Please run Pkg.build(\"CSDP\")")

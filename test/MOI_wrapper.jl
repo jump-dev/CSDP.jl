@@ -7,38 +7,51 @@ const MOIU = MOI.Utilities
 const MOIB = MOI.Bridges
 
 import CSDP
-const optimizer_constructor = MOI.OptimizerWithAttributes(CSDP.Optimizer, MOI.Silent() => true)
+const optimizer_constructor =
+    MOI.OptimizerWithAttributes(CSDP.Optimizer, MOI.Silent() => true)
 const optimizer = MOI.instantiate(optimizer_constructor)
 
 @testset "SolverName" begin
     @test MOI.get(optimizer, MOI.SolverName()) == "CSDP"
 end
 
-const bridged = MOI.instantiate(optimizer_constructor, with_bridge_type=Float64)
+const bridged =
+    MOI.instantiate(optimizer_constructor, with_bridge_type = Float64)
 const config = MOIT.Config(atol = 1e-4, rtol = 1e-4)
 
 @testset "Options" begin
     param = MOI.RawOptimizerAttribute("bad_option")
     err = MOI.UnsupportedAttribute(param)
-    @test_throws err MOI.set(optimizer, MOI.RawOptimizerAttribute("bad_option"), 0)
+    @test_throws err MOI.set(
+        optimizer,
+        MOI.RawOptimizerAttribute("bad_option"),
+        0,
+    )
 end
 
 @testset "Unit" begin
-    MOIT.unittest(bridged, config, [
-        # `NUMERICAL_ERROR` on Mac: https://travis-ci.org/JuliaOpt/CSDP.jl/jobs/601302777#L217-L219
-        "solve_unbounded_model",
-        # `NumberOfThreads` not supported.
-        "number_threads",
-        # `TimeLimitSec` not supported.
-        "time_limit_sec",
-        # Quadratic functions are not supported
-        "solve_qcp_edge_cases", "solve_qp_edge_cases",
-        # Integer and ZeroOne sets are not supported
-        "solve_integer_edge_cases", "solve_objbound_edge_cases",
-        "solve_start_soc", # RSOCtoPSDBridge seems to be incorrect for dimension-2 RSOC cone.
-        "solve_zero_one_with_bounds_1",
-        "solve_zero_one_with_bounds_2",
-        "solve_zero_one_with_bounds_3"])
+    MOIT.unittest(
+        bridged,
+        config,
+        [
+            # `NUMERICAL_ERROR` on Mac: https://travis-ci.org/JuliaOpt/CSDP.jl/jobs/601302777#L217-L219
+            "solve_unbounded_model",
+            # `NumberOfThreads` not supported.
+            "number_threads",
+            # `TimeLimitSec` not supported.
+            "time_limit_sec",
+            # Quadratic functions are not supported
+            "solve_qcp_edge_cases",
+            "solve_qp_edge_cases",
+            # Integer and ZeroOne sets are not supported
+            "solve_integer_edge_cases",
+            "solve_objbound_edge_cases",
+            "solve_start_soc", # RSOCtoPSDBridge seems to be incorrect for dimension-2 RSOC cone.
+            "solve_zero_one_with_bounds_1",
+            "solve_zero_one_with_bounds_2",
+            "solve_zero_one_with_bounds_3",
+        ],
+    )
 end
 @testset "Continuous Linear" begin
     # See explanation in `MOI/test/Bridges/lazy_bridge_optimizer.jl`.
@@ -49,19 +62,29 @@ end
         # Finds `MOI.ALMOST_OPTIMAL` instead of `MOI.OPTIMAL`
         "linear10b",
         # Empty constraint
-        "linear15"
+        "linear15",
     ])
 end
 @testset "Continuous Conic" begin
-    MOIT.contconictest(bridged, config, [
-        # Finds `MOI.OPTIMAL` instead of `MOI.INFEASIBLE`.
-        "soc3",
-        # Empty constraint `c4`
-        "psdt2",
-        # See https://github.com/coin-or/Csdp/issues/11
-        "rotatedsoc1v",
-        # Missing bridges
-        "rootdets",
-        # Does not support power and exponential cone
-        "pow", "dualpow", "logdet", "exp", "dualexp", "relentr"])
+    MOIT.contconictest(
+        bridged,
+        config,
+        [
+            # Finds `MOI.OPTIMAL` instead of `MOI.INFEASIBLE`.
+            "soc3",
+            # Empty constraint `c4`
+            "psdt2",
+            # See https://github.com/coin-or/Csdp/issues/11
+            "rotatedsoc1v",
+            # Missing bridges
+            "rootdets",
+            # Does not support power and exponential cone
+            "pow",
+            "dualpow",
+            "logdet",
+            "exp",
+            "dualexp",
+            "relentr",
+        ],
+    )
 end
