@@ -64,12 +64,7 @@ function test_runtests()
             "test_conic_SecondOrderCone_INFEASIBLE",
             # FIXME need to investigate
             "test_objective_qp_ObjectiveFunction_edge_cases",
-            # FIXME need to investigate
-            #   Expression: isapprox(MOI.get(model, MOI.ObjectiveValue()), objective_value, config)
-            #   Evaluated: isapprox(-0.9999999999999991, 1.0, ...
-            #   Expression: isapprox(MOI.get(model, MOI.VariablePrimal(), index), solution_value, config)
-            #   Evaluated: isapprox(-0.9999999999999991, 1.0, ...
-            #BoundsError: attempt to access 1-element Vector{Float64} at index [3]
+            # See https://github.com/jump-dev/MathOptInterface.jl/issues/1761
             "test_constraint_PrimalStart_DualStart_SecondOrderCone",
             # FIXME investigate
             # Internal library error: status=-1
