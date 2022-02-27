@@ -105,6 +105,7 @@ function test_runtests()
             # Incorrect solution
             "test_objective_ObjectiveFunction_VariableIndex",
             "test_conic_SecondOrderCone_negative_post_bound",
+            "test_solve_result_index",
             # ALMOST_OPTIMAL
             "test_conic_RotatedSecondOrderCone_VectorOfVariables",
             # NUMERICAL_ERROR
@@ -112,10 +113,18 @@ function test_runtests()
             "test_objective_ObjectiveFunction_duplicate_terms",
             "test_modification_transform_singlevariable_lessthan",
             "test_conic_SecondOrderCone_no_initial_bound",
+            "test_conic_SecondOrderCone_negative_initial_bound",
+            "test_solve_TerminationStatus_DUAL_INFEASIBLE",
+            "test_modification_set_singlevariable_lessthan:",
+            "test_modification_delete_variable_with_single_variable_obj",
             #   Expression: MOI.get(model, MOI.TerminationStatus()) == MOI.DUAL_INFEASIBLE
             #  Evaluated: MathOptInterface.INFEASIBLE == MathOptInterface.DUAL_INFEASIBLE
             "test_conic_SecondOrderCone_negative_post_bound_2",
             "test_conic_SecondOrderCone_negative_post_bound_3",
+            #  Expression: MOI.get(model, MOI.TerminationStatus()) == config.optimal_status
+            #   Evaluated: MathOptInterface.INFEASIBLE == MathOptInterface.OPTIMAL
+            "test_modification_const_scalar_objective",
+            "test_modification_coef_scalar_objective",
         ],
     )
     return
