@@ -109,6 +109,7 @@ function test_runtests()
             "test_solve_result_index",
             "test_modification_set_singlevariable_lessthan",
             "test_conic_SecondOrderCone_nonnegative_initial_bound",
+            "test_objective_FEASIBILITY_SENSE_clears_objective",
             # ALMOST_OPTIMAL
             "test_conic_RotatedSecondOrderCone_VectorOfVariables",
             # NUMERICAL_ERROR
