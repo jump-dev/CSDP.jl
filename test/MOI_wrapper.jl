@@ -61,11 +61,8 @@ function test_runtests()
             # SLOW_PROGRESS
             "test_quadratic_constraint_basic",
             "test_quadratic_constraint_minimize",
-            # FIXME need to investigate
-            #  Expression: MOI.get(model, MOI.TerminationStatus()) == config.infeasible_status
-            #   Evaluated: MathOptInterface.OPTIMAL == MathOptInterface.INFEASIBLE
+            # Unable to bridge RotatedSecondOrderCone to PSD because the dimension is too small: got 2, expected >= 3.
             "test_conic_SecondOrderCone_INFEASIBLE",
-            # FIXME need to investigate
             "test_objective_qp_ObjectiveFunction_edge_cases",
             # See https://github.com/jump-dev/MathOptInterface.jl/issues/1761
             "test_constraint_PrimalStart_DualStart_SecondOrderCone",
@@ -86,11 +83,13 @@ function test_runtests()
             #   Evaluated: isapprox(9.973062820023415e-9, 1.0, ...
             "test_variable_solve_with_lowerbound",
             # TODO CSDP just returns an infinite ObjectiveValue
+            # See https://github.com/jump-dev/MathOptInterface.jl/issues/1759
             "test_unbounded_MIN_SENSE",
             "test_unbounded_MIN_SENSE_offset",
             "test_unbounded_MAX_SENSE",
             "test_unbounded_MAX_SENSE_offset",
-            # TODO SDPT3 just returns an infinite DualObjectiveValue
+            # TODO CSDP just returns an infinite DualObjectiveValue
+            # See https://github.com/jump-dev/MathOptInterface.jl/issues/1759
             "test_infeasible_MAX_SENSE",
             "test_infeasible_MAX_SENSE_offset",
             "test_infeasible_MIN_SENSE",
