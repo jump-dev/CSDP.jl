@@ -1,3 +1,8 @@
+# Copyright (c) 2016: CSDP.jl contributors
+#
+# Use of this source code is governed by an MIT-style license that can be found
+# in the LICENSE.md file or at https://opensource.org/licenses/MIT.
+
 # Julia wrapper for header: include/declarations.h
 # Automatically generated using Clang.jl wrap_c, version 0.0.0 and then modified as some places
 
