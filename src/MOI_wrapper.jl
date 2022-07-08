@@ -501,17 +501,6 @@ function block(
 )
     return optimizer.varmap[ci.value][1]
 end
-function dimension(
-    optimizer::Optimizer,
-    ci::MOI.ConstraintIndex{MOI.VectorOfVariables},
-)
-    blockdim = optimizer.blockdims[block(optimizer, ci)]
-    if blockdim < 0
-        return -blockdim
-    else
-        return MOI.dimension(MOI.PositiveSemidefiniteConeTriangle(blockdim))
-    end
-end
 function vectorize_block(M, blk::Integer, s::Type{MOI.Nonnegatives})
     return diag(block(M, blk))
 end
