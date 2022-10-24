@@ -42,7 +42,7 @@ function test_unsupported_constraint()
     MOI.add_constraint(model, x, MOI.GreaterThan(0.0))
     MOI.add_constraint(model, 1.0 * x, MOI.EqualTo(0.0))
     @test_throws(
-        MOI.UsupportedConstraint{MOI.VariableIndex,MOI.GreaterThan{Float64}}(),
+        MOI.UnsupportedConstraint{MOI.VariableIndex,MOI.GreaterThan{Float64}}(),
         MOI.copy_to(CSDP.Optimizer(), model),
     )
     return
