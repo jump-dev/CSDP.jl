@@ -263,7 +263,10 @@ end
 
 function _check_unsupported_constraints(dest, src)
     for (F, S) in MOI.get(src, MOI.ListOfConstraintTypesPresent())
-        if !MOI.supports_constraint(dest, F, S)
+        constrained_variable =
+            F == MOI.VectorOfVariables &&
+            MOI.supports_add_constrained_variables(dest, S)
+        if !(MOI.supports_constraint(dest, F, S) || constrained_variable)
             throw(MOI.UnsupportedConstraint{F,S}())
         end
     end
@@ -284,7 +287,7 @@ function MOI.copy_to(dest::Optimizer, src::MOI.ModelLike)
         MOI.PositiveSemidefiniteConeTriangle,
     )
     vis_src = MOI.get(src, MOI.ListOfVariableIndices())
-    if length(vis_src) != length(index_map.var_map)
+    if length(vis_src) < length(index_map.var_map)
         _error(
             "Free variables are not supported by CSDP",
             "to bridge free variables into `x - y` where `x` and `y` are nonnegative.",
