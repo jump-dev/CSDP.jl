@@ -36,6 +36,18 @@ function test_options()
     )
 end
 
+function test_unsupported_constraint()
+    model = MOI.Utilities.Model{Float64}()
+    x = MOI.add_variable(model)
+    MOI.add_constraint(model, x, MOI.GreaterThan(0.0))
+    MOI.add_constraint(model, 1.0 * x, MOI.EqualTo(0.0))
+    @test_throws(
+        MOI.UnsupportedConstraint{MOI.VariableIndex,MOI.GreaterThan{Float64}}(),
+        MOI.copy_to(CSDP.Optimizer(), model),
+    )
+    return
+end
+
 function test_runtests()
     model = MOI.Utilities.CachingOptimizer(
         MOI.Utilities.UniversalFallback(MOI.Utilities.Model{Float64}()),

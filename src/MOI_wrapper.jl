@@ -261,7 +261,20 @@ function load_objective_term!(optimizer::Optimizer, α, vi::MOI.VariableIndex)
     return addentry(optimizer.problem, 0, blk, i, j, coef, true)
 end
 
+function _check_unsupported_constraints(dest, src)
+    for (F, S) in MOI.get(src, MOI.ListOfConstraintTypesPresent())
+        constrained_variable =
+            F == MOI.VectorOfVariables &&
+            MOI.supports_add_constrained_variables(dest, S)
+        if !(MOI.supports_constraint(dest, F, S) || constrained_variable)
+            throw(MOI.UnsupportedConstraint{F,S}())
+        end
+    end
+    return
+end
+
 function MOI.copy_to(dest::Optimizer, src::MOI.ModelLike)
+    _check_unsupported_constraints(dest, src)
     MOI.empty!(dest)
     index_map = MOI.Utilities.IndexMap()
 
