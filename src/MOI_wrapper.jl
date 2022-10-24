@@ -261,7 +261,17 @@ function load_objective_term!(optimizer::Optimizer, α, vi::MOI.VariableIndex)
     return addentry(optimizer.problem, 0, blk, i, j, coef, true)
 end
 
+function _check_unsupported_constraints(dest, src)
+    for (F, S) in MOI.get(src, MOI.ListOfConstraintTypesPresent())
+        if !MOI.supports_constraint(dest, F, S)
+            throw(MOI.UnsupportedConstraint{F,S}())
+        end
+    end
+    return
+end
+
 function MOI.copy_to(dest::Optimizer, src::MOI.ModelLike)
+    _check_unsupported_constraints(dest, src)
     MOI.empty!(dest)
     index_map = MOI.Utilities.IndexMap()
 
@@ -274,7 +284,7 @@ function MOI.copy_to(dest::Optimizer, src::MOI.ModelLike)
         MOI.PositiveSemidefiniteConeTriangle,
     )
     vis_src = MOI.get(src, MOI.ListOfVariableIndices())
-    if length(vis_src) < length(index_map.var_map)
+    if length(vis_src) != length(index_map.var_map)
         _error(
             "Free variables are not supported by CSDP",
             "to bridge free variables into `x - y` where `x` and `y` are nonnegative.",
