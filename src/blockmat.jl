@@ -325,14 +325,6 @@ function ConstraintMatrix(csdp::constraintmatrix, k::Integer)
     return ConstraintMatrix(jblocks, csdp)
 end
 
-# Needed by MPB_wrapper
-function Base.getindex(
-    A::Union{blockmatrix,BlockMatrix,ConstraintMatrix},
-    i::Integer,
-)
-    return block(A, i)
-end
-
 block(A::blockmatrix, i::Integer) = getblockrec(A, i)
 function block(A::Union{BlockMatrix,ConstraintMatrix}, i::Integer)
     return A.jblocks[i]
