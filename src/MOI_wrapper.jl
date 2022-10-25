@@ -568,6 +568,19 @@ end
 
 function MOI.get(
     model::Optimizer,
+    attr::MOI.ConstraintPrimal,
+    ci::MOI.ConstraintIndex{
+        MOI.ScalarAffineFunction{Cdouble},
+        MOI.EqualTo{Cdouble},
+    },
+)
+    MOI.check_result_index_bounds(model, attr)
+    # TODO(odow): this isn't correct. In Ax = b, it should be Ax, not b.
+    return model.b[ci.value]
+end
+
+function MOI.get(
+    model::Optimizer,
     attr::MOI.ConstraintDual,
     ci::MOI.ConstraintIndex{MOI.VectorOfVariables,S},
 ) where {S<:SupportedSets}
