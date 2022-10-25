@@ -3,11 +3,9 @@
 # Use of this source code is governed by an MIT-style license that can be found
 # in the LICENSE.md file or at https://opensource.org/licenses/MIT.
 
-using MathOptInterface
+import MathOptInterface
+
 const MOI = MathOptInterface
-const AFF = MOI.ScalarAffineFunction{Cdouble}
-const EQ = MOI.EqualTo{Cdouble}
-const AFFEQ = MOI.ConstraintIndex{AFF,EQ}
 
 mutable struct Optimizer <: MOI.AbstractOptimizer
     objective_constant::Cdouble
@@ -28,7 +26,7 @@ mutable struct Optimizer <: MOI.AbstractOptimizer
     silent::Bool
     options::Dict{Symbol,Any}
     function Optimizer(; kwargs...)
-        optimizer = new(
+        model = new(
             zero(Cdouble),
             1,
             CSDP_INT[],
@@ -48,20 +46,64 @@ mutable struct Optimizer <: MOI.AbstractOptimizer
             Dict{Symbol,Any}(),
         )
         for (key, value) in kwargs
-            MOI.set(optimizer, MOI.RawOptimizerAttribute(String(key)), value)
+            MOI.set(model, MOI.RawOptimizerAttribute(String(key)), value)
         end
         # May need to call `free_loaded_prob` and `free_loading_prob`.
-        finalizer(MOI.empty!, optimizer)
-        return optimizer
+        finalizer(MOI.empty!, model)
+        return model
     end
 end
 
-varmap(optimizer::Optimizer, vi::MOI.VariableIndex) = optimizer.varmap[vi.value]
+varmap(model::Optimizer, vi::MOI.VariableIndex) = model.varmap[vi.value]
 
-function MOI.supports(optimizer::Optimizer, param::MOI.RawOptimizerAttribute)
+function MOI.is_empty(model::Optimizer)
+    return iszero(model.objective_constant) &&
+           isone(model.objective_sign) &&
+           isempty(model.blockdims) &&
+           isempty(model.varmap) &&
+           isempty(model.num_entries) &&
+           isempty(model.b) &&
+           iszero(model.C.nblocks) &&
+           model.C.blocks == C_NULL &&
+           model.problem === nothing
+end
+
+function MOI.empty!(model::Optimizer)
+    model.objective_constant = zero(Cdouble)
+    model.objective_sign = 1
+    empty!(model.blockdims)
+    empty!(model.varmap)
+    empty!(model.num_entries)
+    empty!(model.b)
+    model.C.nblocks = 0
+    model.C.blocks = C_NULL
+    if model.problem !== nothing
+        if model.y !== nothing
+            free_loaded_prob(model.problem, model.X, model.y, model.Z)
+        end
+        free_loading_prob(model.problem)
+    end
+    model.problem = nothing
+    model.X.nblocks = 0
+    model.X.blocks = C_NULL
+    model.y = nothing
+    model.Z.nblocks = 0
+    model.Z.blocks = C_NULL
+    model.status = -1
+    model.pobj = 0.0
+    model.dobj = 0.0
+    return
+end
+
+###
+### RawOptimizerAttribute
+###
+
+function MOI.supports(::Optimizer, param::MOI.RawOptimizerAttribute)
     return Symbol(param.name) in ALLOWED_OPTIONS
 end
-function MOI.set(optimizer::Optimizer, param::MOI.RawOptimizerAttribute, value)
+
+function MOI.set(model::Optimizer, param::MOI.RawOptimizerAttribute, value)
     if !(param.name isa String)
         Base.depwarn(
             "passing `$(param.name)` to `MOI.RawOptimizerAttribute` as type " *
@@ -69,13 +111,15 @@ function MOI.set(optimizer::Optimizer, param::MOI.RawOptimizerAttribute, value)
             Symbol("MOI.set"),
         )
     end
-    if !MOI.supports(optimizer, param)
+    if !MOI.supports(model, param)
         throw(MOI.UnsupportedAttribute(param))
     end
-    return optimizer.options[Symbol(param.name)] = value
+    return model.options[Symbol(param.name)] = value
 end
-function MOI.get(optimizer::Optimizer, param::MOI.RawOptimizerAttribute)
-    # TODO: This gives a poor error message if the name of the parameter is invalid.
+
+function MOI.get(model::Optimizer, param::MOI.RawOptimizerAttribute)
+    # TODO: This gives a poor error message if the name of the parameter is
+    # invalid.
     if !(param.name isa String)
         Base.depwarn(
             "passing `$(param.name)` to `MOI.RawOptimizerAttribute` as type " *
@@ -83,126 +127,92 @@ function MOI.get(optimizer::Optimizer, param::MOI.RawOptimizerAttribute)
             Symbol("MOI.set"),
         )
     end
-    return optimizer.options[Symbol(param.name)]
+    return model.options[Symbol(param.name)]
 end
+
+###
+### Silent
+###
 
 MOI.supports(::Optimizer, ::MOI.Silent) = true
-function MOI.set(optimizer::Optimizer, ::MOI.Silent, value::Bool)
-    return optimizer.silent = value
+
+function MOI.set(model::Optimizer, ::MOI.Silent, value::Bool)
+    model.silent = value
+    return
 end
-MOI.get(optimizer::Optimizer, ::MOI.Silent) = optimizer.silent
+
+MOI.get(model::Optimizer, ::MOI.Silent) = model.silent
+
+###
+### SolverName
+###
 
 MOI.get(::Optimizer, ::MOI.SolverName) = "CSDP"
-# See table "Return codes for easy_sdp() and CSDP" in `doc/csdpuser.pdf`.
-const RAW_STATUS = [
-    "Problem solved to optimality.",
-    "Problem is primal infeasible.",
-    "Problem is dual infeasible.",
-    "Problem solved to near optimality.",
-    "Maximum iterations reached.",
-    "Stuck at edge of primal feasibility.",
-    "Stuck at edge of dual feasibility.",
-    "Lack of progress.",
-    "X, Z, or O is singular.",
-    "NaN or Inf values encountered.",
-    "Program stopped by signal (SIXCPU, SIGTERM, etc.)",
-]
 
-function MOI.get(optimizer::Optimizer, ::MOI.RawStatusString)
-    return RAW_STATUS[optimizer.status+1]
-end
-function MOI.get(optimizer::Optimizer, ::MOI.SolveTimeSec)
-    return optimizer.solve_time
-end
+###
+### ObjectiveSense
+###
 
-function MOI.is_empty(optimizer::Optimizer)
-    return iszero(optimizer.objective_constant) &&
-           isone(optimizer.objective_sign) &&
-           isempty(optimizer.blockdims) &&
-           isempty(optimizer.varmap) &&
-           isempty(optimizer.num_entries) &&
-           isempty(optimizer.b) &&
-           iszero(optimizer.C.nblocks) &&
-           optimizer.C.blocks == C_NULL &&
-           optimizer.problem === nothing
-end
+MOI.supports(::Optimizer, ::MOI.ObjectiveSense) = true
 
-function MOI.empty!(optimizer::Optimizer)
-    optimizer.objective_constant = zero(Cdouble)
-    optimizer.objective_sign = 1
-    empty!(optimizer.blockdims)
-    empty!(optimizer.varmap)
-    empty!(optimizer.num_entries)
-    empty!(optimizer.b)
-    if optimizer.problem !== nothing
-        if optimizer.y !== nothing
-            free_loaded_prob(
-                optimizer.problem,
-                optimizer.X,
-                optimizer.y,
-                optimizer.Z,
-            )
-        end
-        free_loading_prob(optimizer.problem)
-    end
-    optimizer.problem = nothing
-    optimizer.C.nblocks = 0
-    optimizer.C.blocks = C_NULL
-    optimizer.X.nblocks = 0
-    optimizer.X.blocks = C_NULL
-    optimizer.y = nothing
-    optimizer.Z.nblocks = 0
-    optimizer.Z.blocks = C_NULL
-    optimizer.status = -1
-    optimizer.pobj = 0.0
-    return optimizer.dobj = 0.0
-end
+###
+### ObjectiveFunction
+###
 
 function MOI.supports(
-    optimizer::Optimizer,
-    ::Union{MOI.ObjectiveSense,MOI.ObjectiveFunction{AFF}},
+    ::Optimizer,
+    ::MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Cdouble}},
 )
     return true
 end
+
+###
+### supports_constraint
+###
 
 MOI.supports_add_constrained_variables(::Optimizer, ::Type{MOI.Reals}) = false
 
 const SupportedSets =
     Union{MOI.Nonnegatives,MOI.PositiveSemidefiniteConeTriangle}
+
 function MOI.supports_add_constrained_variables(
     ::Optimizer,
     ::Type{<:SupportedSets},
 )
     return true
 end
-function MOI.supports_constraint(::Optimizer, ::Type{AFF}, ::Type{EQ})
+
+function MOI.supports_constraint(
+    ::Optimizer,
+    ::Type{MOI.ScalarAffineFunction{Cdouble}},
+    ::Type{MOI.EqualTo{Cdouble}},
+)
     return true
 end
 
-function _new_block(optimizer::Optimizer, set::MOI.Nonnegatives)
-    push!(optimizer.blockdims, -MOI.dimension(set))
-    blk = length(optimizer.blockdims)
+function _new_block(model::Optimizer, set::MOI.Nonnegatives)
+    push!(model.blockdims, -MOI.dimension(set))
+    blk = length(model.blockdims)
     for i in 1:MOI.dimension(set)
-        push!(optimizer.varmap, (blk, i, i))
+        push!(model.varmap, (blk, i, i))
     end
+    return
 end
 
-function _new_block(
-    optimizer::Optimizer,
-    set::MOI.PositiveSemidefiniteConeTriangle,
-)
-    push!(optimizer.blockdims, set.side_dimension)
-    blk = length(optimizer.blockdims)
+function _new_block(model::Optimizer, set::MOI.PositiveSemidefiniteConeTriangle)
+    push!(model.blockdims, set.side_dimension)
+    blk = length(model.blockdims)
     for i in 1:set.side_dimension
         for j in 1:i
-            push!(optimizer.varmap, (blk, i, j))
+            push!(model.varmap, (blk, i, j))
         end
     end
+    return
 end
 
-function _add_constrained_variables(optimizer::Optimizer, set::SupportedSets)
-    offset = length(optimizer.varmap)
-    _new_block(optimizer, set)
+function _add_constrained_variables(model::Optimizer, set::SupportedSets)
+    offset = length(model.varmap)
+    _new_block(model, set)
     ci = MOI.ConstraintIndex{MOI.VectorOfVariables,typeof(set)}(offset + 1)
     return [MOI.VariableIndex(i) for i in offset .+ (1:MOI.dimension(set))], ci
 end
@@ -226,13 +236,18 @@ function constrain_variables_on_creation(
         f_src = MOI.get(src, MOI.ConstraintFunction(), ci_src)
         if !allunique(f_src.variables)
             _error(
-                "Cannot copy constraint `$(ci_src)` as variables constrained on creation because there are duplicate variables in the function `$(f_src)`",
+                "Cannot copy constraint `$(ci_src)` as variables constrained " *
+                "on creation because there are duplicate variables in the " *
+                "function `$(f_src)`",
                 "to bridge this by creating slack variables.",
             )
         elseif any(vi -> haskey(index_map, vi), f_src.variables)
             _error(
-                "Cannot copy constraint `$(ci_src)` as variables constrained on creation because some variables of the function `$(f_src)` are in another constraint as well.",
-                "to bridge constraints having the same variables by creating slack variables.",
+                "Cannot copy constraint `$(ci_src)` as variables constrained " *
+                "on creation because some variables of the function " *
+                "`$(f_src)` are in another constraint as well.",
+                "to bridge constraints having the same variables by creating " *
+                "slack variables.",
             )
         else
             set = MOI.get(src, MOI.ConstraintSet(), ci_src)::S
@@ -243,22 +258,23 @@ function constrain_variables_on_creation(
             end
         end
     end
+    return
 end
 
-function count_entry(optimizer::Optimizer, con_idx::Integer, blk::Integer)
+function count_entry(model::Optimizer, con_idx::Integer, blk::Integer)
     key = (con_idx, blk)
-    return optimizer.num_entries[key] = get(optimizer.num_entries, key, 0) + 1
+    return model.num_entries[key] = get(model.num_entries, key, 0) + 1
 end
 
 # Loads objective coefficient α * vi
-function load_objective_term!(optimizer::Optimizer, α, vi::MOI.VariableIndex)
-    blk, i, j = varmap(optimizer, vi)
+function load_objective_term!(model::Optimizer, α, vi::MOI.VariableIndex)
+    blk, i, j = varmap(model, vi)
     # in SDP format, it is max and in MPB Conic format it is min
-    coef = optimizer.objective_sign * α
+    coef = model.objective_sign * α
     if i != j
         coef /= 2
     end
-    return addentry(optimizer.problem, 0, blk, i, j, coef, true)
+    return addentry(model.problem, 0, blk, i, j, coef, true)
 end
 
 function _check_unsupported_constraints(dest, src)
@@ -277,7 +293,6 @@ function MOI.copy_to(dest::Optimizer, src::MOI.ModelLike)
     _check_unsupported_constraints(dest, src)
     MOI.empty!(dest)
     index_map = MOI.Utilities.IndexMap()
-
     # Step 1) Compute the dimensions of what needs to be allocated
     constrain_variables_on_creation(dest, src, index_map, MOI.Nonnegatives)
     constrain_variables_on_creation(
@@ -290,28 +305,28 @@ function MOI.copy_to(dest::Optimizer, src::MOI.ModelLike)
     if length(vis_src) < length(index_map.var_map)
         _error(
             "Free variables are not supported by CSDP",
-            "to bridge free variables into `x - y` where `x` and `y` are nonnegative.",
+            "to bridge free variables into `x - y` where `x` and `y` are " *
+            "nonnegative.",
         )
     end
-    cis_src = MOI.get(src, MOI.ListOfConstraintIndices{AFF,EQ}())
+    F, S = MOI.ScalarAffineFunction{Cdouble}, MOI.EqualTo{Cdouble}
+    cis_src = MOI.get(src, MOI.ListOfConstraintIndices{F,S}())
     dest.b = Vector{Cdouble}(undef, length(cis_src))
-    funcs = Vector{AFF}(undef, length(cis_src))
+    funcs = Vector{MOI.ScalarAffineFunction{Cdouble}}(undef, length(cis_src))
     for (k, ci_src) in enumerate(cis_src)
         funcs[k] = MOI.get(src, MOI.CanonicalConstraintFunction(), ci_src)
         set = MOI.get(src, MOI.ConstraintSet(), ci_src)
         if isempty(funcs[k].terms)
             throw(
                 ArgumentError(
-                    "Empty constraint $cis_src: $(funcs[k])-in-$set. Not supported by CSDP.",
+                    "Empty constraint $cis_src: $(funcs[k])-in-$set. Not " *
+                    "supported by CSDP.",
                 ),
             )
         end
         if !iszero(MOI.constant(funcs[k]))
-            throw(
-                MOI.ScalarFunctionConstantNotZero{Cdouble,AFF,EQ}(
-                    MOI.constant(funcs[k]),
-                ),
-            )
+            c = MOI.constant(funcs[k])
+            throw(MOI.ScalarFunctionConstantNotZero{Cdouble,F,S}(c))
         end
         for t in funcs[k].terms
             if !iszero(t.coefficient)
@@ -320,9 +335,8 @@ function MOI.copy_to(dest::Optimizer, src::MOI.ModelLike)
             end
         end
         dest.b[k] = MOI.constant(set)
-        index_map[ci_src] = AFFEQ(k)
+        index_map[ci_src] = MOI.ConstraintIndex{F,S}(k)
     end
-
     # Step 2) Allocate CSDP datastructures
     dummy = isempty(dest.b)
     if dummy
@@ -349,7 +363,6 @@ function MOI.copy_to(dest::Optimizer, src::MOI.ModelLike)
             addentry(dest.problem, 1, length(dest.blockdims), 1, 1, 1.0, true)
         @assert !duplicate
     end
-
     # Step 3) Load data in the datastructures
     for k in eachindex(funcs)
         setconstant(dest.problem, k, dest.b[k])
@@ -365,16 +378,15 @@ function MOI.copy_to(dest::Optimizer, src::MOI.ModelLike)
             end
         end
     end
-
     # Throw error for variable attributes
     MOI.Utilities.pass_attributes(dest, src, index_map, vis_src)
     # Throw error for constraint attributes
     MOI.Utilities.pass_attributes(dest, src, index_map, cis_src)
-
     # Pass objective attributes and throw error for other ones
     model_attributes = MOI.get(src, MOI.ListOfModelAttributesSet())
+    obj_attr = MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Cdouble}}()
     for attr in model_attributes
-        if attr != MOI.ObjectiveSense() && attr != MOI.ObjectiveFunction{AFF}()
+        if attr != MOI.ObjectiveSense() && attr != obj_attr
             throw(MOI.UnsupportedAttribute(attr))
         end
     end
@@ -383,149 +395,142 @@ function MOI.copy_to(dest::Optimizer, src::MOI.ModelLike)
         sense = MOI.get(src, MOI.ObjectiveSense())
         dest.objective_sign = sense == MOI.MIN_SENSE ? -1 : 1
     end
-    if MOI.ObjectiveFunction{AFF}() in model_attributes
-        func = MOI.get(src, MOI.ObjectiveFunction{AFF}())
-        obj = MOI.Utilities.canonical(func)
+    if obj_attr in model_attributes
+        obj = MOI.Utilities.canonical(MOI.get(src, obj_attr))
         dest.objective_constant = obj.constant
-        for term in obj.terms
-            if !iszero(term.coefficient)
-                load_objective_term!(
-                    dest,
-                    term.coefficient,
-                    index_map[term.variable],
-                )
+        for t in obj.terms
+            if !iszero(t.coefficient)
+                load_objective_term!(dest, t.coefficient, index_map[t.variable])
             end
         end
     end
     return index_map
 end
 
-function MOI.optimize!(optimizer::Optimizer)
-    write_prob(optimizer)
-
+function MOI.optimize!(model::Optimizer)
+    write_prob(model)
     start_time = time()
-    optimizer.y = loaded_initsoln(
-        optimizer.problem,
-        length(optimizer.b),
-        Ref(optimizer.X),
-        Ref(optimizer.Z),
+    model.y = loaded_initsoln(
+        model.problem,
+        length(model.b),
+        Ref(model.X),
+        Ref(model.Z),
     )
-
-    options = optimizer.options
-    if optimizer.silent
+    options = model.options
+    if model.silent
         options = copy(options)
         options[:printlevel] = 0
     end
-
-    optimizer.status, optimizer.pobj, optimizer.dobj = loaded_sdp(
-        optimizer.problem,
-        optimizer.objective_sign * optimizer.objective_constant,
-        Ref(optimizer.X),
-        optimizer.y,
-        Ref(optimizer.Z),
+    model.status, model.pobj, model.dobj = loaded_sdp(
+        model.problem,
+        model.objective_sign * model.objective_constant,
+        Ref(model.X),
+        model.y,
+        Ref(model.Z),
         options,
     )
-    optimizer.solve_time = time() - start_time
+    model.solve_time = time() - start_time
     return
 end
 
-function MOI.get(m::Optimizer, ::MOI.TerminationStatus)
-    status = m.status
-    if status == -1
+# See table "Return codes for easy_sdp() and CSDP" in `doc/csdpuser.pdf`.
+const RAW_STATUS = [
+    "Problem solved to optimality.",
+    "Problem is primal infeasible.",
+    "Problem is dual infeasible.",
+    "Problem solved to near optimality.",
+    "Maximum iterations reached.",
+    "Stuck at edge of primal feasibility.",
+    "Stuck at edge of dual feasibility.",
+    "Lack of progress.",
+    "X, Z, or O is singular.",
+    "NaN or Inf values encountered.",
+    "Program stopped by signal (SIXCPU, SIGTERM, etc.)",
+]
+
+MOI.get(model::Optimizer, ::MOI.RawStatusString) = RAW_STATUS[model.status+1]
+
+MOI.get(::Optimizer, ::MOI.ResultCount) = 1
+
+function MOI.get(model::Optimizer, ::MOI.TerminationStatus)
+    if model.status == -1
         return MOI.OPTIMIZE_NOT_CALLED
-    elseif status == 0
+    elseif model.status == 0
         return MOI.OPTIMAL
-    elseif status == 1
+    elseif model.status == 1
         return MOI.INFEASIBLE
-    elseif status == 2
+    elseif model.status == 2
         return MOI.DUAL_INFEASIBLE
-    elseif status == 3
+    elseif model.status == 3
         return MOI.ALMOST_OPTIMAL
-    elseif status == 4
+    elseif model.status == 4
         return MOI.ITERATION_LIMIT
-    elseif 5 <= status <= 7
+    elseif 5 <= model.status <= 7
         return MOI.SLOW_PROGRESS
-    elseif 8 <= status <= 9
+    else
+        @assert 8 <= model.status <= 9
         return MOI.NUMERICAL_ERROR
-    else
-        error("Internal library error: status=$status")
     end
 end
 
-function MOI.get(m::Optimizer, attr::MOI.PrimalStatus)
-    if attr.result_index > MOI.get(m, MOI.ResultCount())
+function MOI.get(model::Optimizer, attr::MOI.PrimalStatus)
+    if attr.result_index != 1
         return MOI.NO_SOLUTION
-    end
-    status = m.status
-    if status == 0
-        return MOI.FEASIBLE_POINT
-    elseif status == 1
-        return MOI.INFEASIBLE_POINT
-    elseif status == 2
-        return MOI.INFEASIBILITY_CERTIFICATE
-    elseif status == 3
-        return MOI.NEARLY_FEASIBLE_POINT
-    elseif 4 <= status <= 9
-        return MOI.UNKNOWN_RESULT_STATUS
-    else
-        error("Internal library error: status=$status")
-    end
-end
-
-function MOI.get(m::Optimizer, attr::MOI.DualStatus)
-    if attr.result_index > MOI.get(m, MOI.ResultCount())
+    elseif model.status == -1
         return MOI.NO_SOLUTION
-    end
-    status = m.status
-    if status == 0
+    elseif model.status == 0
         return MOI.FEASIBLE_POINT
-    elseif status == 1
-        return MOI.INFEASIBILITY_CERTIFICATE
-    elseif status == 2
+    elseif model.status == 1
         return MOI.INFEASIBLE_POINT
-    elseif status == 3
+        # elseif model.status == 2
+        #     return MOI.INFEASIBILITY_CERTIFICATE
+    elseif model.status == 3
         return MOI.NEARLY_FEASIBLE_POINT
-    elseif 4 <= status <= 9
-        return MOI.UNKNOWN_RESULT_STATUS
     else
-        error("Internal library error: status=$status")
+        return MOI.UNKNOWN_RESULT_STATUS
     end
 end
 
-MOI.get(m::Optimizer, ::MOI.ResultCount) = 1
-function MOI.get(m::Optimizer, attr::MOI.ObjectiveValue)
-    MOI.check_result_index_bounds(m, attr)
-    return m.objective_sign * m.pobj
+function MOI.get(model::Optimizer, attr::MOI.DualStatus)
+    if attr.result_index != 1
+        return MOI.NO_SOLUTION
+    elseif model.status == -1
+        return MOI.NO_SOLUTION
+    elseif model.status == 0
+        return MOI.FEASIBLE_POINT
+        # elseif model.status == 1
+        #     return MOI.INFEASIBILITY_CERTIFICATE
+    elseif model.status == 2
+        return MOI.INFEASIBLE_POINT
+    elseif model.status == 3
+        return MOI.NEARLY_FEASIBLE_POINT
+    else
+        return MOI.UNKNOWN_RESULT_STATUS
+    end
 end
-function MOI.get(m::Optimizer, attr::MOI.DualObjectiveValue)
-    MOI.check_result_index_bounds(m, attr)
-    return m.objective_sign * m.dobj
-end
-struct PrimalSolutionMatrix <: MOI.AbstractModelAttribute end
-MOI.is_set_by_optimize(::PrimalSolutionMatrix) = true
-MOI.get(optimizer::Optimizer, ::PrimalSolutionMatrix) = optimizer.X
 
-struct DualSolutionVector <: MOI.AbstractModelAttribute end
-MOI.is_set_by_optimize(::DualSolutionVector) = true
-MOI.get(optimizer::Optimizer, ::DualSolutionVector) = optimizer.y
+MOI.get(model::Optimizer, ::MOI.SolveTimeSec) = model.solve_time
 
-struct DualSlackMatrix <: MOI.AbstractModelAttribute end
-MOI.is_set_by_optimize(::DualSlackMatrix) = true
-MOI.get(optimizer::Optimizer, ::DualSlackMatrix) = optimizer.Z
+function MOI.get(model::Optimizer, attr::MOI.ObjectiveValue)
+    MOI.check_result_index_bounds(model, attr)
+    return model.objective_sign * model.pobj
+end
 
-function block(
-    optimizer::Optimizer,
-    ci::MOI.ConstraintIndex{MOI.VectorOfVariables},
-)
-    return optimizer.varmap[ci.value][1]
+function MOI.get(model::Optimizer, attr::MOI.DualObjectiveValue)
+    MOI.check_result_index_bounds(model, attr)
+    return model.objective_sign * model.dobj
 end
-function vectorize_block(M, blk::Integer, s::Type{MOI.Nonnegatives})
-    return diag(block(M, blk))
+
+function block(model::Optimizer, ci::MOI.ConstraintIndex{MOI.VectorOfVariables})
+    return model.varmap[ci.value][1]
 end
+
+vectorize_block(M, blk::Integer, ::Type{MOI.Nonnegatives}) = diag(block(M, blk))
+
 function vectorize_block(
     M::AbstractMatrix{Cdouble},
     blk::Integer,
-    s::Type{MOI.PositiveSemidefiniteConeTriangle},
+    ::Type{MOI.PositiveSemidefiniteConeTriangle},
 ) where {T}
     B = block(M, blk)
     d = LinearAlgebra.checksquare(B)
@@ -543,45 +548,66 @@ function vectorize_block(
 end
 
 function MOI.get(
-    optimizer::Optimizer,
+    model::Optimizer,
     attr::MOI.VariablePrimal,
-    vi::MOI.VariableIndex,
+    x::MOI.VariableIndex,
 )
-    MOI.check_result_index_bounds(optimizer, attr)
-    blk, i, j = varmap(optimizer, vi)
-    return block(MOI.get(optimizer, PrimalSolutionMatrix()), blk)[i, j]
+    MOI.check_result_index_bounds(model, attr)
+    blk, i, j = varmap(model, x)
+    return block(model.X, blk)[i, j]
 end
 
 function MOI.get(
-    optimizer::Optimizer,
+    model::Optimizer,
     attr::MOI.ConstraintPrimal,
     ci::MOI.ConstraintIndex{MOI.VectorOfVariables,S},
 ) where {S<:SupportedSets}
-    MOI.check_result_index_bounds(optimizer, attr)
-    return vectorize_block(
-        MOI.get(optimizer, PrimalSolutionMatrix()),
-        block(optimizer, ci),
-        S,
-    )
-end
-function MOI.get(optimizer::Optimizer, attr::MOI.ConstraintPrimal, ci::AFFEQ)
-    MOI.check_result_index_bounds(optimizer, attr)
-    return optimizer.b[ci.value]
+    MOI.check_result_index_bounds(model, attr)
+    return vectorize_block(model.X, block(model, ci), S)
 end
 
 function MOI.get(
-    optimizer::Optimizer,
+    model::Optimizer,
+    attr::MOI.ConstraintPrimal,
+    ci::MOI.ConstraintIndex{
+        MOI.ScalarAffineFunction{Cdouble},
+        MOI.EqualTo{Cdouble},
+    },
+)
+    MOI.check_result_index_bounds(model, attr)
+    # TODO(odow): this isn't correct. In Ax = b, it should be Ax, not b.
+    return model.b[ci.value]
+end
+
+function MOI.get(
+    model::Optimizer,
     attr::MOI.ConstraintDual,
     ci::MOI.ConstraintIndex{MOI.VectorOfVariables,S},
 ) where {S<:SupportedSets}
-    MOI.check_result_index_bounds(optimizer, attr)
-    return vectorize_block(
-        MOI.get(optimizer, DualSlackMatrix()),
-        block(optimizer, ci),
-        S,
-    )
+    MOI.check_result_index_bounds(model, attr)
+    return vectorize_block(model.Z, block(model, ci), S)
 end
-function MOI.get(optimizer::Optimizer, attr::MOI.ConstraintDual, ci::AFFEQ)
-    MOI.check_result_index_bounds(optimizer, attr)
-    return -MOI.get(optimizer, DualSolutionVector())[ci.value]
+
+function MOI.get(
+    model::Optimizer,
+    attr::MOI.ConstraintDual,
+    ci::MOI.ConstraintIndex{
+        MOI.ScalarAffineFunction{Cdouble},
+        MOI.EqualTo{Cdouble},
+    },
+)
+    MOI.check_result_index_bounds(model, attr)
+    return -model.y[ci.value]
 end
+
+struct PrimalSolutionMatrix <: MOI.AbstractModelAttribute end
+MOI.is_set_by_optimize(::PrimalSolutionMatrix) = true
+MOI.get(model::Optimizer, ::PrimalSolutionMatrix) = model.X
+
+struct DualSolutionVector <: MOI.AbstractModelAttribute end
+MOI.is_set_by_optimize(::DualSolutionVector) = true
+MOI.get(model::Optimizer, ::DualSolutionVector) = model.y
+
+struct DualSlackMatrix <: MOI.AbstractModelAttribute end
+MOI.is_set_by_optimize(::DualSlackMatrix) = true
+MOI.get(model::Optimizer, ::DualSlackMatrix) = model.Z
