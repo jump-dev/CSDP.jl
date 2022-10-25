@@ -408,7 +408,6 @@ function MOI.copy_to(dest::Optimizer, src::MOI.ModelLike)
 end
 
 function MOI.optimize!(model::Optimizer)
-    write_prob(model)
     start_time = time()
     model.y = loaded_initsoln(
         model.problem,

@@ -20,23 +20,6 @@ const ALLOWED_OPTIONS = [
     :affine,
     :perturbobj,
     :fastmode,
-    :write_prob,
 ]
-
-# The :write_prob option is for the following function
-function write_prob(m)
-    let wrt = string(get(m.options, :write_prob, ""))
-        if length(wrt) > 0
-            k = 1
-            wrtf = "$wrt.$k"
-            while isfile(wrtf)
-                wrtf = "$wrt.$k"
-                k += 1
-            end
-            @info "Writing problem to $(pwd())/$(wrtf)"
-            write_prob(wrtf, m.C, m.b, map(A -> A.csdp, m.As))
-        end
-    end
-end
 
 options(params::Dict{Symbol}) = get(params, :printlevel, 1), paramstruc(params)
