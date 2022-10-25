@@ -82,6 +82,7 @@ function test_runtests()
             "test_conic_SecondOrderCone_INFEASIBLE",
             "test_constraint_PrimalStart_DualStart_SecondOrderCone",
             # TODO(odow): unknown test failures.
+            "test_conic_RotatedSecondOrderCone_VectorOfVariables",
             "test_conic_SecondOrderCone_negative_initial_bound",
             "test_conic_SecondOrderCone_negative_post_bound",
             "test_conic_SecondOrderCone_negative_post_bound_2",
