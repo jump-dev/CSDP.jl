@@ -104,13 +104,6 @@ function MOI.supports(::Optimizer, param::MOI.RawOptimizerAttribute)
 end
 
 function MOI.set(model::Optimizer, param::MOI.RawOptimizerAttribute, value)
-    if !(param.name isa String)
-        Base.depwarn(
-            "passing `$(param.name)` to `MOI.RawOptimizerAttribute` as type " *
-            "`$(typeof(param.name))` is deprecated. Use a string instead.",
-            Symbol("MOI.set"),
-        )
-    end
     if !MOI.supports(model, param)
         throw(MOI.UnsupportedAttribute(param))
     end
@@ -118,15 +111,6 @@ function MOI.set(model::Optimizer, param::MOI.RawOptimizerAttribute, value)
 end
 
 function MOI.get(model::Optimizer, param::MOI.RawOptimizerAttribute)
-    # TODO: This gives a poor error message if the name of the parameter is
-    # invalid.
-    if !(param.name isa String)
-        Base.depwarn(
-            "passing `$(param.name)` to `MOI.RawOptimizerAttribute` as type " *
-            "`$(typeof(param.name))` is deprecated. Use a string instead.",
-            Symbol("MOI.set"),
-        )
-    end
     return model.options[Symbol(param.name)]
 end
 
