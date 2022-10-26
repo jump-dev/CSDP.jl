@@ -5,3 +5,4 @@ Manifest.toml
 .juliahistory
 core
 prob.dat-s
+prob.sol

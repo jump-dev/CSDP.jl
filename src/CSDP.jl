@@ -20,7 +20,7 @@ end
 # by `Clong`.
 const CSDP_INT = Cint
 
-export Blockmatrix
+export BlockMastrix
 
 include("blockdiag.jl")
 include("blockmat.h.jl")
