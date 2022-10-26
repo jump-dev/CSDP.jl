@@ -17,6 +17,14 @@ end
 # by `Clong`.
 const CSDP_INT = Cint
 
+# TODO: detect size and use bitstype because if the DLL changes and gets
+# compiled with NOSHORTS we are screwed with the following code...
+@static if Sys.iswindows()
+    const csdpshort = Cushort
+else
+    const csdpshort = CSDP_INT
+end
+
 """
     offset(x::Vector)
 

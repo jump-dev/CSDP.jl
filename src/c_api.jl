@@ -3,28 +3,6 @@
 # Use of this source code is governed by an MIT-style license that can be found
 # in the LICENSE.md file or at https://opensource.org/licenses/MIT.
 
-# Data types declared in `include/blockmat.h`
-# Small type names are the C types
-# Capitalized are the corresponding Julia types
-
-# The problem is
-# max ⟨C, X⟩
-#   ⟨A_i, X⟩ = b_i  ∀ i
-#         X  ⪰ 0
-
-# CSDP does not have any C functions manipulate the values of the structures
-# so we need to create the structures in Julia.
-# Since the arrays are stored in Julia, we need to make sure they are not garbage collected
-# so we put both the C structure (named csdp) and the allocated arrays in a wrapper with the same name as the C structure but capitalized
-
-# TODO detect size and use bitstype because if the DLL changes and gets
-#      compiled with NOSHORTS we are screwed with the following code...
-@static if Sys.iswindows()
-    const csdpshort = Cushort
-else
-    const csdpshort = CSDP_INT
-end
-
 const blockcat = Cuint
 const DIAG = blockcat(0)
 const MATRIX = blockcat(1)
