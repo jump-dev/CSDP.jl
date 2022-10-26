@@ -508,7 +508,9 @@ function block(model::Optimizer, ci::MOI.ConstraintIndex{MOI.VectorOfVariables})
     return model.varmap[ci.value][1]
 end
 
-vectorize_block(M, blk::Integer, ::Type{MOI.Nonnegatives}) = diag(block(M, blk))
+function vectorize_block(M, blk::Integer, ::Type{MOI.Nonnegatives})
+    return LinearAlgebra.diag(block(M, blk))
+end
 
 function vectorize_block(
     M::AbstractMatrix{Cdouble},

@@ -57,7 +57,7 @@ C = BlockMatrix(
         0 2 0
         1 0 3
     ],
-    Diagonal([0, 0]),
+    LinearAlgebra.Diagonal([0, 0]),
 )
 
 b = [1.0, 2.0]
@@ -73,7 +73,7 @@ A1 = ConstraintMatrix(
         0 0 0
         0 0 0
     ],
-    Diagonal([1, 0]),
+    LinearAlgebra.Diagonal([1, 0]),
 )
 
 A2 = ConstraintMatrix(
@@ -87,7 +87,7 @@ A2 = ConstraintMatrix(
         0 4 0
         1 0 5
     ],
-    Diagonal([0, 1]),
+    LinearAlgebra.Diagonal([0, 1]),
 )
 
 constraints = [A.csdp for A in [A1, A2]]
@@ -96,7 +96,7 @@ CSDP.write_prob("prob.dat-s", C, b, constraints)
 
 X, y, Z = initsoln(C, b, constraints)
 
-pobj, dobj = easy_sdp(C, b, constraints, X, y, Z)
+pobj, dobj = easy_sdp(C, b, constraints, 0.0, X, y, Z)
 
 @static if !Sys.iswindows()
     CSDP.write_sol("prob.sol", X, y, Z)

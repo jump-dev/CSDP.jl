@@ -34,4 +34,3 @@ function Base.getindex(bm::AbstractBlockMatrix, i::Integer, j::Integer)
     i, j = (i, j) .+ size(bm)
     throw(BoundsError(i, j))
 end
-Base.getindex(A::AbstractBlockMatrix, I::Tuple) = getindex(A, I...)

@@ -15,7 +15,7 @@ X_sol = Blockmatrix(
         0 2 0
         1 0 3
     ],
-    Diagonal([0, 0]),
+    LinearAlgebra.Diagonal([0, 0]),
 )
 
 Z_sol = Blockmatrix(
@@ -28,7 +28,7 @@ Z_sol = Blockmatrix(
         0 2 0
         1 0 3
     ],
-    Diagonal([0, 0]),
+    LinearAlgebra.Diagonal([0, 0]),
 )
 
 y_origin = [5.5, 6.2]
