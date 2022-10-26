@@ -15,7 +15,7 @@ mutable struct Optimizer <: MOI.AbstractOptimizer
     num_entries::Dict{Tuple{Int,Int},Int}
     b::Vector{Cdouble}
     C::blockmatrix
-    problem::Union{Nothing,LoadingProblem}
+    problem::Union{Nothing,Ptr{Cvoid}}
     X::blockmatrix
     y::Union{Nothing,Vector{Cdouble}}
     Z::blockmatrix
@@ -79,7 +79,7 @@ function MOI.empty!(model::Optimizer)
     model.C.blocks = C_NULL
     if model.problem !== nothing
         if model.y !== nothing
-            free_loaded_prob(model.problem, model.X, model.y, model.Z)
+            free_loaded_prob(model.problem, model.X, offset(model.y), model.Z)
         end
         free_loading_prob(model.problem)
     end
@@ -258,7 +258,8 @@ function load_objective_term!(model::Optimizer, α, vi::MOI.VariableIndex)
     if i != j
         coef /= 2
     end
-    return addentry(model.problem, 0, blk, i, j, coef, true)
+    ret = addentry(model.problem, 0, blk, i, j, coef, true)
+    return !iszero(ret)
 end
 
 function _check_unsupported_constraints(dest, src)
@@ -336,7 +337,7 @@ function MOI.copy_to(dest::Optimizer, src::MOI.ModelLike)
     end
     dest.problem = allocate_loading_prob(
         Ref(dest.C),
-        dest.blockdims,
+        offset(dest.blockdims),
         length(dest.b),
         num_entries,
         3,
@@ -345,7 +346,7 @@ function MOI.copy_to(dest::Optimizer, src::MOI.ModelLike)
         # See https://github.com/coin-or/Csdp/issues/2
         duplicate =
             addentry(dest.problem, 1, length(dest.blockdims), 1, 1, 1.0, true)
-        @assert !duplicate
+        @assert iszero(duplicate)
     end
     # Step 3) Load data in the datastructures
     for k in eachindex(funcs)
@@ -358,7 +359,7 @@ function MOI.copy_to(dest::Optimizer, src::MOI.ModelLike)
                     coef /= 2
                 end
                 duplicate = addentry(dest.problem, k, blk, i, j, coef, true)
-                @assert !duplicate
+                @assert iszero(duplicate)
             end
         end
     end
@@ -393,24 +394,18 @@ end
 
 function MOI.optimize!(model::Optimizer)
     start_time = time()
-    model.y = loaded_initsoln(
-        model.problem,
-        length(model.b),
-        Ref(model.X),
-        Ref(model.Z),
-    )
+    y_ptr = loaded_initsoln(model.problem, model.X, model.Z)
+    model.y = _unsafe_wrap(y_ptr, length(model.b))
     options = model.options
-    if model.silent
-        options = copy(options)
-        options[:printlevel] = 0
-    end
+    print_level = model.silent ? Cint(0) : get(options, :print_level, Cint(1))
     model.status, model.pobj, model.dobj = loaded_sdp(
         model.problem,
         model.objective_sign * model.objective_constant,
         Ref(model.X),
-        model.y,
+        Ref{Ptr{Cdouble}}(offset(model.y)),
         Ref(model.Z),
-        options,
+        print_level,
+        paramstruc(options),
     )
     model.solve_time = time() - start_time
     return
@@ -584,15 +579,3 @@ function MOI.get(
     MOI.check_result_index_bounds(model, attr)
     return -model.y[ci.value]
 end
-
-struct PrimalSolutionMatrix <: MOI.AbstractModelAttribute end
-MOI.is_set_by_optimize(::PrimalSolutionMatrix) = true
-MOI.get(model::Optimizer, ::PrimalSolutionMatrix) = model.X
-
-struct DualSolutionVector <: MOI.AbstractModelAttribute end
-MOI.is_set_by_optimize(::DualSolutionVector) = true
-MOI.get(model::Optimizer, ::DualSolutionVector) = model.y
-
-struct DualSlackMatrix <: MOI.AbstractModelAttribute end
-MOI.is_set_by_optimize(::DualSlackMatrix) = true
-MOI.get(model::Optimizer, ::DualSlackMatrix) = model.Z

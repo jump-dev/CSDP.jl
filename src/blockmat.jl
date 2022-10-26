@@ -7,33 +7,10 @@
 # Small type names are the C types
 # Capitalized are the corresponding Julia types
 
-# Utils
-
-function fptr(x::Vector{T}) where {T}
-    # CSDP starts indexing at 1 so we need to do "- sizeof(T)"
-    return pointer(x) - sizeof(T)
-end
-
-function ptr(x::X) where {X}
-    return Base.reinterpret(Base.Ptr{X}, Base.pointer_from_objref(x))
-end
-export fptr, ptr
-
-function mywrap(X::blockmatrix)
-    return BlockMatrix(X)
-end
-
-function _unsafe_wrap(A, x, n, own::Bool)
-    return Base.unsafe_wrap(A, x, n, own = own)
-end
-
-function mywrap(x::Ptr{T}, len) where {T}
+function _unsafe_wrap(x::Ptr{T}, len) where {T}
     # I give false to unsafe_wrap to specify that Julia do not own the array so it should not free it
     # because the pointer it has has an offset
-    y = _unsafe_wrap(Array, x + sizeof(T), len, false)
-    # fptr takes care of this offset
-    #finalizer(s -> Libc.free(fptr(s)), y)
-    return y
+    return Base.unsafe_wrap(Array, x + sizeof(T), len; own = false)
 end
 
 # The problem is
@@ -62,8 +39,8 @@ function BlockRec(a::Vector{Cdouble}, n::Int)
         # /!\ the matrix is 0-indexed -> pointer
         BlockRec(a, blockrec(blockdatarec(pointer(a)), MATRIX, csdpshort(n)))
     else
-        # /!\ the diagonal matrix is 1-indexed -> fptr
-        BlockRec(a, blockrec(blockdatarec(fptr(a)), DIAG, csdpshort(-n)))
+        # /!\ the diagonal matrix is 1-indexed -> offset
+        BlockRec(a, blockrec(blockdatarec(offset(a)), DIAG, csdpshort(-n)))
     end
 end
 BlockRec(a::Vector, n::Int) = BlockRec(Vector{Cdouble}(a), n)
@@ -101,9 +78,16 @@ mutable struct BlockMatrix <: AbstractBlockMatrix{Cdouble}
     csdp::blockmatrix
 end
 
+Base.cconvert(::Type{blockmatrix}, x::BlockMatrix) = x.csdp
+
+function Base.cconvert(::Type{Ptr{blockmatrix}}, x::BlockMatrix)
+    ptr = Base.pointer_from_objref(x.csdp)
+    return Base.reinterpret(Base.Ptr{blockmatrix}, ptr)
+end
+
 function BlockMatrix(jblocks::AbstractVector{BlockRec})
     blocks = map(block -> block.csdp, jblocks)
-    csdp = blockmatrix(length(blocks), fptr(blocks))
+    csdp = blockmatrix(length(blocks), offset(blocks))
     return BlockMatrix(jblocks, blocks, csdp)
 end
 BlockMatrix(As::AbstractVector) = BlockMatrix(map(BlockRec, As))
@@ -111,16 +95,20 @@ BlockMatrix(As::AbstractMatrix...) = BlockMatrix(collect(As))
 
 function BlockMatrix(csdp::blockmatrix)
     # I give false so that Julia does not try to free it
-    blocks =
-        _unsafe_wrap(Array, csdp.blocks + sizeof(blockrec), csdp.nblocks, false)
+    blocks = unsafe_wrap(
+        Array,
+        csdp.blocks + sizeof(blockrec),
+        csdp.nblocks;
+        own = false,
+    )
     jblocks = map(blocks) do csdp
         let n = csdp.blocksize, c = csdp.blockcategory, d = csdp.data._blockdatarec
             if c == MATRIX
-                _blockdatarec = _unsafe_wrap(Array, d, n^2, false)
+                _blockdatarec = unsafe_wrap(Array, d, n^2; own = false)
             else
                 @assert c == DIAG
                 _blockdatarec =
-                    _unsafe_wrap(Array, d + sizeof(Cdouble), n, false)
+                    unsafe_wrap(Array, d + sizeof(Cdouble), n; own = false)
             end
             BlockRec(_blockdatarec, csdp)
         end
@@ -160,9 +148,9 @@ function SparseBlock(
     block = sparseblock(
         C_NULL,    # next
         C_NULL,    # nextbyblock
-        fptr(v),   # entries
-        fptr(i),   # iindices
-        fptr(j),   # jindices
+        offset(v),   # entries
+        offset(i),   # iindices
+        offset(j),   # jindices
         length(i), # numentries
         0,         # blocknum
         n,         # blocksize
@@ -192,10 +180,13 @@ function SparseBlock(A::SparseArrays.SparseMatrixCSC{Cdouble})
     end
     return SparseBlock(I, J, V, n)
 end
+
 function SparseBlock(A::AbstractMatrix{Cdouble})
     return SparseBlock(SparseArrays.SparseMatrixCSC{Cdouble,CSDP_INT}(A))
 end
+
 SparseBlock(A::AbstractMatrix) = SparseBlock(map(Cdouble, A))
+
 Base.convert(::Type{SparseBlock}, A::AbstractMatrix) = SparseBlock(A)
 
 mutable struct ConstraintMatrix <: AbstractBlockMatrix{Cdouble}
@@ -229,17 +220,3 @@ function block(A::Union{BlockMatrix,ConstraintMatrix}, i::Integer)
 end
 nblocks(A::blockmatrix) = A.nblocks
 nblocks(A::Union{BlockMatrix,ConstraintMatrix}) = length(A.jblocks)
-
-export BlockMatrix, ConstraintMatrix
-
-"""Solver status"""
-mutable struct Csdp
-    n::CSDP_INT
-    k::CSDP_INT
-    X::BlockMatrix
-    y::Vector{Cdouble}
-    constant_offset::Cdouble
-    constraints::Vector{SparseBlock}
-    pobj::Cdouble
-    dobj::Cdouble
-end

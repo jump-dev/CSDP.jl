@@ -8,13 +8,27 @@
 # Automatically generated using Clang.jl wrap_c, version 0.0.0 and then modified
 # in some places.
 
-export read_prob
+const ALLOWED_OPTIONS = [
+    :printlevel,
+    :axtol,
+    :atytol,
+    :objtol,
+    :pinftol,
+    :dinftol,
+    :maxiter,
+    :minstepfrac,
+    :maxstepfrac,
+    :minstepp,
+    :minstepd,
+    :usexzgap,
+    :tweakgap,
+    :affine,
+    :perturbobj,
+    :fastmode,
+    :write_prob,
+]
 
-function loaded_initsoln(
-    problem::Ptr{Cvoid},
-    X::Ref{blockmatrix},
-    Z::Ref{blockmatrix},
-)
+function loaded_initsoln(problem, X, Z)
     y = Ref{Ptr{Cdouble}}(C_NULL)
     ccall(
         (:loaded_initsoln, CSDP.libcsdp),
@@ -28,13 +42,7 @@ function loaded_initsoln(
     return y[]
 end
 
-function initsoln(
-    n::CSDP_INT,
-    k::CSDP_INT,
-    C::blockmatrix,
-    a::Ptr{Cdouble},
-    constraints::Ptr{constraintmatrix},
-)
+function initsoln(n, k, C, a, constraints)
     X = Ref{blockmatrix}(blockmatrix(0, C_NULL))
     y = Ref{Ptr{Cdouble}}(C_NULL)
     Z = Ref{blockmatrix}(blockmatrix(0, C_NULL))
@@ -54,23 +62,16 @@ function initsoln(
         n,
         k,
         C,
-        a,
-        constraints,
+        offset(a),
+        offset(constraints),
         X,
         y,
         Z,
     )
-    return X[], y[], Z[]
+    return BlockMatrix(X[]), _unsafe_wrap(y[], k), BlockMatrix(Z[])
 end
 
-function write_prob(
-    fname::String,
-    n::CSDP_INT,
-    k::CSDP_INT,
-    C::blockmatrix,
-    a::Ptr{Cdouble},
-    constraints::Ptr{constraintmatrix},
-)
+function write_prob(fname, n, k, C, a, constraints)
     return ccall(
         (:write_prob, CSDP.libcsdp),
         CSDP_INT,
@@ -86,19 +87,12 @@ function write_prob(
         n,
         k,
         C,
-        a,
-        constraints,
+        offset(a),
+        offset(constraints),
     )
 end
 
-function write_sol(
-    fname::String,
-    n::CSDP_INT,
-    k::CSDP_INT,
-    X::blockmatrix,
-    y::Ptr{Cdouble},
-    Z::blockmatrix,
-)
+function write_sol(fname, n, k, X, y, Z)
     return ccall(
         (:write_sol, CSDP.libcsdp),
         CSDP_INT,
@@ -114,7 +108,7 @@ function write_sol(
         n,
         k,
         X,
-        y,
+        offset(y),
         Z,
     )
 end
@@ -141,11 +135,11 @@ function getblockrec(A::blockmatrix, i::Integer)
 end
 
 function allocate_loading_prob(
-    pC::Ref{blockmatrix},
-    block_dims::Ptr{CSDP_INT},
-    num_constraints::Integer,
-    num_entries::Ptr{CSDP_INT},
-    printlevel::Integer,
+    pC,
+    block_dims,
+    num_constraints,
+    num_entries,
+    printlevel,
 )
     return ccall(
         (:allocate_loading_prob, CSDP.libcsdp),
@@ -159,7 +153,7 @@ function allocate_loading_prob(
     )
 end
 
-function free_loading_prob(problem::Ptr{Cvoid})
+function free_loading_prob(problem)
     return ccall(
         (:free_loading_prob, CSDP.libcsdp),
         Nothing,
@@ -168,12 +162,7 @@ function free_loading_prob(problem::Ptr{Cvoid})
     )
 end
 
-function free_loaded_prob(
-    problem::Ptr{Cvoid},
-    X::blockmatrix,
-    y::Ptr{Cdouble},
-    Z::blockmatrix,
-)
+function free_loaded_prob(problem, X, y, Z)
     return ccall(
         (:free_loaded_prob, CSDP.libcsdp),
         Nothing,
@@ -185,7 +174,7 @@ function free_loaded_prob(
     )
 end
 
-function setconstant(problem::Ptr{Cvoid}, mat::Integer, ent::Cdouble)
+function setconstant(problem, mat, ent)
     return ccall(
         (:setconstant, CSDP.libcsdp),
         Nothing,
@@ -196,15 +185,7 @@ function setconstant(problem::Ptr{Cvoid}, mat::Integer, ent::Cdouble)
     )
 end
 
-function addentry(
-    problem::Ptr{Cvoid},
-    mat::Integer,
-    blk::Integer,
-    indexi::Integer,
-    indexj::Integer,
-    ent::Cdouble,
-    allow_duplicates::Integer,
-)
+function addentry(problem, mat, blk, indexi, indexj, ent, allow_duplicates)
     return ccall(
         (:addentry, CSDP.libcsdp),
         CSDP_INT,
@@ -220,13 +201,13 @@ function addentry(
 end
 
 function loaded_sdp(
-    problem::Ptr{Cvoid},
-    constant_offset::Cdouble,
-    pX::Ref{blockmatrix},
-    py::Ref{Ptr{Cdouble}},
-    pZ::Ref{blockmatrix},
-    printlevel::CSDP_INT,
-    parameters::paramstruc,
+    problem,
+    constant_offset,
+    pX,
+    py,
+    pZ,
+    printlevel,
+    parameters,
 )
     pobj = Ref{Cdouble}(0.0)
     dobj = Ref{Cdouble}(0.0)
@@ -257,17 +238,7 @@ function loaded_sdp(
     return status, pobj[], dobj[]
 end
 
-function easy_sdp(
-    n::CSDP_INT,
-    k::CSDP_INT,
-    C::blockmatrix,
-    a::Ptr{Cdouble},
-    constraints::Ptr{constraintmatrix},
-    constant_offset::Cdouble,
-    pX::Ptr{blockmatrix},
-    py::Ref{Ptr{Cdouble}},
-    pZ::Ptr{blockmatrix},
-)
+function easy_sdp(n, k, C, a, constraints, constant_offset, pX, py, pZ)
     pobj = Ref{Cdouble}(0.0)
     dobj = Ref{Cdouble}(0.0)
     status = ccall(
@@ -289,11 +260,11 @@ function easy_sdp(
         n,
         k,
         C,
-        a,
-        constraints,
+        offset(a),
+        offset(constraints),
         constant_offset,
         pX,
-        py,
+        Ref{Ptr{Cdouble}}(offset(py)),
         pZ,
         pobj,
         dobj,

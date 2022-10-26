@@ -3,7 +3,8 @@
 # Use of this source code is governed by an MIT-style license that can be found
 # in the LICENSE.md file or at https://opensource.org/licenses/MIT.
 
-using CSDP
+import CSDP
+import LinearAlgebra
 
 #=
 # Example copied from `example/example.c`
@@ -47,57 +48,36 @@ using CSDP
 
 =#
 
-C = BlockMatrix(
-    [
-        2 1
-        1 2
-    ],
-    [
-        3 0 1
-        0 2 0
-        1 0 3
-    ],
+C = CSDP.BlockMatrix(
+    [2 1; 1 2],
+    [3 0 1; 0 2 0; 1 0 3],
     LinearAlgebra.Diagonal([0, 0]),
 )
 
 b = [1.0, 2.0]
 
-A1 = ConstraintMatrix(
+A1 = CSDP.ConstraintMatrix(
     1,
-    [
-        3 1
-        1 3
-    ],
-    [
-        0 0 0
-        0 0 0
-        0 0 0
-    ],
+    [3 1; 1 3],
+    zeros(3, 3),
     LinearAlgebra.Diagonal([1, 0]),
 )
 
-A2 = ConstraintMatrix(
+A2 = CSDP.ConstraintMatrix(
     2,
-    [
-        0 0
-        0 0
-    ],
-    [
-        3 0 1
-        0 4 0
-        1 0 5
-    ],
+    zeros(2, 2),
+    [3 0 1; 0 4 0; 1 0 5],
     LinearAlgebra.Diagonal([0, 1]),
 )
 
-constraints = [A.csdp for A in [A1, A2]]
+constraints = [A1.csdp, A2.csdp]
 
-CSDP.write_prob("prob.dat-s", C, b, constraints)
+CSDP.write_prob("prob.dat-s", 7, 2, C, b, constraints)
 
-X, y, Z = initsoln(C, b, constraints)
+X, y, Z = CSDP.initsoln(7, 2, C, b, constraints)
 
-pobj, dobj = easy_sdp(C, b, constraints, 0.0, X, y, Z)
+status, pobj, dobj = CSDP.easy_sdp(7, 2, C, b, constraints, 0.0, X, y, Z)
 
 @static if !Sys.iswindows()
-    CSDP.write_sol("prob.sol", X, y, Z)
+    CSDP.write_sol("prob.sol", 7, 2, X, y, Z)
 end
