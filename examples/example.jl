@@ -4,7 +4,6 @@
 # in the LICENSE.md file or at https://opensource.org/licenses/MIT.
 
 import CSDP
-import LinearAlgebra
 
 #=
 # Example copied from `example/example.c`
@@ -49,25 +48,20 @@ import LinearAlgebra
 =#
 
 C = CSDP.BlockMatrix(
-    [2 1; 1 2],
-    [3 0 1; 0 2 0; 1 0 3],
-    LinearAlgebra.Diagonal([0, 0]),
+    Float64[2 1; 1 2],
+    Float64[3 0 1; 0 2 0; 1 0 3],
+    Float64[0 0; 0 0],
 )
 
-b = [1.0, 2.0]
+b = Float64[1.0, 2.0]
 
-A1 = CSDP.ConstraintMatrix(
-    1,
-    [3 1; 1 3],
-    zeros(3, 3),
-    LinearAlgebra.Diagonal([1, 0]),
-)
+A1 = CSDP.ConstraintMatrix(1, Float64[3 1; 1 3], zeros(3, 3), Float64[1 0; 0 0])
 
 A2 = CSDP.ConstraintMatrix(
     2,
     zeros(2, 2),
-    [3 0 1; 0 4 0; 1 0 5],
-    LinearAlgebra.Diagonal([0, 1]),
+    Float64[3 0 1; 0 4 0; 1 0 5],
+    Float64[0 0; 0 1],
 )
 
 constraints = [A1.csdp, A2.csdp]

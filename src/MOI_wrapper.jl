@@ -33,11 +33,11 @@ mutable struct Optimizer <: MOI.AbstractOptimizer
             Tuple{Int,Int,Int}[],
             Dict{Tuple{Int,Int},Int}(),
             Cdouble[],
-            blockmatrix(),
+            blockmatrix(CSDP_INT(0), C_NULL),
             nothing,
-            blockmatrix(),
+            blockmatrix(CSDP_INT(0), C_NULL),
             nothing,
-            blockmatrix(),
+            blockmatrix(CSDP_INT(0), C_NULL),
             -1,
             NaN,
             NaN,
@@ -100,7 +100,7 @@ end
 ###
 
 function MOI.supports(::Optimizer, param::MOI.RawOptimizerAttribute)
-    return Symbol(param.name) in ALLOWED_OPTIONS
+    return hasfield(paramstruc, Symbol(param.name)) || param == "printlevel"
 end
 
 function MOI.set(model::Optimizer, param::MOI.RawOptimizerAttribute, value)
@@ -247,7 +247,8 @@ end
 
 function count_entry(model::Optimizer, con_idx::Integer, blk::Integer)
     key = (con_idx, blk)
-    return model.num_entries[key] = get(model.num_entries, key, 0) + 1
+    model.num_entries[key] = get(model.num_entries, key, 0) + 1
+    return
 end
 
 # Loads objective coefficient α * vi
@@ -336,7 +337,7 @@ function MOI.copy_to(dest::Optimizer, src::MOI.ModelLike)
         num_entries[key...] = value
     end
     dest.problem = allocate_loading_prob(
-        Ref(dest.C),
+        dest.C,
         offset(dest.blockdims),
         length(dest.b),
         num_entries,
@@ -395,15 +396,20 @@ end
 function MOI.optimize!(model::Optimizer)
     start_time = time()
     y_ptr = loaded_initsoln(model.problem, model.X, model.Z)
-    model.y = _unsafe_wrap(y_ptr, length(model.b))
+    model.y = unsafe_wrap(
+        Array,
+        y_ptr + sizeof(Cdouble),
+        length(model.b);
+        own = false,
+    )
     options = model.options
     print_level = model.silent ? Cint(0) : get(options, :print_level, Cint(1))
     model.status, model.pobj, model.dobj = loaded_sdp(
         model.problem,
         model.objective_sign * model.objective_constant,
-        Ref(model.X),
+        model.X,
         Ref{Ptr{Cdouble}}(offset(model.y)),
-        Ref(model.Z),
+        model.Z,
         print_level,
         paramstruc(options),
     )
@@ -499,34 +505,6 @@ function MOI.get(model::Optimizer, attr::MOI.DualObjectiveValue)
     return model.objective_sign * model.dobj
 end
 
-function block(model::Optimizer, ci::MOI.ConstraintIndex{MOI.VectorOfVariables})
-    return model.varmap[ci.value][1]
-end
-
-function vectorize_block(M, blk::Integer, ::Type{MOI.Nonnegatives})
-    return LinearAlgebra.diag(block(M, blk))
-end
-
-function vectorize_block(
-    M::AbstractMatrix{Cdouble},
-    blk::Integer,
-    ::Type{MOI.PositiveSemidefiniteConeTriangle},
-) where {T}
-    B = block(M, blk)
-    d = LinearAlgebra.checksquare(B)
-    n = MOI.dimension(MOI.PositiveSemidefiniteConeTriangle(d))
-    v = Vector{Cdouble}(undef, n)
-    k = 0
-    for j in 1:d
-        for i in 1:j
-            k += 1
-            v[k] = B[i, j]
-        end
-    end
-    @assert k == n
-    return v
-end
-
 function MOI.get(
     model::Optimizer,
     attr::MOI.VariablePrimal,
@@ -534,16 +512,7 @@ function MOI.get(
 )
     MOI.check_result_index_bounds(model, attr)
     blk, i, j = varmap(model, x)
-    return block(model.X, blk)[i, j]
-end
-
-function MOI.get(
-    model::Optimizer,
-    attr::MOI.ConstraintPrimal,
-    ci::MOI.ConstraintIndex{MOI.VectorOfVariables,S},
-) where {S<:SupportedSets}
-    MOI.check_result_index_bounds(model, attr)
-    return vectorize_block(model.X, block(model, ci), S)
+    return getblockrec(model.X, blk)[i, j]
 end
 
 function MOI.get(
@@ -562,15 +531,6 @@ end
 function MOI.get(
     model::Optimizer,
     attr::MOI.ConstraintDual,
-    ci::MOI.ConstraintIndex{MOI.VectorOfVariables,S},
-) where {S<:SupportedSets}
-    MOI.check_result_index_bounds(model, attr)
-    return vectorize_block(model.Z, block(model, ci), S)
-end
-
-function MOI.get(
-    model::Optimizer,
-    attr::MOI.ConstraintDual,
     ci::MOI.ConstraintIndex{
         MOI.ScalarAffineFunction{Cdouble},
         MOI.EqualTo{Cdouble},
@@ -578,4 +538,48 @@ function MOI.get(
 )
     MOI.check_result_index_bounds(model, attr)
     return -model.y[ci.value]
+end
+
+function _vectorize_block(M::blockmatrix, blk, ::Type{MOI.Nonnegatives})
+    rec = getblockrec(M, blk)
+    return [rec[i, i] for i in 1:rec.blocksize]
+end
+
+function _vectorize_block(
+    M::blockmatrix,
+    blk,
+    ::Type{MOI.PositiveSemidefiniteConeTriangle},
+)
+    B = getblockrec(M, blk)
+    n = MOI.dimension(MOI.PositiveSemidefiniteConeTriangle(B.blocksize))
+    v = Vector{Cdouble}(undef, n)
+    k = 0
+    for j in 1:B.blocksize
+        for i in 1:j
+            k += 1
+            v[k] = B[i, j]
+        end
+    end
+    @assert k == n
+    return v
+end
+
+function MOI.get(
+    model::Optimizer,
+    attr::MOI.ConstraintPrimal,
+    ci::MOI.ConstraintIndex{MOI.VectorOfVariables,S},
+) where {S<:SupportedSets}
+    MOI.check_result_index_bounds(model, attr)
+    blk = model.varmap[ci.value][1]
+    return _vectorize_block(model.X, blk, S)
+end
+
+function MOI.get(
+    model::Optimizer,
+    attr::MOI.ConstraintDual,
+    ci::MOI.ConstraintIndex{MOI.VectorOfVariables,S},
+) where {S<:SupportedSets}
+    MOI.check_result_index_bounds(model, attr)
+    blk = model.varmap[ci.value][1]
+    return _vectorize_block(model.Z, blk, S)
 end
