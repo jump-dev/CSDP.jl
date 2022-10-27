@@ -35,7 +35,7 @@ never be accessed.
 offset(x::Vector{T}) where {T} = pointer(x) - sizeof(T)
 
 include("c_api.jl")
+include("c_api_patch.jl")
 include("MOI_wrapper.jl")
-include("simple_api.jl")
 
 end # module
