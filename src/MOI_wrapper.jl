@@ -514,7 +514,7 @@ function vectorize_block(
     M::AbstractMatrix{Cdouble},
     blk::Integer,
     ::Type{MOI.PositiveSemidefiniteConeTriangle},
-) where {T}
+)
     B = block(M, blk)
     d = LinearAlgebra.checksquare(B)
     n = MOI.dimension(MOI.PositiveSemidefiniteConeTriangle(d))
