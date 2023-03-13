@@ -45,6 +45,15 @@ mutable struct Optimizer <: MOI.AbstractOptimizer
             false,
             Dict{Symbol,Any}(),
         )
+        if !isempty(kwargs)
+            @warn("""Passing optimizer attributes as keyword arguments to
+            CSDP.Optimizer is deprecated. Use
+                MOI.set(model, MOI.RawOptimizerAttribute("key"), value)
+            or
+                JuMP.set_optimizer_attribute(model, "key", value)
+            instead.
+            """)
+        end
         for (key, value) in kwargs
             MOI.set(model, MOI.RawOptimizerAttribute(String(key)), value)
         end
