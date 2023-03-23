@@ -105,6 +105,22 @@ function test_runtests()
             "test_solve_result_index",
             "test_solve_TerminationStatus_DUAL_INFEASIBLE",
             "test_variable_solve_with_lowerbound",
+            # TODO CSDP just returns an infinite ObjectiveValue
+            # See https://github.com/jump-dev/MathOptInterface.jl/issues/1759
+            "test_unbounded_MIN_SENSE",
+            "test_unbounded_MIN_SENSE_offset",
+            "test_unbounded_MAX_SENSE",
+            "test_unbounded_MAX_SENSE_offset",
+            # TODO CSDP just returns an infinite DualObjectiveValue
+            # See https://github.com/jump-dev/MathOptInterface.jl/issues/1759
+            "test_infeasible_MAX_SENSE",
+            "test_infeasible_MAX_SENSE_offset",
+            "test_infeasible_MIN_SENSE",
+            "test_infeasible_MIN_SENSE_offset",
+            "test_infeasible_affine_MAX_SENSE",
+            "test_infeasible_affine_MAX_SENSE_offset",
+            "test_infeasible_affine_MIN_SENSE",
+            "test_infeasible_affine_MIN_SENSE_offset",
         ],
     )
     return
