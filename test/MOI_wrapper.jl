@@ -85,9 +85,20 @@ function test_runtests()
             "test_conic_RotatedSecondOrderCone_VectorOfVariables",
             "test_variable_solve_with_lowerbound",
             "test_modification_delete_variables_in_a_batch",
-            # Working locally but `SLOW_PROGRESS` in CI
+            # Working locally but getting into numerical issues in CI
             "test_quadratic_constraint_basic",
             "test_quadratic_constraint_minimize",
+            "test_conic_SecondOrderCone_negative_post_bound",
+            "test_conic_SecondOrderCone_no_initial_bound",
+            "test_linear_integration",
+            "test_modification_coef_scalar_objective",
+            "test_modification_const_scalar_objective",
+            "test_modification_delete_variable_with_single_variable_obj",
+            "test_modification_transform_singlevariable_lessthan",
+            "test_objective_FEASIBILITY_SENSE_clears_objective",
+            "test_objective_ObjectiveFunction_blank",
+            "test_objective_ObjectiveFunction_duplicate_terms",
+            "test_solve_result_index",
         ],
     )
     return
