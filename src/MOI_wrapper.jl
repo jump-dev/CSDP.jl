@@ -474,8 +474,8 @@ function MOI.get(model::Optimizer, attr::MOI.PrimalStatus)
         return MOI.FEASIBLE_POINT
     elseif model.status == 1
         return MOI.INFEASIBLE_POINT
-        # elseif model.status == 2
-        #     return MOI.INFEASIBILITY_CERTIFICATE
+    elseif model.status == 2
+        return MOI.INFEASIBILITY_CERTIFICATE
     elseif model.status == 3
         return MOI.NEARLY_FEASIBLE_POINT
     else
@@ -490,8 +490,8 @@ function MOI.get(model::Optimizer, attr::MOI.DualStatus)
         return MOI.NO_SOLUTION
     elseif model.status == 0
         return MOI.FEASIBLE_POINT
-        # elseif model.status == 1
-        #     return MOI.INFEASIBILITY_CERTIFICATE
+    elseif model.status == 1
+        return MOI.INFEASIBILITY_CERTIFICATE
     elseif model.status == 2
         return MOI.INFEASIBLE_POINT
     elseif model.status == 3
