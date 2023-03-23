@@ -1,7 +1,7 @@
 name = "CSDP"
 uuid = "0a46da34-8e4b-519e-b418-48813639ff34"
 repo = "https://github.com/jump-dev/CSDP.jl.git"
-version = "1.1.0"
+version = "1.1.1"
 
 [deps]
 CSDP_jll = "9ce75daa-2788-5e2c-ba1d-cf8c48367b27"
