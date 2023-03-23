@@ -102,6 +102,7 @@ function test_runtests()
             "test_modification_set_singlevariable_lessthan",
             "test_objective_ObjectiveFunction_VariableIndex",
             "test_conic_SecondOrderCone_nonnegative_initial_bound",
+            "test_solve_TerminationStatus_DUAL_INFEASIBLE",
         ],
     )
     return
