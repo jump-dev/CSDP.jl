@@ -474,8 +474,8 @@ function MOI.get(model::Optimizer, attr::MOI.PrimalStatus)
         return MOI.FEASIBLE_POINT
     elseif model.status == 1
         return MOI.INFEASIBLE_POINT
-        # elseif model.status == 2
-        #     return MOI.INFEASIBILITY_CERTIFICATE
+    elseif model.status == 2
+        return MOI.INFEASIBILITY_CERTIFICATE
     elseif model.status == 3
         return MOI.NEARLY_FEASIBLE_POINT
     else
@@ -490,8 +490,8 @@ function MOI.get(model::Optimizer, attr::MOI.DualStatus)
         return MOI.NO_SOLUTION
     elseif model.status == 0
         return MOI.FEASIBLE_POINT
-        # elseif model.status == 1
-        #     return MOI.INFEASIBILITY_CERTIFICATE
+    elseif model.status == 1
+        return MOI.INFEASIBILITY_CERTIFICATE
     elseif model.status == 2
         return MOI.INFEASIBLE_POINT
     elseif model.status == 3
@@ -505,11 +505,29 @@ MOI.get(model::Optimizer, ::MOI.SolveTimeSec) = model.solve_time
 
 function MOI.get(model::Optimizer, attr::MOI.ObjectiveValue)
     MOI.check_result_index_bounds(model, attr)
+    if MOI.get(model, MOI.PrimalStatus(attr.result_index)) ==
+       MOI.INFEASIBILITY_CERTIFICATE
+        throw(
+            MOI.GetAttributeNotAllowed(
+                attr,
+                "CSDP does not support getting the objective value corresponding to a certificate of dual infeasibility. Use a `MOI.Utilities.CachingOptimizer` layer so that it gets automatically computed from the value of the variables.",
+            ),
+        )
+    end
     return model.objective_sign * model.pobj
 end
 
 function MOI.get(model::Optimizer, attr::MOI.DualObjectiveValue)
     MOI.check_result_index_bounds(model, attr)
+    if MOI.get(model, MOI.DualStatus(attr.result_index)) ==
+       MOI.INFEASIBILITY_CERTIFICATE
+        throw(
+            MOI.GetAttributeNotAllowed(
+                attr,
+                "CSDP does not support getting the dual objective value corresponding to a certificate of primal infeasibility. Use a `MOI.Utilities.CachingOptimizer` layer so that it gets automatically computed from the dual value of the constraints.",
+            ),
+        )
+    end
     return model.objective_sign * model.dobj
 end
 

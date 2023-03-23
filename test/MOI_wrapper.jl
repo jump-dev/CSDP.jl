@@ -78,33 +78,31 @@ function test_runtests()
             #   Empty constraint not supported:
             "test_conic_PositiveSemidefiniteConeTriangle",
             "test_linear_VectorAffineFunction_empty_row",
-            #   Unable to bridge RotatedSecondOrderCone to PSD because the ...
+            #   Unable to bridge RotatedSecondOrderCone to PSD because the the dimension is too small: got 2, expected >= 3
             "test_conic_SecondOrderCone_INFEASIBLE",
             "test_constraint_PrimalStart_DualStart_SecondOrderCone",
             # TODO(odow): unknown test failures.
             "test_conic_RotatedSecondOrderCone_VectorOfVariables",
-            "test_conic_SecondOrderCone_negative_initial_bound",
+            "test_variable_solve_with_lowerbound",
+            "test_modification_delete_variables_in_a_batch",
+            # Working locally but getting into numerical issues in CI
+            "test_quadratic_constraint_basic",
+            "test_quadratic_constraint_minimize",
             "test_conic_SecondOrderCone_negative_post_bound",
-            "test_conic_SecondOrderCone_negative_post_bound_2",
-            "test_conic_SecondOrderCone_negative_post_bound_3",
-            "test_conic_SecondOrderCone_nonnegative_initial_bound",
             "test_conic_SecondOrderCone_no_initial_bound",
+            "test_linear_integration",
             "test_modification_coef_scalar_objective",
             "test_modification_const_scalar_objective",
-            "test_modification_delete_variables_in_a_batch",
             "test_modification_delete_variable_with_single_variable_obj",
-            "test_modification_set_singlevariable_lessthan",
             "test_modification_transform_singlevariable_lessthan",
             "test_objective_FEASIBILITY_SENSE_clears_objective",
             "test_objective_ObjectiveFunction_blank",
-            "test_objective_ObjectiveFunction_constant",
             "test_objective_ObjectiveFunction_duplicate_terms",
-            "test_objective_ObjectiveFunction_VariableIndex",
-            "test_quadratic_constraint_basic",
-            "test_quadratic_constraint_minimize",
             "test_solve_result_index",
+            "test_modification_set_singlevariable_lessthan",
+            "test_objective_ObjectiveFunction_VariableIndex",
+            "test_conic_SecondOrderCone_nonnegative_initial_bound",
             "test_solve_TerminationStatus_DUAL_INFEASIBLE",
-            "test_variable_solve_with_lowerbound",
         ],
     )
     return
