@@ -1,19 +1,21 @@
-# COIN-OR SemiDefinite Programming Interface (CSDP.jl)
-
 ![](https://www.coin-or.org/wordpress/wp-content/uploads/2014/08/COINOR.png)
+s
+# CSDP.jl
+
 
 [![Build Status](https://github.com/jump-dev/CSDP.jl/workflows/CI/badge.svg?branch=master)](https://github.com/jump-dev/CSDP.jl/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/jump-dev/CSDP.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/jump-dev/CSDP.jl)
 
-`CSDP.jl` is a wrapper for the [COIN-OR SemiDefinite Programming](https://projects.coin-or.org/Csdp)
+[`CSDP.jl`](https://github.com/jump-dev/CSDP.jl) is a wrapper for the [COIN-OR SemiDefinite Programming](https://projects.coin-or.org/Csdp)
 solver.
 
 The wrapper has two components:
  * a thin wrapper around the low-level C API
  * an interface to [MathOptInterface](https://github.com/jump-dev/MathOptInterface.jl)
 
-*Note: This wrapper is maintained by the JuMP community and is not a COIN-OR
-project.*
+## Affiliation
+
+This wrapper is maintained by the JuMP community and is not a COIN-OR project.
 
 The original algorithm is described by B. Borchers.
 _CSDP, A C Library for Semidefinite Programming_.
@@ -21,11 +23,19 @@ Optimization Methods and Software 11(1):613-623, 1999.
 DOI [10.1080/10556789908805765](http://dx.doi.org/10.1080/10556789908805765).
 [Preprint](http://euler.nmt.edu/~brian/csdppaper.pdf).
 
+## License
+
+`Clp.jl` is licensed under the [MIT License](https://github.com/jump-dev/CSDP.jl/blob/master/LICENSE.md).
+
+The underlying solver, [coin-or/Csdp](https://github.com/coin-or/Csdp), is
+licensed under the [Eclipse public license](https://github.com/coin-or/Csdp/blob/master/LICENSE).
+
 ## Installation
 
 Install CSDP using `Pkg.add`:
 ```julia
-import Pkg; Pkg.add("CSDP")
+import Pkg
+Pkg.add("CSDP")
 ```
 
 In addition to installing the CSDP.jl package, this will also download and
@@ -33,18 +43,57 @@ install the CSDP binaries. (You do not need to install CSDP separately.)
 
 ## Use with JuMP
 
-We highly recommend that you use the *CSDP.jl* package with higher level
-packages such as [CSDP.jl](https://github.com/jump-dev/CSDP.jl).
-
 To use CSDP with [JuMP](https://github.com/jump-dev/JuMP.jl), use
 `CSDP.Optimizer`:
 ```julia
 using JuMP, CSDP
-
 model = Model(CSDP.Optimizer)
-set_optimizer_attribute(model, "maxiter", 1000)
+set_attribute(model, "maxiter", 1000)
 ```
 
+## MathOptInterface API
+
+The CSDP optimizer supports the following constraints and attributes.
+
+List of supported objective functions:
+
+ * [`MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}`](@ref)
+
+List of supported variable types:
+
+ * [`MOI.Nonnegatives`](@ref)
+ * [`MOI.PositiveSemidefiniteConeTriangle`](@ref)
+
+List of supported constraint types:
+
+ * [`MOI.ScalarAffineFunction{Float64}`](@ref) in [`MOI.EqualTo{Float64}`](@ref)
+
+List of supported model attributes:
+
+ * [`MOI.ObjectiveSense()`](@ref)
+
+## Options
+
+The CSDP options are listed in the table below.
+
+Name          |                                                                                                                      | Default Value  |
+ ------------ | -----------------------------------                                                                                  | -------------- |
+`axtol`       | Tolerance for primal feasibility                                                                                     | `1.0e-8`       |
+`atytol`      | Tolerance for dual feasibility                                                                                       | `1.0e-8`       |
+`objtol`      | Tolerance for relative duality gap                                                                                   | `1.0e-8`       |
+`pinftol`     | Tolerance for determining primal infeasibility                                                                       | `1.0e8`        |
+`dinftol`     | Tolerance for determining dual infeasibility                                                                         | `1.0e8`        |
+`maxiter`     | Limit for the total number of iterations                                                                             | `100`          |
+`minstepfrac` | The `minstepfrac` and `maxstepfrac` parameters determine how close to the edge of the feasible region CSDP will step | `0.90`         |
+`maxstepfrac` | The `minstepfrac` and `maxstepfrac` parameters determine how close to the edge of the feasible region CSDP will step | `0.97`         |
+`minstepp`    | If the primal step is shorter than `minstepp` then CSDP declares a line search failure                               | `1.0e-8`       |
+`minstepd`    | If the dual step is shorter than `minstepd` then CSDP declares a line search failure                                 | `1.0e-8`       |
+`usexzgap`    | If `usexzgap` is `0` then CSDP will use the objective duality gap `d - p` instead of the XY duality gap `⟨Z, X⟩`     | `1`            |
+`tweakgap`    | If `tweakgap` is set to `1`, and `usexzgap` is set to `0`, then CSDP will attempt to "fix" negative duality gaps     | `0`            |
+`affine`      | If `affine` is set to `1`, then CSDP will take only primal-dual affine steps and not make use of the barrier term. This can be useful for some problems that do not have feasible solutions that are strictly in the interior of the cone of semidefinite matrices | `0`            |
+`perturbobj`  | The `perturbobj` parameter determines whether the objective function will be perturbed to help deal with problems that have unbounded optimal solution sets. If `perturbobj` is `0`, then the objective will not be perturbed. If `perturbobj` is `1`, then the objective function will be perturbed by a default amount. Larger values of `perturbobj` (e.g. `100`) increase the size of the perturbation. This can be helpful in solving some difficult problems. | `1`            |
+`fastmode`    | The `fastmode` parameter determines whether or not CSDP will skip certain time consuming operations that slightly improve the accuracy of the solutions. If `fastmode` is set to `1`, then CSDP may be somewhat faster, but also somewhat less accurate | `0`            |
+`printlevel`  | The `printlevel` parameter determines how much debugging information is output. Use a `printlevel` of `0` for no output and a `printlevel` of `1` for normal output. Higher values of printlevel will generate more debugging output | `1`            |
 ## CSDP problem representation
 
 The primal is represented internally by CSDP as follows:
@@ -108,27 +157,4 @@ If the `printlevel` option is at least `1`, the following will be printed:
   * the relative primal/dual infeasibility,
   * the objective duality gap `⟨a, y⟩ - ⟨C, X⟩` and objective relative duality  gap `(⟨a, y⟩ - ⟨C, X⟩) / (1 + |⟨a, y⟩| + |⟨C, X⟩|)`,
   * the XY duality gap `⟨Z, X⟩` and XY relative duality gap `⟨Z, X⟩ / (1 + |⟨a, y⟩| + |⟨C, X⟩|)`
-  * and the DIMACS error measures.
-
-## Options
-
-The CSDP options are listed in the table below.
-
-Name          |                                                                                                                      | Default Value  |
- ------------ | -----------------------------------                                                                                  | -------------- |
-`axtol`       | Tolerance for primal feasibility                                                                                     | `1.0e-8`       |
-`atytol`      | Tolerance for dual feasibility                                                                                       | `1.0e-8`       |
-`objtol`      | Tolerance for relative duality gap                                                                                   | `1.0e-8`       |
-`pinftol`     | Tolerance for determining primal infeasibility                                                                       | `1.0e8`        |
-`dinftol`     | Tolerance for determining dual infeasibility                                                                         | `1.0e8`        |
-`maxiter`     | Limit for the total number of iterations                                                                             | `100`          |
-`minstepfrac` | The `minstepfrac` and `maxstepfrac` parameters determine how close to the edge of the feasible region CSDP will step | `0.90`         |
-`maxstepfrac` | The `minstepfrac` and `maxstepfrac` parameters determine how close to the edge of the feasible region CSDP will step | `0.97`         |
-`minstepp`    | If the primal step is shorter than `minstepp` then CSDP declares a line search failure                               | `1.0e-8`       |
-`minstepd`    | If the dual step is shorter than `minstepd` then CSDP declares a line search failure                                 | `1.0e-8`       |
-`usexzgap`    | If `usexzgap` is `0` then CSDP will use the objective duality gap `d - p` instead of the XY duality gap `⟨Z, X⟩`     | `1`            |
-`tweakgap`    | If `tweakgap` is set to `1`, and `usexzgap` is set to `0`, then CSDP will attempt to "fix" negative duality gaps     | `0`            |
-`affine`      | If `affine` is set to `1`, then CSDP will take only primal-dual affine steps and not make use of the barrier term. This can be useful for some problems that do not have feasible solutions that are strictly in the interior of the cone of semidefinite matrices | `0`            |
-`perturbobj`  | The `perturbobj` parameter determines whether the objective function will be perturbed to help deal with problems that have unbounded optimal solution sets. If `perturbobj` is `0`, then the objective will not be perturbed. If `perturbobj` is `1`, then the objective function will be perturbed by a default amount. Larger values of `perturbobj` (e.g. `100`) increase the size of the perturbation. This can be helpful in solving some difficult problems. | `1`            |
-`fastmode`    | The `fastmode` parameter determines whether or not CSDP will skip certain time consuming operations that slightly improve the accuracy of the solutions. If `fastmode` is set to `1`, then CSDP may be somewhat faster, but also somewhat less accurate | `0`            |
-`printlevel`  | The `printlevel` parameter determines how much debugging information is output. Use a `printlevel` of `0` for no output and a `printlevel` of `1` for normal output. Higher values of printlevel will generate more debugging output | `1`            |
+  * and the DIMACS error measures.s
