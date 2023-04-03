@@ -1,5 +1,4 @@
 ![](https://www.coin-or.org/wordpress/wp-content/uploads/2014/08/COINOR.png)
-s
 # CSDP.jl
 
 
@@ -25,7 +24,7 @@ DOI [10.1080/10556789908805765](http://dx.doi.org/10.1080/10556789908805765).
 
 ## License
 
-`Clp.jl` is licensed under the [MIT License](https://github.com/jump-dev/CSDP.jl/blob/master/LICENSE.md).
+`CSDP.jl` is licensed under the [MIT License](https://github.com/jump-dev/CSDP.jl/blob/master/LICENSE.md).
 
 The underlying solver, [coin-or/Csdp](https://github.com/coin-or/Csdp), is
 licensed under the [Eclipse public license](https://github.com/coin-or/Csdp/blob/master/LICENSE).
@@ -157,4 +156,4 @@ If the `printlevel` option is at least `1`, the following will be printed:
   * the relative primal/dual infeasibility,
   * the objective duality gap `⟨a, y⟩ - ⟨C, X⟩` and objective relative duality  gap `(⟨a, y⟩ - ⟨C, X⟩) / (1 + |⟨a, y⟩| + |⟨C, X⟩|)`,
   * the XY duality gap `⟨Z, X⟩` and XY relative duality gap `⟨Z, X⟩ / (1 + |⟨a, y⟩| + |⟨C, X⟩|)`
-  * and the DIMACS error measures.s
+  * and the DIMACS error measures.
