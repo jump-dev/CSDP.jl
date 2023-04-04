@@ -16,11 +16,10 @@ The wrapper has two components:
 
 This wrapper is maintained by the JuMP community and is not a COIN-OR project.
 
-The original algorithm is described by B. Borchers.
-_CSDP, A C Library for Semidefinite Programming_.
-Optimization Methods and Software 11(1):613-623, 1999.
-DOI [10.1080/10556789908805765](http://dx.doi.org/10.1080/10556789908805765).
-[Preprint](http://euler.nmt.edu/~brian/csdppaper.pdf).
+The original algorithm is described by B. Borchers (1999). _CSDP, A C Library
+for Semidefinite Programming_. Optimization Methods and Software. 11(1), 613-623.
+ [[doi]](http://dx.doi.org/10.1080/10556789908805765)
+ [[preprint]](http://euler.nmt.edu/~brian/csdppaper.pdf)
 
 ## License
 
@@ -89,9 +88,9 @@ The CSDP options are listed in the table below.
 | `usexzgap`    | `1`            | If `usexzgap` is `0` then CSDP will use the objective duality gap `d - p` instead of the XY duality gap `⟨Z, X⟩`     |
 | `tweakgap`    | `0`            | If `tweakgap` is set to `1`, and `usexzgap` is set to `0`, then CSDP will attempt to "fix" negative duality gaps     |
 | `affine`      | `0`            | If `affine` is set to `1`, then CSDP will take only primal-dual affine steps and not make use of the barrier term. This can be useful for some problems that do not have feasible solutions that are strictly in the interior of the cone of semidefinite matrices |
-| `perturbobj`  | `1`            | The `perturbobj` parameter determines whether the objective function will be perturbed to help deal with problems that have unbounded optimal solution sets. If `perturbobj` is `0`, then the objective will not be perturbed. If `perturbobj` is `1`, then the objective function will be perturbed by a default amount. Larger values of `perturbobj` (e.g. `100`) increase the size of the perturbation. This can be helpful in solving some difficult problems. |
+| `perturbobj`  | `1`            | The `perturbobj` parameter determines whether the objective function will be perturbed to help deal with problems that have unbounded optimal solution sets. If `perturbobj` is `0`, then the objective will not be perturbed. If `perturbobj` is `1`, then the objective function will be perturbed by a default amount. Larger values of `perturbobj` (for example, `100`) increase the size of the perturbation. This can be helpful in solving some difficult problems. |
 | `fastmode`    | `0`            | The `fastmode` parameter determines whether or not CSDP will skip certain time consuming operations that slightly improve the accuracy of the solutions. If `fastmode` is set to `1`, then CSDP may be somewhat faster, but also somewhat less accurate |
-| `printlevel`  | `1`            | The `printlevel` parameter determines how much debugging information is output. Use a `printlevel` of `0` for no output and a `printlevel` of `1` for normal output. Higher values of printlevel will generate more debugging output |
+| `printlevel`  | `1`            | The `printlevel` parameter determines how much debugging information is output. Use a `printlevel` of `0` for no output and a `printlevel` of `1` for normal output. Higher values of `printlevel` will generate more debugging output |
 
 ## Problem representation
 
@@ -117,8 +116,8 @@ CSDP will terminate successfully (or partially) in the following cases:
   * primal feasibility tolerance: `||A(x) - a||_2 / (1 + ||a||_2) < axtol`
   * dual feasibility tolerance: `||A'(y) - C - Z||_F / (1 + ||C||_F) < atytol`
   * relative duality gap tolerance: `gap / (1 + |⟨a, y⟩| + |⟨C, X⟩|) < objtol`
-    * objective duality gap: If `usexygap` is `0`, `gap = ⟨a, y⟩ - ⟨C, X⟩`
-    * XY duality gap: If `usexygap` is `1`, `gap = ⟨Z, X⟩`
+    * objective duality gap: if `usexygap` is `0`, `gap = ⟨a, y⟩ - ⟨C, X⟩`
+    * XY duality gap: if `usexygap` is `1`, `gap = ⟨Z, X⟩`
   then it returns `0`.
 * If CSDP finds `y` and `Z ⪰ 0` such that `-⟨a, y⟩ / ||A'(y) - Z||_F > pinftol`,
   it returns `1` with `y` such that `⟨a, y⟩ = -1`.
@@ -143,17 +142,16 @@ printed:
     `⟨Z, X⟩ / (1 + |⟨a, y⟩| + |⟨C, X⟩|)`
   * and the DIMACS error measures.
 
-**Remark:** In theory, for feasible primal and dual solutions,
-`⟨a, y⟩ - ⟨C, X⟩ = ⟨Z, X⟩` so the objective and XY duality gap should be
-equivalent. However, in practice, there are sometimes solution which satisfy
-primal and dual feasibility tolerances but have objective duality gap which are
-not close to XY duality gap. In some cases, the objective duality gap may even
-become negative (hence the `tweakgap` option). This is the reason `usexygap` is
-`1` by default.
+In theory, for feasible primal and dual solutions, `⟨a, y⟩ - ⟨C, X⟩ = ⟨Z, X⟩`,
+so the objective and XY duality gap should be equivalent. However, in practice,
+there are sometimes solution which satisfy primal and dual feasibility
+tolerances but have objective duality gap which are not close to XY duality gap.
+In some cases, the objective duality gap may even become negative (hence the
+`tweakgap` option). This is the reason `usexygap` is `1` by default.
 
-**Remark:** CSDP considers that `X ⪰ 0` (resp. `Z ⪰ 0`) is satisfied when the
-Cholesky factorizations can be computed. In practice, this is somewhat more
-conservative than simply requiring all eigenvalues to be nonnegative.
+CSDP considers that `X ⪰ 0` (resp. `Z ⪰ 0`) is satisfied when the Cholesky
+factorizations can be computed. In practice, this is somewhat more conservative
+than simply requiring all eigenvalues to be nonnegative.
 
 ## Status
 
