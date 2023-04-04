@@ -137,8 +137,10 @@ printed:
 * Otherwise, CSDP will print
   * the primal/dual objective value,
   * the relative primal/dual infeasibility,
-  * the objective duality gap `⟨a, y⟩ - ⟨C, X⟩` and objective relative duality  gap `(⟨a, y⟩ - ⟨C, X⟩) / (1 + |⟨a, y⟩| + |⟨C, X⟩|)`,
-  * the XY duality gap `⟨Z, X⟩` and XY relative duality gap `⟨Z, X⟩ / (1 + |⟨a, y⟩| + |⟨C, X⟩|)`
+  * the objective duality gap `⟨a, y⟩ - ⟨C, X⟩` and objective relative duality
+    gap `(⟨a, y⟩ - ⟨C, X⟩) / (1 + |⟨a, y⟩| + |⟨C, X⟩|)`,
+  * the XY duality gap `⟨Z, X⟩` and XY relative duality gap
+    `⟨Z, X⟩ / (1 + |⟨a, y⟩| + |⟨C, X⟩|)`
   * and the DIMACS error measures.
 
 **Remark:** In theory, for feasible primal and dual solutions,
