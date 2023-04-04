@@ -18,8 +18,7 @@ This wrapper is maintained by the JuMP community and is not a COIN-OR project.
 
 The original algorithm is described by B. Borchers (1999). _CSDP, A C Library
 for Semidefinite Programming_. Optimization Methods and Software. 11(1), 613-623.
- [[doi]](http://dx.doi.org/10.1080/10556789908805765)
- [[preprint]](http://euler.nmt.edu/~brian/csdppaper.pdf)
+[[preprint]](http://euler.nmt.edu/~brian/csdppaper.pdf)
 
 ## License
 
