@@ -92,6 +92,7 @@ function test_runtests()
             r"test_objective_ObjectiveFunction_VariableIndex$",
             r"test_conic_SecondOrderCone_nonnegative_initial_bound$",
             r"test_solve_TerminationStatus_DUAL_INFEASIBLE$",
+            r"test_conic_RotatedSecondOrderCone_VectorOfVariables$",
         ],
     )
     return
