@@ -6,10 +6,8 @@
 module TestCSDP
 
 using Test
-using MathOptInterface
+import MathOptInterface as MOI
 import CSDP
-
-const MOI = MathOptInterface
 
 function runtests()
     for name in names(@__MODULE__; all = true)
@@ -51,15 +49,9 @@ function test_unsupported_constraint()
 end
 
 function test_runtests()
-    model = MOI.Utilities.CachingOptimizer(
-        MOI.Utilities.UniversalFallback(MOI.Utilities.Model{Float64}()),
-        MOI.instantiate(CSDP.Optimizer, with_bridge_type = Float64),
-    )
+    model = MOI.instantiate(CSDP.Optimizer, with_bridge_type = Float64)
     # `Variable.ZerosBridge` makes dual needed by some tests fail.
-    MOI.Bridges.remove_bridge(
-        model.optimizer,
-        MathOptInterface.Bridges.Variable.ZerosBridge{Float64},
-    )
+    MOI.Bridges.remove_bridge(model, MOI.Bridges.Variable.ZerosBridge{Float64})
     MOI.set(model, MOI.Silent(), true)
     MOI.Test.runtests(
         model,
@@ -73,36 +65,34 @@ function test_runtests()
                 MOI.SolverVersion,
             ],
         ),
-        exclude = String[
+        exclude = Regex[
             # Known test failures.
             #   Empty constraint not supported:
-            "test_conic_PositiveSemidefiniteConeTriangle",
-            "test_linear_VectorAffineFunction_empty_row",
-            #   Unable to bridge RotatedSecondOrderCone to PSD because the the dimension is too small: got 2, expected >= 3
-            "test_conic_SecondOrderCone_INFEASIBLE",
-            "test_constraint_PrimalStart_DualStart_SecondOrderCone",
-            # TODO(odow): unknown test failures.
-            "test_conic_RotatedSecondOrderCone_VectorOfVariables",
-            "test_variable_solve_with_lowerbound",
-            "test_modification_delete_variables_in_a_batch",
+            r"test_conic_PositiveSemidefiniteConeTriangle$",
+            r"test_linear_VectorAffineFunction_empty_row$",
+            #   Terminates with status `5` which means "Stuck at edge of primal feasibility."
+            r"test_quadratic_constraint_basic",
+            r"test_quadratic_constraint_minimize",
+            # Unknown test failures.
             # Working locally but getting into numerical issues in CI
-            "test_quadratic_constraint_basic",
-            "test_quadratic_constraint_minimize",
-            "test_conic_SecondOrderCone_negative_post_bound",
-            "test_conic_SecondOrderCone_no_initial_bound",
-            "test_linear_integration",
-            "test_modification_coef_scalar_objective",
-            "test_modification_const_scalar_objective",
-            "test_modification_delete_variable_with_single_variable_obj",
-            "test_modification_transform_singlevariable_lessthan",
-            "test_objective_FEASIBILITY_SENSE_clears_objective",
-            "test_objective_ObjectiveFunction_blank",
-            "test_objective_ObjectiveFunction_duplicate_terms",
-            "test_solve_result_index",
-            "test_modification_set_singlevariable_lessthan",
-            "test_objective_ObjectiveFunction_VariableIndex",
-            "test_conic_SecondOrderCone_nonnegative_initial_bound",
-            "test_solve_TerminationStatus_DUAL_INFEASIBLE",
+            r"test_quadratic_constraint_basic$",
+            r"test_quadratic_constraint_minimize$",
+            r"test_conic_SecondOrderCone_negative_post_bound$",
+            r"test_conic_SecondOrderCone_no_initial_bound$",
+            r"test_linear_integration$",
+            r"test_modification_coef_scalar_objective$",
+            r"test_modification_const_scalar_objective$",
+            r"test_modification_delete_variable_with_single_variable_obj$",
+            r"test_modification_transform_singlevariable_lessthan$",
+            r"test_objective_FEASIBILITY_SENSE_clears_objective$",
+            r"test_objective_ObjectiveFunction_blank$",
+            r"test_objective_ObjectiveFunction_duplicate_terms$",
+            r"test_solve_result_index$",
+            r"test_modification_set_singlevariable_lessthan$",
+            r"test_objective_ObjectiveFunction_VariableIndex$",
+            r"test_conic_SecondOrderCone_nonnegative_initial_bound$",
+            r"test_solve_TerminationStatus_DUAL_INFEASIBLE$",
+            r"test_conic_RotatedSecondOrderCone_VectorOfVariables$",
         ],
     )
     return
