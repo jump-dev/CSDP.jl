@@ -51,10 +51,7 @@ end
 function test_runtests()
     model = MOI.instantiate(CSDP.Optimizer, with_bridge_type = Float64)
     # `Variable.ZerosBridge` makes dual needed by some tests fail.
-    MOI.Bridges.remove_bridge(
-        model,
-        MOI.Bridges.Variable.ZerosBridge{Float64},
-    )
+    MOI.Bridges.remove_bridge(model, MOI.Bridges.Variable.ZerosBridge{Float64})
     MOI.set(model, MOI.Silent(), true)
     MOI.Test.runtests(
         model,
