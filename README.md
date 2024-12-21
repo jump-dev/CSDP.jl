@@ -2,7 +2,7 @@
 # CSDP.jl
 
 
-[![Build Status](https://github.com/jump-dev/CSDP.jl/workflows/CI/badge.svg?branch=master)](https://github.com/jump-dev/CSDP.jl/actions?query=workflow%3ACI)
+[![Build Status](https://github.com/jump-dev/CSDP.jl/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/jump-dev/CSDP.jl/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/jump-dev/CSDP.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/jump-dev/CSDP.jl)
 
 [`CSDP.jl`](https://github.com/jump-dev/CSDP.jl) is a wrapper for the
