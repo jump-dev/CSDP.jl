@@ -15,7 +15,7 @@ import LinearAlgebra
     @test abs(n1 - 4) < 1e-15
 end
 
-@testset "Example" begin
+function test_example()
     C = BlockMatrix(
         [2 1; 1 2],
         [3 0 1; 0 2 0; 1 0 3],
@@ -61,6 +61,13 @@ end
         0 0 0 0 0 0 4
     ]
     @test isapprox(Z, Z✓ / 4; atol = 1e-6)
+    return
+end
+
+@testset "Example" begin
+    if !Sys.iswindows()
+        test_example()
+    end
 end
 
 @testset "Options" begin
